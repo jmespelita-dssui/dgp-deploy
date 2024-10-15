@@ -10,6 +10,7 @@ const Dashboard = () => {
   const [people, setPeople] = useState([])
 
   const handlePeopleSelect = (e) => {
+    console.log(e.target.selectedPeople)
     setPeople(e.target.selectedPeople)
   }
 

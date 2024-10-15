@@ -15,6 +15,7 @@ const root = createRoot(container)
 
 Providers.globalProvider = new Msal2Provider({
   clientId: 'b781906d-dabc-418d-b1e6-cca04e3ad35f',
+  scopes: ['calendars.read', 'user.read', 'openid', 'profile', 'people.read', 'user.readbasic.all'],
 })
 
 root.render(

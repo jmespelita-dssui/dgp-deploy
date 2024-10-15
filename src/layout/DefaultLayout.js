@@ -6,6 +6,7 @@ import LoginPage from 'src/views/pages/login/LoginPage'
 
 function useIsSignIn() {
   const [isSignIn, setIsSignIn] = useState(false)
+
   useEffect(() => {
     const updateState = () => {
       const provider = Providers.globalProvider

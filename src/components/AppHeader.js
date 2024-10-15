@@ -18,7 +18,8 @@ import { Login } from '@microsoft/mgt-react'
 
 import { AppBreadcrumb } from './index'
 
-import { logo } from 'src/assets/brand/logo'
+// import { logo } from 'src/assets/brand/logo'
+import logo from 'src/assets/brand/dssui-logo.png'
 
 const AppHeader = () => {
   const dispatch = useDispatch()
@@ -35,7 +36,8 @@ const AppHeader = () => {
           <CIcon icon={cilMenu} size="lg" />
         </CHeaderToggler>
         <CHeaderBrand className="mx-auto d-md-none" to="/">
-          <CIcon icon={logo} height={48} alt="Logo" />
+          {/* <CIcon icon={logo} height={48} alt="Logo" /> */}
+          <img src={logo} alt="logo" height={80} />
         </CHeaderBrand>
         <CHeaderNav className="d-none d-md-flex me-auto">
           <CNavItem>
