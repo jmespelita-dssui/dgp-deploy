@@ -5,6 +5,7 @@ import {
   CCard,
   CCardBody,
   CCardGroup,
+  CCardImage,
   CCol,
   CContainer,
   CForm,
@@ -17,6 +18,7 @@ import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilUser } from '@coreui/icons'
 
 import { Login } from '@microsoft/mgt-react'
+import loginImg from 'src/assets/img/login.jpg'
 
 const LoginPage = () => {
   return (
@@ -34,17 +36,13 @@ const LoginPage = () => {
                     </p>
                     <CRow>
                       <CCol xs={6}>
-                        <Login />
-                      </CCol>
-                      <CCol xs={6} className="text-right">
-                        <CButton color="link" className="px-0">
-                          Forgot password?
-                        </CButton>
+                        <Login className="login" />
                       </CCol>
                     </CRow>
                   </CForm>
                 </CCardBody>
               </CCard>
+              <CCardImage orientation="top" src={loginImg} />
             </CCardGroup>
           </CCol>
         </CRow>

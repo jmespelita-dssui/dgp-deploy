@@ -1,1 +1,19 @@
 // Here you can add other styles
+.callout {
+  background-color: white;
+}
+
+h6 {
+  font-weight: bold;
+  color: $primary;
+}
+
+.login {
+  --login-signed-out-button-background: #8f3937;
+  --login-signed-out-button-hover-background: rgb(98, 98, 98);
+  --login-signed-out-button-text-color: white;
+  --login-popup-text-color: white;
+  --login-add-account-button-background-color: #8f3937;
+  --login-command-button-background-color: rgb(98, 98, 98);
+  --login-command-button-text-color: white;
+}

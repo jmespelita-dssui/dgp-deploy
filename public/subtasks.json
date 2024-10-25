@@ -1,0 +1,62 @@
+[
+    {
+        "prat_no": "1",
+        "subtask_no": "1",
+        "desc": "Initial project setup",
+        "assigned_to": "John Doe"
+    },
+    {
+        "prat_no": "1",
+        "subtask_no": "2",
+        "desc": "Create project documentation",
+        "assigned_to": "Jane Smith"
+    },
+    {
+        "prat_no": "2",
+        "subtask_no": "1",
+        "desc": "Gather client requirements",
+        "assigned_to": "Emily Johnson"
+    },
+    {
+        "prat_no": "2",
+        "subtask_no": "2",
+        "desc": "Prepare project timeline",
+        "assigned_to": "Michael Brown"
+    },
+    {
+        "prat_no": "3",
+        "subtask_no": "1",
+        "desc": "Design system architecture",
+        "assigned_to": "David Wilson"
+    },
+    {
+        "prat_no": "3",
+        "subtask_no": "2",
+        "desc": "Set up development environment",
+        "assigned_to": "Sophia Martinez"
+    },
+    {
+        "prat_no": "4",
+        "subtask_no": "1",
+        "desc": "Coordinate with stakeholders",
+        "assigned_to": "Chris Lee"
+    },
+    {
+        "prat_no": "4",
+        "subtask_no": "2",
+        "desc": "Develop front-end interface",
+        "assigned_to": "Olivia Taylor"
+    },
+    {
+        "prat_no": "5",
+        "subtask_no": "1",
+        "desc": "Develop back-end logic",
+        "assigned_to": "Ethan Harris"
+    },
+    {
+        "prat_no": "5",
+        "subtask_no": "2",
+        "desc": "Integrate with third-party APIs",
+        "assigned_to": "Mia Clark"
+    }
+]
