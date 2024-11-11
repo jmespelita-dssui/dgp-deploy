@@ -17,3 +17,8 @@ h6 {
   --login-command-button-background-color: rgb(98, 98, 98);
   --login-command-button-text-color: white;
 }
+
+.scrollable-container {
+  max-height: 70vh;
+  overflow-y: auto;
+}

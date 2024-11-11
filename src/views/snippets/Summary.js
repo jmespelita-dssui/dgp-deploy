@@ -3,31 +3,27 @@ import React from 'react'
 
 import {
   CCardBody,
-  CCollapse,
-  CAvatar,
   CContainer,
   CRow,
   CCol,
   CCallout,
-  CFormCheck,
-  CFormLabel,
-  CFormInput,
   CListGroup,
   CListGroupItem,
   CButton,
 } from '@coreui/react-pro'
 import { cilCheckCircle, cilFolderOpen, cilPencil, cilSpreadsheet } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
+import Tasks from './Tasks'
 
 const Summary = ({ item, openPratica }) => {
   const task = item
   return (
     <CContainer>
-      <CCallout color="primary">
+      <CCallout color="primary" className="mb-5">
         <CCardBody className="p-3">
           <CRow>
             <CCol xs={8} className="me-auto">
-              <h3>{task.title}</h3>
+              <h3>{task.titolo}</h3>
             </CCol>
             <CCol xs={2} className="d-grid gap-2 d-md-flex justify-content-md-end">
               <CButton onClick={openPratica}>
@@ -58,7 +54,7 @@ const Summary = ({ item, openPratica }) => {
                     <span className="fw-bold">Materia rapporto:</span> {task.materia_rapporto}
                   </CListGroupItem>
                   <CListGroupItem>
-                    <span className="fw-bold">Numero partecipanti/ospiti:</span>{' '}
+                    <span className="fw-bold">Numero partecipanti/ospiti:</span>
                     {task.numero_partecipanti_ospiti}
                   </CListGroupItem>
                   <CListGroupItem>
@@ -75,45 +71,14 @@ const Summary = ({ item, openPratica }) => {
               {/* MAIN BODY */}
               <CCol xs={6}>
                 {/* task  1*/}
-                <h6>TASKS</h6>
-                <CCardBody className="p-3">
-                  <CCol xs={12}>
-                    <CRow>
-                      <CCol xs={8}>
-                        <CFormCheck
-                          label="Send to richiedente before sundown, while the birds fly on high."
-                          disabled
-                        />
-                      </CCol>
-                      <CCol xs={2}>
-                        <CAvatar color="primary" size="sm" textColor="white">
-                          JM
-                        </CAvatar>
-                        <CAvatar color="secondary" size="sm">
-                          AM
-                        </CAvatar>
-                      </CCol>
-                    </CRow>
-                  </CCol>
-                  {/* task  2*/}
-                  <CCol xs={12}>
-                    <CRow>
-                      <CCol xs={8}>
-                        <CFormCheck label="Draft letter to recipient" checked disabled />
-                      </CCol>
-                      <CCol xs={2}>
-                        <CAvatar color="warning" size="sm" textColor="white">
-                          AA
-                        </CAvatar>
-                      </CCol>
-                    </CRow>
-                  </CCol>
-                </CCardBody>
+                <Tasks />
                 <CRow>
                   <CCardBody className="text-body-secondary font-size-sm lh-2">
-                    <CRow>Created on 3/10/2024 </CRow>
-                    <CRow>Forwarded to responsabile on 15/10/2024</CRow>
-                    <CRow>Last modified by Jena Espelita on 22/10/2024</CRow>
+                    <CRow>Created on {task.data_creazione} </CRow>
+                    <CRow>Forwarded to responsabile on {task.data_inoltrata_responsabile}</CRow>
+                    <CRow>
+                      Last modified by {task.modificato_da} on {task.data_ultima_modifica}
+                    </CRow>
                   </CCardBody>
                 </CRow>
               </CCol>

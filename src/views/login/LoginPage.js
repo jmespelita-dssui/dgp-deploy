@@ -27,8 +27,8 @@ const LoginPage = () => {
         <CRow className="justify-content-center">
           <CCol md={5}>
             <CCardGroup>
-              <CCard className="p-4">
-                <CCardBody>
+              <CCard className="m-4">
+                <CCardBody className="m-4">
                   <CForm>
                     <h1>DSSUI Gestione Pratiche</h1>
                     <p className="text-medium-emphasis">
@@ -41,8 +41,8 @@ const LoginPage = () => {
                     </CRow>
                   </CForm>
                 </CCardBody>
+                <CCardImage orientation="top" src={loginImg} />
               </CCard>
-              <CCardImage orientation="top" src={loginImg} />
             </CCardGroup>
           </CCol>
         </CRow>

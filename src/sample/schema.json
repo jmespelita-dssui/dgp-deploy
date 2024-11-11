@@ -1,7 +1,7 @@
 [
   {
-    "prat_no": 673818,
-    "prot": 31356,
+    "prat_no": 67381,
+    "prot_no": 31356,
     "title": "",
     "timbro_segretario": "10/16/2024",
     "categoria": "",
@@ -18,7 +18,7 @@
     "richiesta_contributo": "",
     "tema_contributo": "",
     "materia_rapporto": "",
-    "deadline": "",
+    "prima_scadenza":"",
     "data_inoltrata_responsabile": "",
     "superiori_invitati": "",
     "numero_partecipanti_ospiti": "",
@@ -29,6 +29,10 @@
     "status": 1,
     "links": "",
     "correspondence": "",
-    "activity_log": ""
+    "activity_log": "",
+    "officiale_incaricato":"",
+    "data_creazione":"",
+    "data_ultima_modifica":"",
+    "modificato_da":""
   }
 ]
