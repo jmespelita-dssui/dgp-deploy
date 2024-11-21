@@ -12,15 +12,10 @@ import {
   CNav,
   CNavItem,
   CNavLink,
-  CModal,
-  CModalHeader,
-  CModalBody,
-  CModalTitle,
-  CModalFooter,
 } from '@coreui/react-pro'
 
 import { Providers } from '@microsoft/mgt-element'
-// import { FileList, Agenda, PeoplePicker, People } from '@microsoft/mgt-react'
+import { FileList, Agenda, PeoplePicker, People, Person } from '@microsoft/mgt-react'
 import {
   cilFolderOpen,
   cilList,
@@ -34,7 +29,7 @@ import moment from 'moment'
 import Summary from '../snippets/Summary'
 import Pratica from '../modals/Pratica'
 
-const Dashboard = () => {
+const MyTasks = () => {
   const [accessToken, setAccessToken] = useState([])
   const [people, setPeople] = useState([])
   const [praticheList, setPraticheList] = useState([])
@@ -43,7 +38,6 @@ const Dashboard = () => {
   const [activeKey, setActiveKey] = useState(1)
   const [visible, setVisible] = useState(false)
   const [selectedPratica, setSelectedPratica] = useState([])
-
   const columns = [
     { key: 'summary', label: '', _style: { width: '1%' }, sorter: false },
     { key: 'open_folder', label: '', _style: { width: '1%' }, sorter: false },
@@ -120,7 +114,6 @@ const Dashboard = () => {
     let color
     switch (label) {
       case 'PROGETTO ESTERNO':
-        console.log(label, 'PE', 'PROGETTO ESTERNO' === label)
         color = 'warning'
         return color
       case 'EVENTO':
@@ -138,29 +131,15 @@ const Dashboard = () => {
     }
   }
 
-  useEffect(() => {
-    const getToken = async () => {
-      try {
-        const provider = Providers.globalProvider
-
-        if (provider && provider.state === 2) {
-          // 2 means the user is signed in
-          const tokenResponse = await provider.getAccessToken()
-          // console.log('Access Token:', tokenResponse)
-          setAccessToken(tokenResponse) // Store the token if needed
-        } else {
-          console.log('User is not signed in.')
-        }
-      } catch (error) {
-        console.error('Error acquiring token:', error)
-      }
-    }
-
-    getToken()
-  }, [])
-
   return (
     <>
+      {/* {person ? (
+        <Person personQuery="j.espelita@dssui.org" showName showEmail showPresence />
+      ) : (
+        <p>Loading...</p>
+      )} */}
+
+      {/* <FileList /> */}
       <Pratica
         visible={visible}
         onClose={onClosePratica}
@@ -271,8 +250,12 @@ const Dashboard = () => {
               },
               titolo: (item) => {
                 return (
-                  <td>
-                    <CButton color="link" onClick={() => openPratica(item)}>
+                  <td className="">
+                    <CButton
+                      color="link"
+                      style={{ textAlign: 'left' }}
+                      onClick={() => openPratica(item)}
+                    >
                       {item.titolo}
                     </CButton>
                   </td>
@@ -333,4 +316,4 @@ const Dashboard = () => {
   )
 }
 
-export default Dashboard
+export default MyTasks
