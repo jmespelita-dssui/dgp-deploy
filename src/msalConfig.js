@@ -1,12 +1,13 @@
 import { LogLevel, PublicClientApplication } from '@azure/msal-browser'
-
+import { Msal2Provider } from '@microsoft/mgt-msal2-provider'
+import { Providers } from '@microsoft/mgt-element'
 /**
  * Configuration object to be passed to MSAL instance on creation.
  * For a full list of MSAL.js configuration parameters, visit:
  * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/configuration.md
  */
 
-const config = {
+const msalConfig = {
   auth: {
     clientId: 'b781906d-dabc-418d-b1e6-cca04e3ad35f',
     authority: 'https://login.microsoftonline.com/organizations',
@@ -27,9 +28,9 @@ const config = {
           case LogLevel.Error:
             console.error(message)
             return
-          case LogLevel.Info:
-            console.info(message)
-            return
+          // case LogLevel.Info:
+          //   console.info(message)
+          //   return
           case LogLevel.Verbose:
             console.debug(message)
             return
@@ -44,6 +45,22 @@ const config = {
   },
 }
 
-const msalInstance = new PublicClientApplication(config)
+const msalInstance = new PublicClientApplication(msalConfig)
 
-export default config
+Providers.globalProvider = new Msal2Provider({
+  // clientId: 'b781906d-dabc-418d-b1e6-cca04e3ad35f',
+  scopes: [
+    'calendars.read',
+    'user.read',
+    'openid',
+    'profile',
+    'people.read',
+    'user.readbasic.all',
+    'presence.read',
+    'user.readwrite',
+  ],
+  publicClientApplication: msalInstance,
+  // scopes: ['User.Read', 'https://org2f29bfe1.crm4.dynamics.com/.default'],
+})
+
+export default msalInstance

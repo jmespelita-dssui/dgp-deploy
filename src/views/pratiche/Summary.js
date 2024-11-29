@@ -24,7 +24,7 @@ const Summary = ({ item, openPratica }) => {
       <CCardBody className="pt-4">
         <CRow>
           <CCol xs={8} className="me-auto">
-            <h3>{task.titolo}</h3>
+            <h3>{task.crebd_titolo}</h3>
           </CCol>
           <CCol xs={2} className="d-grid gap-2 d-md-flex justify-content-md-end">
             <CButton onClick={openPratica}>
@@ -34,7 +34,7 @@ const Summary = ({ item, openPratica }) => {
         </CRow>
 
         <span className="fw-bold">Istruzioni superiori: </span>
-        {task.istruzioni_superiori}
+        {task.crebd_istruzionesuperiori}
       </CCardBody>
       <CCardBody className="pb-5">
         <CContainer>
@@ -43,29 +43,30 @@ const Summary = ({ item, openPratica }) => {
             <CCol xs={5} className="me-auto">
               <CListGroup flush>
                 <CListGroupItem>
-                  <span className="fw-bold">Ente richiedente:</span> {task.ente_richiedente}
+                  <span className="fw-bold">Ente richiedente:</span> {task.crebd_entericevente}
                 </CListGroupItem>
                 <CListGroupItem>
-                  <span className="fw-bold">DSSUI Organizzatore:</span> {task.dssui_organizzatore}
+                  <span className="fw-bold">DSSUI Organizzatore:</span>{' '}
+                  {task.crebd_dssuiorganizzatore}
                 </CListGroupItem>
                 <CListGroupItem>
-                  <span className="fw-bold">Tema contributo:</span> {task.tema_contributo}
+                  <span className="fw-bold">Tema contributo:</span> {task.crebd_temacontributo}
                 </CListGroupItem>
                 <CListGroupItem>
-                  <span className="fw-bold">Materia rapporto:</span> {task.materia_rapporto}
+                  <span className="fw-bold">Materia rapporto:</span> {task.crebd_materiarapporto}
                 </CListGroupItem>
                 <CListGroupItem>
                   <span className="fw-bold">Numero partecipanti/ospiti:</span>
-                  {task.numero_partecipanti_ospiti}
+                  {task.crebd_numeropartecipantiospiti}
                 </CListGroupItem>
                 <CListGroupItem>
-                  <span className="fw-bold">Paese:</span> {task.paese}
+                  <span className="fw-bold">Paese:</span> {task.crebd_paese}
                 </CListGroupItem>
                 <CListGroupItem>
-                  <span className="fw-bold">Città: </span> {task.città}
+                  <span className="fw-bold">Città: </span> {task.crebd_citta}
                 </CListGroupItem>
                 <CListGroupItem>
-                  <span className="fw-bold">Diocesi: </span> {task.diocesi}
+                  <span className="fw-bold">Diocesi: </span> {task.crebd_diocesi}
                 </CListGroupItem>
               </CListGroup>
             </CCol>
@@ -77,10 +78,10 @@ const Summary = ({ item, openPratica }) => {
 
               <CRow>
                 <CCardBody className="text-body-secondary font-size-sm lh-2">
-                  <CRow>Created on {task.data_creazione} </CRow>
-                  <CRow>Forwarded to responsabile on {task.data_inoltrata_responsabile}</CRow>
+                  <CRow>Created on {task.crebd_datacreazione} </CRow>
+                  <CRow>Forwarded to responsabile on {task.crebd_datainoltrataresponsabile}</CRow>
                   <CRow>
-                    Last modified by {task.modificato_da} on {task.data_ultima_modifica}
+                    Last modified by {task.crebd_modificatoda} on {task.crebd_dataultimamodifica}
                   </CRow>
                 </CCardBody>
               </CRow>

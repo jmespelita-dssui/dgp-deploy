@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import React, { useState } from 'react'
-import ProgettoEsterno from '../snippets/ProgettoEsterno'
+import ProgettoEsterno from './ProgettoEsterno'
 
 import {
   CModal,
@@ -34,9 +34,9 @@ import {
 import { FileList, Agenda, PeoplePicker, People } from '@microsoft/mgt-react'
 import CIcon from '@coreui/icons-react'
 import { cilPlus } from '@coreui/icons'
-import Tasks from '../snippets/Tasks'
+import Tasks from './Tasks'
 
-const Pratica = ({ pratica, visible, onClose, labelColor }) => {
+const Pratica = ({ pratica, visible, onClose, labelColor, label }) => {
   const [visibleLinks, setVisibleLinks] = useState(true)
   const [visibleCorr, setVisibleCorr] = useState(false)
   const [visibleLogs, setVisibleLogs] = useState(false)
@@ -51,7 +51,7 @@ const Pratica = ({ pratica, visible, onClose, labelColor }) => {
     >
       <CModalHeader>
         <CModalTitle id="StaticBackdropExampleLabel">
-          Prat. No. {pratica.prat_no} / Prot. {pratica.prot_no}
+          Prat. No. {pratica.crebd_pratno} / Prot. {pratica.crebd_protno}
         </CModalTitle>
       </CModalHeader>
       <CModalBody>
@@ -59,14 +59,14 @@ const Pratica = ({ pratica, visible, onClose, labelColor }) => {
           <CRow>
             <CCol className="mb-3 scrollable-container">
               <CBadge color={labelColor} className="mb-2">
-                {pratica.categoria}
+                {label}
               </CBadge>
-              <h3>{pratica.titolo}</h3>
+              <h3>{pratica.crebd_titolo}</h3>
               <span className="fw-bold">Istruzioni superiori: </span>
-              {pratica.istruzioni_superiori}
-              <CRow className="mt-4">
+              {pratica.crebd_istruzionesuperiori}
+              {/* <CRow className="mt-4">
                 <Tasks />
-              </CRow>
+              </CRow> */}
               <ProgettoEsterno pratica={pratica} />
               <CForm>
                 <CFormTextarea
@@ -77,10 +77,10 @@ const Pratica = ({ pratica, visible, onClose, labelColor }) => {
                 ></CFormTextarea>
               </CForm>
               <CCardBody className="text-body-secondary font-size-sm lh-2 m-4">
-                <CRow>Created on {pratica.data_creazione} </CRow>
-                <CRow>Forwarded to responsabile on {pratica.data_inoltrata_responsabile}</CRow>
+                <CRow>Created on {pratica.createdon} </CRow>
+                <CRow>Forwarded to responsabile on {pratica.crebd_datainoltrataresponsabile}</CRow>
                 <CRow>
-                  Last modified by {pratica.modificato_da} on {pratica.data_ultima_modifica}
+                  Last modified by {pratica.crebd_modificatoda} on {pratica.modifiedon}
                 </CRow>
               </CCardBody>
             </CCol>
