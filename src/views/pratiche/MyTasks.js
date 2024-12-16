@@ -14,14 +14,13 @@ import {
   CNavLink,
 } from '@coreui/react-pro'
 
-import { FileList, Agenda, PeoplePicker, People, Person } from '@microsoft/mgt-react'
+// import { FileList, Agenda, PeoplePicker, People, Person } from '@microsoft/mgt-react'
 
 import {
   cilFolderOpen,
   cilList,
   cilChevronCircleDownAlt,
   cilChevronCircleUpAlt,
-  cilCheckCircle,
 } from '@coreui/icons'
 
 import CIcon from '@coreui/icons-react'
@@ -30,8 +29,9 @@ import moment from 'moment'
 import msalConfig from 'src/msalConfig'
 import { getAccessToken, createAxiosInstance } from 'src/util/axiosUtils'
 
-import Summary from '../pratiche/Summary'
-import Pratica from '../pratiche/Pratica'
+import Summary from './Summary'
+import Pratica from './Pratica'
+import { Person } from '@microsoft/mgt-react'
 
 const MyTasks = () => {
   const [people, setPeople] = useState([])
@@ -48,9 +48,9 @@ const MyTasks = () => {
         setLoading(true)
         const token = await getAccessToken(msalConfig)
         const axiosInstance = createAxiosInstance(token)
-        const response = await axiosInstance.get('crebd_table1s')
+        const response = await axiosInstance.get('cr9b3_praticas')
         setPraticheList(response.data.value)
-        // console.log(token)
+        console.log(`read ${response.data.value.length} data entries`)
       } catch (error) {
         console.error('Error fetching tasks:', error)
       } finally {
@@ -58,22 +58,22 @@ const MyTasks = () => {
       }
     }
     fetchTasks()
-    getAccessToken()
   }, [])
 
   const columns = [
     { key: 'summary', label: '', _style: { width: '1%' }, sorter: false },
     { key: 'open_folder', label: '', _style: { width: '1%' }, sorter: false },
-    { key: 'crebd_status', label: '', _style: { width: '10%' }, sorter: false },
-    { key: 'crebd_protno', label: 'Prot. No.' },
+    { key: 'cr9b3_status', label: '', _style: { width: '10%' }, sorter: false },
+    { key: 'cr9b3_protno', label: 'Prot. No.' },
     {
-      key: 'crebd_titolo',
+      key: 'cr9b3_titolo',
       label: 'Title',
     },
-    { key: 'crebd_categoria', label: 'Category' },
-    { key: 'crebd_superioriinvitati', label: 'Invited' },
-    // { key: 'crebd_', label: 'Assigned to' },
-    { key: 'crebd_primascadenza', label: 'Deadline' },
+    { key: 'cr9b3_categoria', label: 'Category' },
+    { key: '_cr9b3_superioriinvitati_value', label: 'Superiori Invitati' },
+    // { key: 'cr9b3_', label: 'Assigned to' },
+    { key: 'dssui_primascadenza', label: 'Deadline' },
+    { key: 'createdon', label: 'Created on' },
   ]
 
   const toggleDetails = (index) => {
@@ -96,22 +96,7 @@ const MyTasks = () => {
     setVisible(false)
   }
 
-  const convertListToArray = () => {
-    let arr = []
-    praticheList.map((p) => {
-      arr.push({
-        desc: p.desc,
-        category: p.categoria,
-        responsabile: p.responsabile,
-        fase: p.fase,
-        superiori_invitati: p.superiori_invitati,
-      })
-    })
-    return arr
-  }
-
   const handlePeopleSelect = (e) => {
-    // console.log(e.target.selectedPeople)
     setPeople(e.target.selectedPeople)
   }
 
@@ -119,25 +104,45 @@ const MyTasks = () => {
     let color
     let label
     switch (index) {
-      case 1:
+      case 129580000:
         color = 'warning'
         label = 'RICHIESTA CONTRIBUTO'
         break
-      case 2:
+      case 129580001:
         color = 'info'
         label = 'PROGETTO ESTERNO'
         break
-      case 3:
+      case 129580002:
         color = 'secondary'
         label = 'EVENTO'
         break
-      case 4:
+      case 129580003:
         color = 'success'
         label = 'RICEZIONE RAPPORTI'
         break
-      case 5:
+      case 129580004:
         color = 'success'
         label = 'VISITA'
+        break
+      case 129580005:
+        color = 'success'
+        label = 'SENZA RICHIESTA - EVENTO'
+        break
+      case 129580006:
+        color = 'success'
+        label = 'SENZA RICHIESTA - LETTERA'
+        break
+      case 129580007:
+        color = 'success'
+        label = 'PURTROPPO'
+        break
+      case 129580008:
+        color = 'success'
+        label = 'GENERICO'
+        break
+      case 129580009:
+        color = 'success'
+        label = 'MESSAGGI PONTIFICI'
         break
       default:
         color = 'black'
@@ -154,13 +159,14 @@ const MyTasks = () => {
       )} */}
 
       {/* <FileList /> */}
-      {/* <p>{praticheList[0].crebd_citta}</p> */}
+      {/* <p>{praticheList[0].cr9b3_citta}</p> */}
+
       <Pratica
         visible={visible}
         onClose={onClosePratica}
         pratica={selectedPratica}
-        labelColor={getLabelColor(selectedPratica.crebd_categoria).color}
-        label={getLabelColor(selectedPratica.crebd_categoria).label}
+        labelColor={getLabelColor(selectedPratica.cr9b3_categoria).color}
+        label={getLabelColor(selectedPratica.cr9b3_categoria).label}
       />
       <CCard className="mb-4">
         <CNav variant="tabs" className="m-3">
@@ -186,10 +192,12 @@ const MyTasks = () => {
             cleaner
             columns={columns}
             columnSorter
+            itemsPerPage={10}
+            pagination
             items={
               activeKey === 1
-                ? praticheList.filter((p) => p.crebd_status < 3)
-                : praticheList.filter((p) => p.crebd_status === 3)
+                ? praticheList.filter((p) => p.cr9b3_status < 5)
+                : praticheList.filter((p) => p.cr9b3_status === 5)
               // praticheList
             }
             loading={loading}
@@ -200,7 +208,7 @@ const MyTasks = () => {
             }}
             scopedColumns={{
               summary: (item) => {
-                let detailsIncludes = details.includes(item.crebd_protno)
+                let detailsIncludes = details.includes(item.cr9b3_protno)
                 return (
                   <td className="table-light summary-box">
                     {detailsIncludes ? (
@@ -209,7 +217,7 @@ const MyTasks = () => {
                         size="lg"
                         className="text-body-secondary icon-link"
                         onClick={() => {
-                          toggleDetails(item.crebd_protno)
+                          toggleDetails(item.cr9b3_protno)
                         }}
                         style={{ cursor: 'pointer' }}
                       />
@@ -220,7 +228,7 @@ const MyTasks = () => {
                           size="lg"
                           className="text-body-secondary"
                           onClick={() => {
-                            toggleDetails(item.crebd_protno)
+                            toggleDetails(item.cr9b3_protno)
                           }}
                           style={{ cursor: 'pointer' }}
                         />
@@ -229,21 +237,25 @@ const MyTasks = () => {
                   </td>
                 )
               },
-              crebd_status: (item) => {
+              cr9b3_status: (item) => {
                 return (
                   <td>
                     <CPopover
                       content={
-                        item.crebd_status === 1
+                        item.cr9b3_status === 0
                           ? 'New'
-                          : item.crebd_status === 2
-                          ? 'In progress'
-                          : 'Done'
+                          : item.cr9b3_status === 1
+                          ? 'Assigned to section'
+                          : item.cr9b3_status === 2
+                          ? 'On hold'
+                          : item.cr9b3_status === 5
+                          ? 'Completed'
+                          : 'Archived'
                       }
                       placement="top"
                       trigger={['hover', 'focus']}
                     >
-                      <CProgress value={(Number(item.crebd_status) / 3) * 100} height={10} />
+                      <CProgress value={(Number(item.cr9b3_status) / 5) * 100} height={10} />
                     </CPopover>
                   </td>
                 )
@@ -257,7 +269,7 @@ const MyTasks = () => {
                       trigger={['hover', 'focus']}
                     >
                       <a
-                        href={item.crebd_cartellaprincipale}
+                        href={item.cr9b3_cartellaprincipale}
                         className="d-inline-block text-body-secondary"
                         tabIndex={0}
                         target="_blank"
@@ -269,24 +281,24 @@ const MyTasks = () => {
                   </td>
                 )
               },
-              crebd_titolo: (item) => {
+              cr9b3_titolo: (item) => {
                 return (
-                  <td className="">
+                  <td>
                     <CButton
                       color="link"
-                      style={{ textAlign: 'left' }}
+                      style={{ textAlign: 'left', padding: '0' }}
                       onClick={() => openPratica(item)}
                     >
-                      {item.crebd_titolo}
+                      {item.cr9b3_titolo}
                     </CButton>
                   </td>
                 )
               },
-              crebd_categoria: (item) => {
+              cr9b3_categoria: (item) => {
                 return (
                   <td>
-                    <CBadge color={getLabelColor(item.crebd_categoria).color}>
-                      {getLabelColor(item.crebd_categoria).label}
+                    <CBadge color={getLabelColor(item.cr9b3_categoria).color}>
+                      {getLabelColor(item.cr9b3_categoria).label}
                     </CBadge>
                   </td>
                 )
@@ -304,30 +316,55 @@ const MyTasks = () => {
               },
               details: (item) => {
                 return (
-                  <CCollapse visible={details.includes(item.crebd_protno)}>
+                  <CCollapse visible={details.includes(item.cr9b3_protno)}>
                     <Summary item={item} />
                   </CCollapse>
                 )
               },
-              prima_scadenza: (item) => {
-                let testDate = moment(item.prima_scadenza, 'DD/MM/YYYY')
+              _cr9b3_superioriinvitati_value: (item) => {
+                return (
+                  <td>
+                    <div style={{ display: 'flex' }}>
+                      {/* <Person
+                        className="m-1"
+                        // userId={item._cr9b3_superioriinvitati_value}
+                        userId="m.czerny@dssui.org"
+                        showPresence
+                        personCardInteraction="hover"
+                      /> */}
+                      <Person
+                        className="m-1"
+                        // userId={item._cr9b3_superioriinvitati_value}
+                        userId="a.smerilli@dssui.org"
+                        showPresence
+                        personCardInteraction="hover"
+                      />
+                    </div>
+                  </td>
+                )
+              },
+              dssui_primascadenza: (item) => {
+                let testDate = moment(item.dssui_primascadenza, 'DD/MM/YYYY')
                 let today = moment()
                 let dateDiff = today.diff(testDate, 'days')
                 return (
                   <td>
                     {dateDiff > -7 && dateDiff < 0 ? (
                       <CBadge color="warning" shape="rounded-pill">
-                        {item.prima_scadenza}
+                        {moment(item.dssui_primascadenza).format('DD/MM/YYYY')}
                       </CBadge>
                     ) : dateDiff >= 0 ? (
                       <CBadge color="primary" shape="rounded-pill">
-                        {item.prima_scadenza}
+                        {moment(item.dssui_primascadenza).format('DD/MM/YYYY')}
                       </CBadge>
                     ) : (
-                      item.prima_scadenza
+                      moment(item.dssui_primascadenza).format('DD/MM/YYYY')
                     )}
                   </td>
                 )
+              },
+              createdon: (item) => {
+                return <td>{moment(item.createdon).format('DD/MM/YYYY hh:mm A')}</td>
               },
             }}
           />

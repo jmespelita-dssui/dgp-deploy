@@ -11,18 +11,18 @@ const ProtocolledSelect = ({ onChangeCategoria }) => {
         defaultValue={'Choose category'}
         options={[
           { label: 'Choose category', value: '0' },
-          { label: 'EVENTO - viaggio estero/italia/roma', value: '3' },
-          { label: 'RICHIESTA CONTRIBUTO - articolo/messaggio', value: '1' },
-          { label: 'VISITA - ogni tipo di partner', value: '5' },
-          { label: 'RICEZIONE DI RAPPORTI - partners, perm miss, Ap. N.', value: '4' },
-          { label: 'PROGETTO ESTERNO', value: '2' },
+          { label: 'EVENTO - viaggio estero/italia/roma', value: '129580002' },
+          { label: 'RICHIESTA CONTRIBUTO - articolo/messaggio', value: '129580000' },
+          { label: 'VISITA - ogni tipo di partner', value: '129580004' },
+          { label: 'RICEZIONE DI RAPPORTI - partners, perm miss, Ap. N.', value: '129580003' },
+          { label: 'PROGETTO ESTERNO', value: '129580001' },
           {
             label: 'SENZA RICHIESTA - nostra iniziativa/co-organizzata (invito evento)',
-            value: '6',
+            value: '129580005',
           },
           {
             label: 'SENZA RICHIESTA - nostra iniziativa/co-organizzata (invio lettera)',
-            value: '7',
+            value: '129580006',
           },
         ]}
         onChange={(e) => {

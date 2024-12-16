@@ -10,11 +10,11 @@ const AppContent = () => {
     <CContainer lg>
       <Suspense
         fallback={
-          <>
+          <CContainer className="p-5">
             <CSpinner color="primary" variant="grow" className="m-3" />
             <CSpinner color="primary" variant="grow" className="m-3" />
             <CSpinner color="primary" variant="grow" className="m-3" />
-          </>
+          </CContainer>
         }
       >
         <Routes>

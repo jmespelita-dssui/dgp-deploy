@@ -8,6 +8,7 @@ import {
   CDatePicker,
   CFormTextarea,
   CFormSelect,
+  CButton,
 } from '@coreui/react-pro'
 import { PeoplePicker } from '@microsoft/mgt-react'
 import { CountrySelect } from 'react-country-state-city'
@@ -21,17 +22,10 @@ const CreateProgettoEsterno = () => {
       <CForm className="row p-3">
         <CRow className="mb-3">
           <CCol md={2}>
-            <CFormInput id="prot-no" label="Prot. no. " />
+            <CFormInput id="prot-no" label="Prot. no. " required />
           </CCol>
           <CCol md={2}>
-            <CFormInput id="prat-no" label="Prat. no. " />
-          </CCol>
-        </CRow>
-        <CRow className="mb-3">
-          <CCol md={4}>
-            Superiori invitati{' '}
-            <PeoplePicker className="mt-2" groupId="317aa3d0-a94a-4c7c-bcb9-8870cfececa4" />
-            {/* <CFormInput id="superiori-invitati" label="Superiori invitati" /> */}
+            <CFormInput id="prat-no" label="Prat. no. " required />
           </CCol>
         </CRow>
         <CRow className="mb-3">
@@ -46,12 +40,13 @@ const CreateProgettoEsterno = () => {
                 { label: 'AE', value: 'AE' },
               ]}
               label="Da"
+              required
             />
           </CCol>
         </CRow>
         <CRow className="mb-5">
           <CCol md={3}>
-            <CDatePicker id="data-iniziale" label="Data timbro Segretario" locale="it-IT" />
+            <CDatePicker id="data-iniziale" label="Data timbro Superiore" locale="it-IT" />
           </CCol>
         </CRow>
         <CRow className="mb-3">
@@ -93,6 +88,11 @@ const CreateProgettoEsterno = () => {
             <CFormTextarea id="corrispondenza" label="Corrispondenza" rows={5} />
           </CCol>
         </CRow>
+        <CCol md={8} className="d-grid gap-2 d-md-flex justify-content-md-end">
+          <CButton color="primary" type="submit">
+            Create pratica
+          </CButton>
+        </CCol>
       </CForm>
     </>
   )

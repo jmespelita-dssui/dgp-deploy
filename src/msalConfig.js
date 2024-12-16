@@ -12,10 +12,10 @@ const msalConfig = {
     clientId: 'b781906d-dabc-418d-b1e6-cca04e3ad35f',
     authority: 'https://login.microsoftonline.com/organizations',
     redirectUri: 'http://localhost:3000',
-    scopes: 'https://org2f29bfe1.crm4.dynamics.com/.default',
+    scopes: 'https://orgac85713a.crm4.dynamics.com/.default',
   },
   cache: {
-    cacheLocation: 'sessionStorage', // This configures where your cache will be stored
+    cacheLocation: 'localStorage', // This configures where your cache will be stored
     storeAuthStateInCookie: false, // Set this to "true" if you are having issues on IE11 or Edge
   },
   system: {
@@ -28,9 +28,6 @@ const msalConfig = {
           case LogLevel.Error:
             console.error(message)
             return
-          // case LogLevel.Info:
-          //   console.info(message)
-          //   return
           case LogLevel.Verbose:
             console.debug(message)
             return
@@ -48,7 +45,6 @@ const msalConfig = {
 const msalInstance = new PublicClientApplication(msalConfig)
 
 Providers.globalProvider = new Msal2Provider({
-  // clientId: 'b781906d-dabc-418d-b1e6-cca04e3ad35f',
   scopes: [
     'calendars.read',
     'user.read',
@@ -60,7 +56,6 @@ Providers.globalProvider = new Msal2Provider({
     'user.readwrite',
   ],
   publicClientApplication: msalInstance,
-  // scopes: ['User.Read', 'https://org2f29bfe1.crm4.dynamics.com/.default'],
 })
 
 export default msalInstance

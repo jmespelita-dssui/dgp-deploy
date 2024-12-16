@@ -8,6 +8,7 @@ import {
   CDatePicker,
   CFormTextarea,
   CFormSelect,
+  CButton,
 } from '@coreui/react-pro'
 import { PeoplePicker } from '@microsoft/mgt-react'
 
@@ -40,7 +41,7 @@ const CreateSenzaRichiestaEvento = () => {
         </CRow>
         <CRow className="mb-5">
           <CCol md={3}>
-            <CDatePicker id="data-iniziale" label="Data timbro Segretario" locale="it-IT" />
+            <CDatePicker id="data-iniziale" label="Data timbro Superiore" locale="it-IT" />
           </CCol>
         </CRow>
         <CRow className="mb-3">
@@ -94,6 +95,11 @@ const CreateSenzaRichiestaEvento = () => {
             <CFormTextarea id="corrispondenza" label="Corrispondenza" rows={5} />
           </CCol>
         </CRow>
+        <CCol md={8} className="d-grid gap-2 d-md-flex justify-content-md-end">
+          <CButton color="primary" type="submit">
+            Create pratica
+          </CButton>
+        </CCol>
       </CForm>
     </>
   )

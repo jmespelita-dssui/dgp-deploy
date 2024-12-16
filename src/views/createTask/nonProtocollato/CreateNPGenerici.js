@@ -8,6 +8,7 @@ import {
   CDatePicker,
   CFormTextarea,
   CFormSelect,
+  CButton,
 } from '@coreui/react-pro'
 import { PeoplePicker } from '@microsoft/mgt-react'
 
@@ -68,6 +69,11 @@ const CreateNPGenerici = () => {
             <CFormTextarea id="corrispondenza" label="Corrispondenza" rows={5} />
           </CCol>
         </CRow>
+        <CCol md={8} className="d-grid gap-2 d-md-flex justify-content-md-end">
+          <CButton color="primary" type="submit">
+            Create pratica
+          </CButton>
+        </CCol>
       </CForm>
     </>
   )
