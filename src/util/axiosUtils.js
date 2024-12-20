@@ -37,7 +37,7 @@ export const getAccessTokenForGraph = async () => {
 }
 
 export const createAxiosInstance = (token) => {
-  return axios.create({
+  const axiosInstance = axios.create({
     baseURL: 'https://orgac85713a.crm4.dynamics.com/api/data/v9.2/',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -45,4 +45,6 @@ export const createAxiosInstance = (token) => {
       Accept: 'application/json',
     },
   })
+
+  return axiosInstance
 }

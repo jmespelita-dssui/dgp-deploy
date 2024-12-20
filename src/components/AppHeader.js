@@ -41,17 +41,17 @@ const AppHeader = () => {
         </CHeaderBrand>
         <CHeaderNav className="d-none d-md-flex me-auto">
           <CNavItem>
-            <CNavLink to="/dashboard" component={NavLink}>
-              Dashboard
+            <CNavLink to="/tasks" component={NavLink}>
+              My Tasks
             </CNavLink>
           </CNavItem>
         </CHeaderNav>
-        <CHeaderToggler
+        {/* <CHeaderToggler
           className="px-md-0 me-md-3"
           onClick={() => dispatch({ type: 'set', asideShow: !asideShow })}
         >
           <CIcon icon={cilApplicationsSettings} size="lg" />
-        </CHeaderToggler>
+        </CHeaderToggler> */}
         <CHeaderNav>
           <Login />
         </CHeaderNav>

@@ -3,7 +3,7 @@ import { CCardBody, CRow, CCol, CFormCheck } from '@coreui/react-pro'
 import { People, Person, Providers } from '@microsoft/mgt-react'
 import ConfirmationModal from '../modals/ConfirmationModal'
 
-const Tasks = () => {
+const Tasks = (tasks) => {
   const [visibleConfirmation, setVisibleConfirmation] = useState(false)
 
   const onCloseConfirmation = () => {
@@ -20,28 +20,30 @@ const Tasks = () => {
       />
       <h6>TASKS</h6>
       <CCardBody className="p-3">
-        <CRow className="pb-2">
-          <CCol xs={7} style={{ fontWeight: 'bold' }}>
-            Description
-          </CCol>
-          <CCol xs={2}></CCol>
-          <CCol xs={3} style={{ fontWeight: 'bold' }}>
-            Deadline
-          </CCol>
-        </CRow>
-        <CRow>
-          <CCol xs={7}>
-            <CFormCheck
-              label="Send to richiedente before sundown, while the birds fly on high."
-              // disabled
-              // onChange={() => {
-              //   // console.log('hello')
-              //   setVisibleConfirmation(true)
-              // }}
-            />
-          </CCol>
-          <CCol xs={2}>
-            {/* {userIds.map((userId) => (
+        {!tasks ? (
+          <>
+            <CRow className="pb-2">
+              <CCol xs={7} style={{ fontWeight: 'bold' }}>
+                Description
+              </CCol>
+              <CCol xs={2}></CCol>
+              <CCol xs={3} style={{ fontWeight: 'bold' }}>
+                Deadline
+              </CCol>
+            </CRow>
+            <CRow>
+              <CCol xs={7}>
+                <CFormCheck
+                  label="Send to richiedente before sundown, while the birds fly on high."
+                  // disabled
+                  // onChange={() => {
+                  //   // console.log('hello')
+                  //   setVisibleConfirmation(true)
+                  // }}
+                />
+              </CCol>
+              <CCol xs={2}>
+                {/* {userIds.map((userId) => (
                 <Person
                   className="m-1"
                   key={userId}
@@ -50,13 +52,13 @@ const Tasks = () => {
                   personCardInteraction="hover"
                 />
               ))} */}
-            <Person
-              className="m-1"
-              userId="p.debbane@dssui.org"
-              showPresence
-              personCardInteraction="hover"
-            />
-            {/* {userIds.map((userId) => (
+                <Person
+                  className="m-1"
+                  userId="p.debbane@dssui.org"
+                  showPresence
+                  personCardInteraction="hover"
+                />
+                {/* {userIds.map((userId) => (
                 <Person
                   className="m-1"
                   key={userId} // Unique key for each user
@@ -66,23 +68,30 @@ const Tasks = () => {
                   personCardInteraction="hover" // Show more details on click
                 />
               ))} */}
-          </CCol>
-          <CCol xs={3}>21/12/2024</CCol>
-        </CRow>
-        <CRow>
-          <CCol xs={7}>
-            <CFormCheck label="Draft letter to recipient" onChange={() => console.log('hello')} />
-          </CCol>
-          <CCol xs={2}>
-            <Person
-              className="m-1"
-              userId="a.piccirilli@dssui.org"
-              showPresence
-              personCardInteraction="hover"
-            />
-          </CCol>
-          <CCol xs={3}>22/12/2024</CCol>
-        </CRow>
+              </CCol>
+              <CCol xs={3}>21/12/2024</CCol>
+            </CRow>
+            <CRow>
+              <CCol xs={7}>
+                <CFormCheck
+                  label="Draft letter to recipient"
+                  onChange={() => console.log('hello')}
+                />
+              </CCol>
+              <CCol xs={2}>
+                <Person
+                  className="m-1"
+                  userId="a.piccirilli@dssui.org"
+                  showPresence
+                  personCardInteraction="hover"
+                />
+              </CCol>
+              <CCol xs={3}>22/12/2024</CCol>
+            </CRow>
+          </>
+        ) : (
+          <>No tasks assigned.</>
+        )}
       </CCardBody>
     </>
   )

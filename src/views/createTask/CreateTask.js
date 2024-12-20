@@ -11,8 +11,22 @@ import {
   CInputGroup,
   CInputGroupText,
   CButton,
+  CToast,
+  CToastHeader,
+  CToastBody,
+  CToaster,
+  CSpinner,
 } from '@coreui/react-pro'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
+import { getAccessToken, createAxiosInstance } from 'src/util/axiosUtils'
+import {
+  getSystemUserID,
+  // successCreateTaskToast,
+  // duplicateCreateTaskToast,
+  errorToast,
+} from 'src/util/taskUtils'
+import { useNavigate } from 'react-router-dom'
+
 import CreateRichiestaContributo from './protocollato/CreateRichiestaContributo'
 import CreateProgettoEsterno from './protocollato/CreateProgettoEsterno'
 import CreateEvento from './protocollato/CreateEvento'
@@ -25,22 +39,68 @@ import CreateSenzaRichiestaInvioLettera from './protocollato/CreateSenzaRichiest
 import CreateNPRichiestaContributo from './nonProtocollato/CreateNPRichiestaContributo'
 import CreateNPPurtroppo from './nonProtocollato/CreateNPPurtroppo'
 import CreateNPGenerici from './nonProtocollato/CreateNPGenerici'
-import { getAccessToken, createAxiosInstance } from 'src/util/axiosUtils'
 
 const CreateTask = () => {
   const [isProtocolled, setIsProtocolled] = useState('')
   const [categoria, setCategoria] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const createTask = async (pratica, superioriInvitati) => {
-    console.log('input', pratica)
-    const praticaDetailsResponse = await addNewPratica(pratica)
-    console.log('output pratica id', praticaDetailsResponse.data.cr9b3_praticaid)
+  const [toast, addToast] = useState(0)
+  const toaster = useRef()
 
-    // console.log('Details of the newly created pratica:', data)
-    superioriInvitati.map(async (id) => {
-      const superiorID = await getSystemUserID(id)
-      assignSuperiorToTask(superiorID, praticaDetailsResponse.data.cr9b3_praticaid)
+  const navigate = useNavigate()
+
+  const createTask = async (pratica, superioriInvitati, responsabili) => {
+    setLoading(true)
+    window.scrollTo({
+      top: 0, // Scroll to the top
+      behavior: 'smooth', // Smooth scrolling animation
     })
+
+    console.log('input', pratica)
+    // console.log(pratica.cr9b3_protno, checkIfExisting(pratica.cr9b3_protno))
+    if (await checkIfExisting(pratica.cr9b3_protno)) {
+      const praticaDetailsResponse = await addNewPratica(pratica)
+      console.log('output pratica id', praticaDetailsResponse.data.cr9b3_praticaid)
+
+      // assign user to task
+      superioriInvitati.map(async (id) => {
+        const superiorID = await getSystemUserID(id)
+        assignUserToTask(
+          superiorID,
+          praticaDetailsResponse.data.cr9b3_praticaid,
+          'cr9b3_pratica_superiore',
+        )
+      })
+
+      responsabili.map(async (id) => {
+        const respID = await getSystemUserID(id)
+        assignUserToTask(
+          respID,
+          praticaDetailsResponse.data.cr9b3_praticaid,
+          'cr9b3_pratica_responsabile',
+        )
+      })
+
+      setLoading(false)
+      addToast(successCreateTaskToast)
+      setTimeout(() => {
+        navigate('/tasks')
+      }, 3500) // 1000 = 1 second
+    } else {
+      setLoading(false)
+      addToast(duplicateCreateTaskToast)
+      console.log('pratica already exists')
+    }
+  }
+
+  //check if pratica with prot
+  const checkIfExisting = async (protNo) => {
+    const token = await getAccessToken()
+    const axiosInstance = createAxiosInstance(token)
+    const response = await axiosInstance.get(`cr9b3_praticas?$filter=cr9b3_protno eq '${protNo}'`)
+    console.log('does it exist???', response.data.value)
+    return response.data.value && response.data.value.length === 0
   }
 
   const addNewPratica = async (pratica) => {
@@ -61,10 +121,12 @@ const CreateTask = () => {
         // Retrieve the details of the created record
         praticaDetailsResponse = await axiosInstance.get(entityUrl)
       } else {
+        addToast(errorToast)
         console.error('Entity URL not returned in the response headers.')
       }
       return praticaDetailsResponse
     } catch (error) {
+      addToast(errorToast)
       if (error.isAxiosError) {
         console.error('Axios error details adding new pratica:', error.response)
         console.error('Error message:', error.message)
@@ -75,51 +137,24 @@ const CreateTask = () => {
     }
   }
 
-  const getSystemUserID = async (user) => {
+  const assignUserToTask = async (userID, praticaID, table) => {
     const token = await getAccessToken()
     const axiosInstance = createAxiosInstance(token)
-    let userID
-    try {
-      console.log('getting user id', user.id)
-      const response = await axiosInstance.get(
-        `systemusers?$filter=azureactivedirectoryobjectid eq '${user.id}'`,
-      )
-      console.log(
-        'user id',
-        response.data.value[0],
-        response.data.value[0].yomifullname,
-        response.data.value[0].systemuserid,
-      )
-      userID = response.data.value[0].systemuserid
-    } catch (error) {
-      if (error.isAxiosError) {
-        console.error('Axios error getting superior ID:', error.response)
-        console.error('Error message:', error.message)
-        console.error('Error response:', error.response.data)
-      } else {
-        console.error('Non-Axios error:', error)
-      }
-    }
-    return userID
-  }
-
-  const assignSuperiorToTask = async (superiorID, praticaID) => {
-    const token = await getAccessToken()
-    const axiosInstance = createAxiosInstance(token)
-    console.log('adding superiori invitati', superiorID)
+    console.log('adding superiori invitati', userID)
     const data = {
       '@odata.id': `https://orgac85713a.crm4.dynamics.com/api/data/v9.2/cr9b3_praticas(${praticaID})`,
     }
     try {
       // POST request to create a relationship in cr9b3_pratica_superiore
       const response = await axiosInstance.post(
-        `systemusers(${superiorID})/cr9b3_pratica_superiore/$ref`,
+        `systemusers(${userID})/${table}/$ref`, //cr9b3_pratica_superiore
         data,
       )
-      console.log('Successfully created the cr9b3_pratica_superiore record:', response.data)
+      console.log('Successfully created the user <-> pratica record:', response.data)
     } catch (error) {
+      addToast(errorToast)
       console.error(
-        'Error creating cr9b3_pratica_superiore record:',
+        'Error creating user <-> pratica record:',
         error.response ? error.response.data : error.message,
       )
     }
@@ -129,8 +164,71 @@ const CreateTask = () => {
     setCategoria(cat)
   }
 
+  const successCreateTaskToast = (
+    <CToast>
+      <CToastHeader closeButton>
+        <svg
+          className="rounded me-2"
+          width="20"
+          height="20"
+          xmlns="http://www.w3.org/2000/svg"
+          preserveAspectRatio="xMidYMid slice"
+          focusable="false"
+          role="img"
+        >
+          <rect width="100%" height="100%" fill="#198754"></rect>
+        </svg>
+        <div className="fw-bold me-auto">Create Pratica</div>
+        {/* <small>7 min ago</small> */}
+      </CToastHeader>
+      <CToastBody>Success! The pratica has been added.</CToastBody>
+    </CToast>
+  )
+
+  const errorToast = (
+    <CToast>
+      <CToastHeader closeButton>
+        <svg
+          className="rounded me-2"
+          width="20"
+          height="20"
+          xmlns="http://www.w3.org/2000/svg"
+          preserveAspectRatio="xMidYMid slice"
+          focusable="false"
+          role="img"
+        >
+          <rect width="100%" height="100%" fill="#8f3937"></rect>
+        </svg>
+        <div className="fw-bold me-auto">Create Pratica</div>
+        {/* <small>7 min ago</small> */}
+      </CToastHeader>
+      <CToastBody>An error occurred while creating the Pratica.</CToastBody>
+    </CToast>
+  )
+
+  const duplicateCreateTaskToast = (
+    <CToast>
+      <CToastHeader closeButton>
+        <svg
+          className="rounded me-2"
+          width="20"
+          height="20"
+          xmlns="http://www.w3.org/2000/svg"
+          preserveAspectRatio="xMidYMid slice"
+          focusable="false"
+          role="img"
+        >
+          <rect width="100%" height="100%" fill="#8f3937"></rect>
+        </svg>
+        <div className="fw-bold me-auto">Create Pratica</div>
+      </CToastHeader>
+      <CToastBody>Pratica with same protocol number already exists</CToastBody>
+    </CToast>
+  )
+
   return (
     <>
+      <CToaster className="p-3" placement="top-end" push={toast} ref={toaster} />
       <CCard className="p-4 mb-3">
         <CHeader>
           <h4>Create new pratica</h4>
@@ -171,9 +269,13 @@ const CreateTask = () => {
               </CRow>
             </CForm>
           </CContainer>
+          {loading && (
+            <div className="d-flex justify-content-center">
+              <CSpinner size="sm" variant="grow" style={{ width: '3rem', height: '3rem' }} />
+            </div>
+          )}
         </CCardBody>
       </CCard>
-
       {/* Form is shown according to chosen category */}
       {categoria === '129580000' ? (
         <CCard className="p-4">

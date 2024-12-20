@@ -1,3 +1,8 @@
+import { CToast, CToastBody, CToastHeader } from '@coreui/react-pro'
+import { createAxiosInstance, getAccessToken } from './axiosUtils'
+import React from 'react'
+import { getAccessTokenForGraph } from './axiosUtils'
+
 export const emptyTask = {
   cr9b3_prano: null,
   cr9b3_protno: null,
@@ -52,6 +57,7 @@ export const getFields = (categoria) => {
     luogo_evento: false,
     tema_contributo: false,
     materia_contributo: false,
+    materia_rapporto: false,
     superiori_invitati: false,
     no_partecipanti: false,
     dssui_partecipanti: false,
@@ -62,6 +68,33 @@ export const getFields = (categoria) => {
   }
 
   switch (categoria) {
+    case 12958: //testing
+      fields = {
+        data_invio_materiale: true,
+        data_prima_scadenza: true,
+        data_richiesta_contributo: true,
+        ente_inviante: true,
+        ente_richiedente: true,
+        ente_ricevente: true,
+        persona_richiedente: true,
+        dssui_organizzatore: true,
+        destinatari: true,
+        indirizzi_destinatari: true,
+        data_evento: true,
+        titolo_evento: true,
+        luogo_evento: true,
+        tema_contributo: true,
+        materia_contributo: true,
+        materia_rapporto: true,
+        superiori_invitati: true,
+        no_partecipanti: true,
+        dssui_partecipanti: true,
+        paese: true,
+        regione: true,
+        citta: true,
+        correspondence: true,
+      }
+      break
     case 129580000: //RICHIESTA CONTRIBUTO
       fields = {
         ...template,
@@ -88,14 +121,13 @@ export const getFields = (categoria) => {
         data_evento: true,
         titolo_evento: true,
         superiori_invitati: true,
-        no_partecipanti: true,
       }
       break
     case 129580003: //RICEZIONE RAPPORTI
       fields = {
         ...template,
         ente_inviante: true,
-        materia_contributo: true,
+        materia_rapporto: true,
       }
       break
     case 129580004: //VISITA
@@ -162,6 +194,70 @@ export const getFields = (categoria) => {
   }
   return fields
 }
+
+export const getUserGraphDetails = async (userID) => {
+  try {
+    const token = await getAccessTokenForGraph()
+    const axiosInstance = createAxiosInstance(token)
+
+    // Fetch user details using systemuserid
+    const response = await axiosInstance.get(`https://graph.microsoft.com/v1.0/users/${userID}`)
+    console.log('graph data for', userID, response.data)
+    return response.data
+  } catch (error) {
+    console.error('Error fetching user details:', error)
+    return null
+  }
+}
+
+export const getSystemUserID = async (user) => {
+  const token = await getAccessToken()
+  const axiosInstance = createAxiosInstance(token)
+  let userID
+  try {
+    console.log('getting user id', user.id)
+    const response = await axiosInstance.get(
+      `systemusers?$filter=azureactivedirectoryobjectid eq '${user.id}'`,
+    )
+    console.log(
+      'user id',
+      response.data.value[0],
+      response.data.value[0].yomifullname,
+      response.data.value[0].systemuserid,
+    )
+    userID = response.data.value[0].systemuserid
+  } catch (error) {
+    if (error.isAxiosError) {
+      console.error('Axios error getting user ID:', error.response)
+      console.error('Error message:', error.message)
+      console.error('Error response:', error.response.data)
+    } else {
+      console.error('Non-Axios error:', error)
+    }
+  }
+  return userID
+}
+
+export const successCreateTaskToast = (
+  <CToast>
+    <CToastHeader closeButton>
+      <svg
+        className="rounded me-2"
+        width="20"
+        height="20"
+        xmlns="http://www.w3.org/2000/svg"
+        preserveAspectRatio="xMidYMid slice"
+        focusable="false"
+        role="img"
+      >
+        <rect width="100%" height="100%" fill="#198754"></rect>
+      </svg>
+      <div className="fw-bold me-auto">Create Pratica</div>
+      {/* <small>7 min ago</small> */}
+    </CToastHeader>
+    <CToastBody>Task successfully created!</CToastBody>
+  </CToast>
+)
 
 {
   /* <CCard className="m-3">

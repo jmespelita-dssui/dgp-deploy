@@ -48,7 +48,7 @@ const MyTasks = () => {
         setLoading(true)
         const token = await getAccessToken(msalConfig)
         const axiosInstance = createAxiosInstance(token)
-        const response = await axiosInstance.get('cr9b3_praticas')
+        const response = await axiosInstance.get('cr9b3_praticas?$orderby=createdon desc')
         setPraticheList(response.data.value)
         console.log(`read ${response.data.value.length} data entries`)
       } catch (error) {
@@ -70,10 +70,18 @@ const MyTasks = () => {
       label: 'Title',
     },
     { key: 'cr9b3_categoria', label: 'Category' },
-    { key: '_cr9b3_superioriinvitati_value', label: 'Superiori Invitati' },
+    // { key: '_cr9b3_superioriinvitati_value', label: 'Superiori Invitati' },
     // { key: 'cr9b3_', label: 'Assigned to' },
     { key: 'dssui_primascadenza', label: 'Deadline' },
-    { key: 'createdon', label: 'Created on' },
+    {
+      key: 'createdon',
+      label: 'Created on',
+      sorter: (date1, date2) => {
+        const a = new Date(date1.registered)
+        const b = new Date(date2.registered)
+        return a > b ? 1 : b > a ? -1 : 0
+      },
+    },
   ]
 
   const toggleDetails = (index) => {
@@ -94,6 +102,7 @@ const MyTasks = () => {
 
   const onClosePratica = () => {
     setVisible(false)
+    window.location.reload()
   }
 
   const handlePeopleSelect = (e) => {
@@ -349,17 +358,18 @@ const MyTasks = () => {
                 let dateDiff = today.diff(testDate, 'days')
                 return (
                   <td>
-                    {dateDiff > -7 && dateDiff < 0 ? (
-                      <CBadge color="warning" shape="rounded-pill">
-                        {moment(item.dssui_primascadenza).format('DD/MM/YYYY')}
-                      </CBadge>
-                    ) : dateDiff >= 0 ? (
-                      <CBadge color="primary" shape="rounded-pill">
-                        {moment(item.dssui_primascadenza).format('DD/MM/YYYY')}
-                      </CBadge>
-                    ) : (
-                      moment(item.dssui_primascadenza).format('DD/MM/YYYY')
-                    )}
+                    {item.dssui_primascadenza &&
+                      (dateDiff > -7 && dateDiff < 0 ? (
+                        <CBadge color="warning" shape="rounded-pill">
+                          {moment(item.dssui_primascadenza).format('DD/MM/YYYY')}
+                        </CBadge>
+                      ) : dateDiff >= 0 ? (
+                        <CBadge color="primary" shape="rounded-pill">
+                          {moment(item.dssui_primascadenza).format('DD/MM/YYYY')}
+                        </CBadge>
+                      ) : (
+                        moment(item.dssui_primascadenza).format('DD/MM/YYYY')
+                      ))}
                   </td>
                 )
               },

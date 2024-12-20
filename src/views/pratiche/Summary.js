@@ -19,19 +19,12 @@ import { Person } from '@microsoft/mgt-react'
 const Summary = ({ item, openPratica }) => {
   const task = item
   return (
-    <CContainer className="p-5">
+    <CContainer className="p-3">
       <CCallout color="primary" className="mb-5">
         <CCardBody className="pt-4">
-          <CRow>
-            <CCol xs={8} className="me-auto">
-              <h3>{task.cr9b3_titolo}</h3>
-            </CCol>
-            <CCol xs={2} className="d-grid gap-2 d-md-flex justify-content-md-end">
-              <CButton onClick={openPratica}>
-                <CIcon icon={cilPencil} size="lg" />
-              </CButton>
-            </CCol>
-          </CRow>
+          <CCol xs={8} className="me-auto">
+            <h3>{task.cr9b3_titolo}</h3>
+          </CCol>
 
           <span className="fw-bold">Istruzioni superiori: </span>
           {task.cr9b3_istruzionesuperiori}

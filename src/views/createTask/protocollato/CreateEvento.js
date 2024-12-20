@@ -11,25 +11,26 @@ import {
   CFormTextarea,
   CFormSelect,
   CButton,
+  CSpinner,
 } from '@coreui/react-pro'
 import { PeoplePicker } from '@microsoft/mgt-react'
+
+import { getSystemUserID } from 'src/util/taskUtils'
 
 const CreateEvento = ({ onCreate, categoria }) => {
   const [newPratica, setNewPratica] = useState({ cr9b3_categoria: categoria, cr9b3_status: 0 })
   const [superioriInvitati, setSuperioriInvitati] = useState([])
-  const [protNo, setProtNo] = useState('')
+  const [responsabili, setResponsabili] = useState([])
 
-  // useEffect(() => {
-  //   setNewPratica(emptyTask)
-  // }, [])
+  useEffect(() => {
+    setNewPratica({ ...newPratica, cr9b3_istruzioneda: 'AS' })
+  }, [])
 
   const onSubmit = async (e) => {
     e.preventDefault()
-    const token = await getAccessToken()
-    const axiosInstance = createAxiosInstance(token)
-    console.log('superiori invitati', superioriInvitati)
-
-    onCreate(newPratica, superioriInvitati)
+    // console.log('superiori invitati', superioriInvitati)
+    // console.log('responsabili', responsabili)
+    onCreate(newPratica, superioriInvitati, responsabili)
   }
 
   return (
@@ -56,7 +57,6 @@ const CreateEvento = ({ onCreate, categoria }) => {
               label="Prot. no."
               onChange={(e) => {
                 setNewPratica({ ...newPratica, cr9b3_protno: e.target.value })
-                setProtNo(e.target.value)
               }}
               maxLength={5}
               required
@@ -75,19 +75,6 @@ const CreateEvento = ({ onCreate, categoria }) => {
           </CCol>
         </CRow>
         <CRow className="mb-3">
-          <CCol md={4}>
-            Superiori invitati{' '}
-            <PeoplePicker
-              className="mt-2"
-              groupId="317aa3d0-a94a-4c7c-bcb9-8870cfececa4"
-              selectionChanged={(e) => {
-                setSuperioriInvitati(e.target.selectedPeople)
-              }}
-            />
-            {/* <CFormInput id="superiori-invitati" label="Superiori invitati" /> */}
-          </CCol>
-        </CRow>
-        <CRow className="mb-3">
           <CCol md={5}>
             <CFormInput
               id="istruzione-superiori"
@@ -95,6 +82,7 @@ const CreateEvento = ({ onCreate, categoria }) => {
               onChange={(e) => {
                 setNewPratica({ ...newPratica, cr9b3_istruzionesuperiori: e.target.value.trim() })
               }}
+              required
             />
           </CCol>
           <CCol md={2}>
@@ -130,9 +118,22 @@ const CreateEvento = ({ onCreate, categoria }) => {
               locale="it-IT"
               onDateChange={(e) => {
                 console.log(e)
-                setNewPratica({ ...newPratica, cr9b3_primascadenza: e })
+                setNewPratica({ ...newPratica, dssui_primascadenza: e })
               }}
             />
+          </CCol>
+        </CRow>
+        <CRow className="mb-3">
+          <CCol md={4}>
+            Superiori invitati{' '}
+            <PeoplePicker
+              className="mt-2"
+              groupId="317aa3d0-a94a-4c7c-bcb9-8870cfececa4"
+              selectionChanged={(e) => {
+                setSuperioriInvitati(e.target.selectedPeople)
+              }}
+            />
+            {/* <CFormInput id="superiori-invitati" label="Superiori invitati" /> */}
           </CCol>
         </CRow>
         <CRow className="mb-3">
@@ -184,7 +185,7 @@ const CreateEvento = ({ onCreate, categoria }) => {
               className="mt-2"
               groupId="2e227ba3-c594-4117-b106-d9735ddf4d26"
               selectionChanged={(e) => {
-                setNewPratica({ ...newPratica, cr9b3_sezioneresponsabile: e.target.value })
+                setResponsabili(e.target.selectedPeople)
               }}
             />
           </CCol>

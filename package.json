@@ -22,7 +22,7 @@
     "test:debug": "react-scripts --inspect-brk test --runInBand"
   },
   "dependencies": {
-    "@azure/msal-browser": "^3.27.0",
+    "@azure/msal-browser": "^3.28.0",
     "@coreui/chartjs": "^3.1.1",
     "@coreui/coreui-pro": "^4.4.3",
     "@coreui/icons": "^3.0.1",
@@ -34,9 +34,10 @@
     "@fullcalendar/interaction": "^5.11.3",
     "@fullcalendar/react": "^5.11.3",
     "@fullcalendar/timegrid": "^5.11.3",
+    "@microsoft/mgt": "^4.4.0",
     "@microsoft/mgt-element": "^4.3.0",
     "@microsoft/mgt-msal2-provider": "^4.3.0",
-    "@microsoft/mgt-react": "^4.3.0",
+    "@microsoft/mgt-react": "^4.4.0",
     "@react-google-maps/api": "^2.18.1",
     "@tiptap/pm": "^2.9.1",
     "@tiptap/react": "^2.9.1",
