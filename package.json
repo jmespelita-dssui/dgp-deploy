@@ -54,6 +54,7 @@
     "react-app-polyfill": "^3.0.0",
     "react-country-state-city": "^1.1.7",
     "react-dom": "^18.2.0",
+    "react-hook-form": "^7.54.2",
     "react-redux": "^8.0.5",
     "react-router-dom": "^6.8.2",
     "redux": "4.2.1",

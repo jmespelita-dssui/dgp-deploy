@@ -22,120 +22,272 @@ import {
   CListGroup,
   CContainer,
   CBadge,
-  CForm,
-  CFormTextarea,
-  CToast,
-  CToastHeader,
-  CToastBody,
-  CToaster,
+  CProgress,
+  CPopover,
 } from '@coreui/react-pro'
 
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilPlus, cilX } from '@coreui/icons'
-import Tasks from './Subtasks'
 import Fields from './Fields'
-import { getUserGraphDetails } from 'src/util/taskUtils'
+import { getSystemUserID, getUserGraphDetails, assignUserToTask } from 'src/util/taskUtils'
+import { useToast } from 'src/context/ToastContext'
+import LoadingOverlay from '../modals/LoadingOverlay'
+import ConfirmClose from '../modals/ConfirmClose'
 
-const Pratica = ({ pratica, visible, onClose, labelColor, label }) => {
+const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
   const [visibleLinks, setVisibleLinks] = useState(true)
   const [visibleCorr, setVisibleCorr] = useState(false)
   const [visibleLogs, setVisibleLogs] = useState(false)
+  const [visibleConfirmClose, setVisibleConfirmClose] = useState(false)
+  const [status, setStatus] = useState('')
+  const [confirmCloseBody, setConfirmCloseBody] = useState({
+    title: 'Confirm',
+    text: 'Your changes may not have been saved. Continue?',
+  })
   const [superioriInvitati, setSuperioriInvitati] = useState([])
+  const [superioriSystemUserIDs, setSuperioriSystemUserIDs] = useState([])
+  // const [superioriAzureIDs, setSuperioriAzureIDs] = useState([])
   const [responsabiliAssegnati, setResponsabiliAssegnati] = useState([])
+  const [responsabiliSystemUserIDs, setResponsabiliSystemUserIDs] = useState([])
+  const [officialiIncaricati, setOfficialiIncaricati] = useState([])
+  const [officialiIncaricatiSystemUserIDs, setOfficialiIncaricatiUserIDs] = useState([])
   const [createdBy, setCreatedBy] = useState('')
   const [modifiedBy, setModifiedBy] = useState('')
   const [isView, setIsView] = useState(true)
-  const [isSuccess, setIsSuccess] = useState(false)
-
-  const [toast, addToast] = useState(0)
   const [loading, setLoading] = useState(false)
-
-  const toaster = useRef()
+  const { addToast } = useToast()
 
   useEffect(() => {
     setIsView(true)
-    const getAssignedUsers = async () => {
-      const token = await getAccessToken()
-      const axiosInstance = createAxiosInstance(token)
-      let superiori
-      let responsabili
-      let superioriSystemUserIDs
-      let responsabiliSystemUserIDs
-
-      try {
-        // Perform same operations for both invited superiors and assigned responsible
-        if (pratica.cr9b3_praticaid) {
-          const responseSuperiori = await axiosInstance.get(
-            `cr9b3_praticas?$filter=cr9b3_praticaid eq '${pratica.cr9b3_praticaid}'&$expand=cr9b3_pratica_superiore`,
-          )
-          superiori = responseSuperiori.data.value[0].cr9b3_pratica_superiore
-          superioriSystemUserIDs = superiori.map((user) => user.azureactivedirectoryobjectid)
-
-          const responseResponsabili = await axiosInstance.get(
-            `cr9b3_praticas?$filter=cr9b3_praticaid eq '${pratica.cr9b3_praticaid}'&$expand=cr9b3_pratica_responsabile`,
-          )
-          responsabili = responseResponsabili.data.value[0].cr9b3_pratica_responsabile
-          responsabiliSystemUserIDs = responsabili.map((user) => user.azureactivedirectoryobjectid)
-
-          // Fetch user details for each `systemuserid`
-          const superiorUserDetailsPromises = superioriSystemUserIDs.map(async (userID) => {
-            return await getUserGraphDetails(userID)
-          })
-          const responsabileUserDetailsPromises = responsabiliSystemUserIDs.map(async (userID) => {
-            return await getUserGraphDetails(userID)
-          })
-
-          const createdByPromise = await axiosInstance.get(
-            `systemusers(${pratica._createdby_value})`,
-          )
-          const modifiedByPromise = await axiosInstance.get(
-            `systemusers(${pratica._modifiedby_value})`,
-          )
-          // const modifiedBy = await getUserGraphDetails(pratica._modifiedby_value)
-
-          // Wait for all user details to be fetched
-          const superiorUsersDetails = await Promise.all(superiorUserDetailsPromises)
-          setSuperioriInvitati(superiorUsersDetails)
-          const responsabileUsersDetails = await Promise.all(responsabileUserDetailsPromises)
-          setResponsabiliAssegnati(responsabileUsersDetails)
-
-          setCreatedBy(createdByPromise.data.fullname)
-          setModifiedBy(modifiedByPromise.data.fullname)
-          console.log(pratica._createdby_value, createdByPromise.data.fullname)
-
-          console.log('responsabile graph details:', responsabileUsersDetails)
-        }
-      } catch (error) {
-        if (error.isAxiosError) {
-          console.error('Axios error getting user ID:', error.response)
-          console.error('Error message:', error.message)
-          console.error('Error response:', error.response.data)
-        } else {
-          console.error('Non-Axios error:', error)
-        }
-      }
-      // return userID
-    }
     getAssignedUsers()
+    setStatus(pratica.cr9b3_status)
+    setLoading(false)
   }, [pratica])
 
-  // const onSaveEdit = (pratica) => {
-  //   console.log('ON SAVE EDIT', pratica)
-  //   //check if changes were made
-  // }
-
-  const onSaveEdit = async (pratica) => {
-    console.log(pratica)
-    setLoading(true)
-
+  const getUserIDs = async (tableName) => {
     const token = await getAccessToken()
     const axiosInstance = createAxiosInstance(token)
+    let user
+    let azureactivedirectoryobjectid
+    let systemuserid
+    const response = await axiosInstance.get(
+      `cr9b3_praticas?$filter=cr9b3_praticaid eq '${pratica.cr9b3_praticaid}'&$expand=${tableName}`,
+    )
+    if (tableName == 'cr9b3_pratica_superiore') {
+      user = response.data.value[0].cr9b3_pratica_superiore
+    } else if (tableName == 'cr9b3_pratica_responsabile') {
+      user = response.data.value[0].cr9b3_pratica_responsabile
+    } else if (tableName == 'cr9b3_pratica_officiali_incaricati') {
+      user = response.data.value[0].cr9b3_pratica_officiali_incaricati
+    }
+
+    azureactivedirectoryobjectid = user.map((user) => user.azureactivedirectoryobjectid)
+    systemuserid = user.map((user) => user.systemuserid)
+
+    return {
+      azureactivedirectoryobjectid: azureactivedirectoryobjectid,
+      systemuserid: systemuserid,
+    }
+  }
+
+  const getAssignedUsers = async () => {
+    const token = await getAccessToken()
+    const axiosInstance = createAxiosInstance(token)
+
+    try {
+      // Perform same operations for both invited superiors and assigned responsible
+      if (pratica.cr9b3_praticaid) {
+        const superioriIDs = await getUserIDs('cr9b3_pratica_superiore')
+        const responsabiliIDs = await getUserIDs('cr9b3_pratica_responsabile')
+        const officialiIncaricatiIDs = await getUserIDs('cr9b3_pratica_officiali_incaricati')
+
+        const superiorUserDetailsPromises = superioriIDs.azureactivedirectoryobjectid.map(
+          async (userID) => {
+            return await getUserGraphDetails(userID)
+          },
+        )
+
+        const responsabileUserDetailsPromises = responsabiliIDs.azureactivedirectoryobjectid.map(
+          async (userID) => {
+            return await getUserGraphDetails(userID)
+          },
+        )
+        const officialiIncaricatiUserDetailsPromises =
+          officialiIncaricatiIDs.azureactivedirectoryobjectid.map(async (userID) => {
+            return await getUserGraphDetails(userID)
+          })
+
+        // Wait for all user details to be fetched
+        const superiorUsersDetails = await Promise.all(superiorUserDetailsPromises)
+        setSuperioriInvitati(superiorUsersDetails)
+        setSuperioriSystemUserIDs(superioriIDs.systemuserid)
+
+        const responsabileUsersDetails = await Promise.all(responsabileUserDetailsPromises)
+        setResponsabiliAssegnati(responsabileUsersDetails)
+        setResponsabiliSystemUserIDs(responsabiliIDs.systemuserid)
+
+        const officialiIncaricatiDetails = await Promise.all(officialiIncaricatiUserDetailsPromises)
+        setOfficialiIncaricati(officialiIncaricatiDetails)
+        setOfficialiIncaricatiUserIDs(officialiIncaricatiIDs.systemuserid)
+
+        // Get system information on creator and modifier
+        const createdByPromise = await axiosInstance.get(`systemusers(${pratica._createdby_value})`)
+        const modifiedByPromise = await axiosInstance.get(
+          `systemusers(${pratica._modifiedby_value})`,
+        )
+        setCreatedBy(createdByPromise.data.fullname)
+        setModifiedBy(modifiedByPromise.data.fullname)
+      }
+    } catch (error) {
+      if (error.isAxiosError) {
+        console.error('Axios error getting user ID:', error.response)
+        console.error('Error message:', error.message)
+        console.error('Error response:', error.response.data)
+      } else {
+        console.error('Non-Axios error:', error)
+      }
+    }
+    // return userID
+  }
+
+  const showConfirmClose = () => {
+    if (!isView) {
+      setVisibleConfirmClose(true)
+    } else {
+      onClose()
+    }
+  }
+
+  const onExitConfirmClose = () => {
+    setVisibleConfirmClose(false)
+    onClose()
+  }
+
+  const onSaveEdit = async (
+    pratica,
+    superioriInvitatiList,
+    responsabileList,
+    officialiIncaricatiList,
+  ) => {
+    setLoading(true)
+    const token = await getAccessToken()
+    const axiosInstance = createAxiosInstance(token)
+    let newSuperioriList = []
+    let newResponsabiliList = []
+    let newOfficialiIncaricatiList = []
     let response
     let praticaDetailsResponse
     let entityUrl
 
+    // console.log('assigning/unassigning superiors pre edit', superioriSystemUserIDs)
+    try {
+      newSuperioriList = await Promise.all(
+        superioriInvitatiList.map(async (id) => {
+          return getSystemUserID(id)
+        }),
+      )
+
+      let superioriToUnassign = superioriSystemUserIDs.filter(
+        (value) => !newSuperioriList.includes(value),
+      )
+      // console.log('superioriToUnassign', superioriToUnassign)
+
+      let superioriToAssign = newSuperioriList.filter(
+        (value) => !superioriSystemUserIDs.includes(value),
+      )
+      // console.log('superioriToAssign', superioriToAssign)
+
+      if (superioriToUnassign.length > 0) {
+        superioriToUnassign.map(async (id) => {
+          response = await axiosInstance.delete(
+            `cr9b3_praticas(${pratica.cr9b3_praticaid})/cr9b3_pratica_superiore(${id})/$ref`,
+          )
+        })
+      }
+      if (superioriToAssign.length > 0) {
+        superioriToAssign.map(async (id) => {
+          assignUserToTask(id, pratica.cr9b3_praticaid, 'cr9b3_pratica_superiore')
+        })
+      }
+    } catch (error) {
+      addToast('Error unassigning/assigning superior', 'Edit Pratica', 'warning', 3000)
+      console.log('Error unassigning superior', error)
+    }
+
+    // console.log('assigning/unassigning responsabile pre edit', responsabiliSystemUserIDs)
+    try {
+      newResponsabiliList = await Promise.all(
+        responsabileList.map(async (id) => {
+          return getSystemUserID(id)
+        }),
+      )
+
+      let responsabiliToUnassign = responsabiliSystemUserIDs.filter(
+        (value) => !newResponsabiliList.includes(value),
+      )
+      // console.log('responsabiliToUnassign', responsabiliToUnassign)
+
+      let responsabiliToAssign = newResponsabiliList.filter(
+        (value) => !responsabiliSystemUserIDs.includes(value),
+      )
+      // console.log('responsabiliToAssign', responsabiliToAssign)
+
+      if (responsabiliToUnassign.length > 0) {
+        responsabiliToUnassign.map(async (id) => {
+          response = await axiosInstance.delete(
+            `cr9b3_praticas(${pratica.cr9b3_praticaid})/cr9b3_pratica_responsabile(${id})/$ref`,
+          )
+        })
+      }
+      if (responsabiliToAssign.length > 0) {
+        responsabiliToAssign.map(async (id) => {
+          assignUserToTask(id, pratica.cr9b3_praticaid, 'cr9b3_pratica_responsabile')
+        })
+      }
+    } catch (error) {
+      addToast('Error assigning superior', 'Edit Pratica', 'warning', 3000)
+      console.log('Error assigning superior', error)
+    }
+
+    console.log('assigning/unassigning officali incaricati pre edit', officialiIncaricati)
+    try {
+      newOfficialiIncaricatiList = await Promise.all(
+        officialiIncaricatiList.map(async (id) => {
+          return getSystemUserID(id)
+        }),
+      )
+
+      let officialiIncaricatiToUnassign = officialiIncaricatiSystemUserIDs.filter(
+        (value) => !newOfficialiIncaricatiList.includes(value),
+      )
+      // console.log('responsabiliToUnassign', responsabiliToUnassign)
+
+      let officialiIncaricatiToAssign = newOfficialiIncaricatiList.filter(
+        (value) => !officialiIncaricatiSystemUserIDs.includes(value),
+      )
+      // console.log('responsabiliToAssign', responsabiliToAssign)
+
+      if (officialiIncaricatiToUnassign.length > 0) {
+        officialiIncaricatiToUnassign.map(async (id) => {
+          response = await axiosInstance.delete(
+            `cr9b3_praticas(${pratica.cr9b3_praticaid})/cr9b3_pratica_officiali_incaricati(${id})/$ref`,
+          )
+        })
+      }
+      if (officialiIncaricatiToAssign.length > 0) {
+        officialiIncaricatiToAssign.map(async (id) => {
+          assignUserToTask(id, pratica.cr9b3_praticaid, 'cr9b3_pratica_officiali_incaricati')
+        })
+      }
+    } catch (error) {
+      addToast('Error assigning superior', 'Edit Pratica', 'warning', 3000)
+      console.log('Error assigning superior', error)
+    }
+
     try {
       console.log('editing pratica', pratica.cr9b3_praticaid)
+      setStatus(pratica.cr9b3_status)
+
       response = await axiosInstance.patch(`cr9b3_praticas(${pratica.cr9b3_praticaid})`, pratica)
       // Get the OData-EntityId from the response headers
       entityUrl = response.headers['odata-entityid']
@@ -143,17 +295,17 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label }) => {
       if (entityUrl) {
         console.log(`Pratica edited! Entity URL: ${entityUrl}`)
         setLoading(false)
-        addToast(successCreateTaskToast)
+        addToast('Success! Your changes have been saved.', 'Edit Pratica', 'success', 3000)
 
         // Retrieve the details of the created record
         praticaDetailsResponse = await axiosInstance.get(entityUrl)
       } else {
-        addToast(errorToast)
+        addToast('Error occurred while saving changes.', 'Edit Pratica', 'warning', 3000)
         console.error('Entity URL not returned in the response headers.')
       }
       return praticaDetailsResponse
     } catch (error) {
-      addToast(errorToast)
+      addToast('Error occurred while saving changes.', 'Edit Pratica', 'warning', 3000)
       if (error.isAxiosError) {
         console.error('Axios error details adding new pratica:', error.response)
         console.error('Error message:', error.message)
@@ -162,53 +314,22 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label }) => {
         console.error('Non-Axios error:', error)
       }
     }
+    getAssignedUsers()
   }
 
-  const successCreateTaskToast = (
-    <CToast>
-      <CToastHeader closeButton>
-        <svg
-          className="rounded me-2"
-          width="20"
-          height="20"
-          xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="xMidYMid slice"
-          focusable="false"
-          role="img"
-        >
-          <rect width="100%" height="100%" fill="#198754"></rect>
-        </svg>
-        <div className="fw-bold me-auto">Edit Pratica</div>
-        {/* <small>7 min ago</small> */}
-      </CToastHeader>
-      <CToastBody>All set! Your changes were saved.</CToastBody>
-    </CToast>
-  )
-
-  const errorToast = (
-    <CToast>
-      <CToastHeader closeButton>
-        <svg
-          className="rounded me-2"
-          width="20"
-          height="20"
-          xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="xMidYMid slice"
-          focusable="false"
-          role="img"
-        >
-          <rect width="100%" height="100%" fill="#8f3937"></rect>
-        </svg>
-        <div className="fw-bold me-auto">Create Pratica</div>
-        {/* <small>7 min ago</small> */}
-      </CToastHeader>
-      <CToastBody>An error occurred while creating the Pratica.</CToastBody>
-    </CToast>
-  )
+  const changeMode = (view) => {
+    setIsView(view)
+  }
 
   return (
     <>
-      <CToaster className="p-3" placement="top-end" push={toast} ref={toaster} />
+      <LoadingOverlay loading={loading} />
+      <ConfirmClose
+        visible={visibleConfirmClose}
+        body={confirmCloseBody}
+        onCancel={() => setVisibleConfirmClose(false)}
+        onExit={onExitConfirmClose}
+      />
       <CModal
         backdrop="static"
         visible={visible}
@@ -217,9 +338,41 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label }) => {
         size="xl"
       >
         <CModalHeader>
-          <CModalTitle id="StaticBackdropExampleLabel">
-            Prat. No. {pratica.cr9b3_prano} / Prot. {pratica.cr9b3_protno}
-          </CModalTitle>
+          <CCol md={3}>
+            <CModalTitle id="StaticBackdropExampleLabel">
+              Prat. No. {pratica.cr9b3_prano} / Prot. {pratica.cr9b3_protno}
+            </CModalTitle>
+          </CCol>
+
+          {/* <CPopover
+            content={
+              status === 10
+                ? 'New'
+                : status === 30
+                ? 'In progress'
+                : status === 50
+                ? 'Pending response from recipient'
+                : status === 70
+                ? 'Pending approval from superior'
+                : status === 40
+                ? 'On hold'
+                : status === 0
+                ? 'Archived'
+                : 'Completed'
+            }
+            placement="top"
+            trigger={['hover', 'focus']}
+          > */}
+          <CCol md={8} className="m-3">
+            <CProgress
+              value={Number(status)}
+              height={10}
+              color={status === 40 ? 'gray' : status > 10 && status < 100 ? 'warning' : 'success'}
+              variant="striped"
+              animated
+            />
+          </CCol>
+          {/* </CPopover> */}
         </CModalHeader>
         <CModalBody>
           <CCardBody className="p-3">
@@ -232,17 +385,18 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label }) => {
                 <span className="fw-bold">Istruzioni superiori: </span>
                 {pratica.cr9b3_istruzioneda} - {pratica.cr9b3_istruzionesuperiori}
                 {/* <CRow className="mt-4">
-                <Tasks />
-              </CRow> */}
+                  <Tasks />
+                </CRow> */}
                 <Fields
                   pratica={pratica}
-                  label={label}
                   superioriInvitati={superioriInvitati}
                   responsabile={responsabiliAssegnati}
-                  isView={isView}
-                  isSuccess={isSuccess}
+                  officialiIncaricati={officialiIncaricati}
                   onSaveEdit={onSaveEdit}
+                  isView={isView}
                   loading={loading}
+                  setIsView={changeMode}
+                  forceRerender={refresh}
                 />
                 <CCardBody className="text-body-secondary font-size-sm lh-2 m-4">
                   <CRow>
@@ -369,7 +523,7 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label }) => {
           </CCardBody>
         </CModalBody>
         <CModalFooter>
-          <CButton color="secondary" onClick={onClose}>
+          <CButton color="secondary" onClick={showConfirmClose}>
             Close
           </CButton>
         </CModalFooter>

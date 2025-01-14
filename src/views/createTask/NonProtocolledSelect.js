@@ -12,14 +12,14 @@ const NonProtocolledSelect = ({ onChangeCategoriaNP }) => {
           defaultValue={'Choose category'}
           options={[
             { label: 'Choose category', value: '0' },
-            {
-              label: 'RICHIESTA CONTRIBUTO - intervista/pubblicazioni su riviste',
-              value: '129580000',
-            },
+            // {
+            //   label: 'RICHIESTA CONTRIBUTO - intervista/pubblicazioni su riviste',
+            //   value: '129580010',
+            // },
             { label: 'PURTROPPO - richiesta evento/contributo/altro', value: '129580007' },
             {
               label: 'RAPPORTI/DOCUMENTI/INVITI GENERICI - partners, newsletters',
-              value: '129580009',
+              value: '129580008',
             },
             { label: 'MESSAGGI PONTIFICI', value: '129580009' },
           ]}

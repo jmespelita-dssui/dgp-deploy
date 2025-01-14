@@ -1,6 +1,7 @@
 import React, { Component, Suspense } from 'react'
 import { HashRouter, Route, Routes } from 'react-router-dom'
 import { CSpinner } from '@coreui/react-pro'
+import { ToastProvider } from './context/ToastContext'
 
 import msalInstance from './msalConfig'
 import { InteractionRequiredAuthError } from '@azure/msal-browser'
@@ -37,13 +38,15 @@ class App extends Component {
 
   render() {
     return (
-      <HashRouter>
-        <Suspense fallback={<CSpinner color="primary" />}>
-          <Routes>
-            <Route path="*" name="Home" element={<DefaultLayout />} />
-          </Routes>
-        </Suspense>
-      </HashRouter>
+      <ToastProvider>
+        <HashRouter>
+          <Suspense fallback={<CSpinner color="primary" />}>
+            <Routes>
+              <Route path="*" name="Home" element={<DefaultLayout />} />
+            </Routes>
+          </Suspense>
+        </HashRouter>
+      </ToastProvider>
     )
   }
 }

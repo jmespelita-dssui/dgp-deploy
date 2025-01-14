@@ -21,7 +21,7 @@ export const getAccessToken = async () => {
 
 export const getAccessTokenForGraph = async () => {
   const provider = Providers.globalProvider
-  console.log('getting access token for graph')
+  // console.log('getting access token for graph')
   if (provider && provider.state === 2) {
     try {
       const response = await msalInstance.acquireTokenSilent({

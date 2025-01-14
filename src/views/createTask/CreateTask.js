@@ -10,43 +10,26 @@ import {
   CRow,
   CInputGroup,
   CInputGroupText,
-  CButton,
-  CToast,
-  CToastHeader,
-  CToastBody,
-  CToaster,
   CSpinner,
 } from '@coreui/react-pro'
+
+import { useToast } from 'src/context/ToastContext'
+
 import React, { useState, useEffect, useRef } from 'react'
 import { getAccessToken, createAxiosInstance } from 'src/util/axiosUtils'
-import {
-  getSystemUserID,
-  // successCreateTaskToast,
-  // duplicateCreateTaskToast,
-  errorToast,
-} from 'src/util/taskUtils'
+import { getSystemUserID, assignUserToTask, getFields } from 'src/util/taskUtils'
 import { useNavigate } from 'react-router-dom'
 
-import CreateRichiestaContributo from './protocollato/CreateRichiestaContributo'
-import CreateProgettoEsterno from './protocollato/CreateProgettoEsterno'
-import CreateEvento from './protocollato/CreateEvento'
-import CreateRicezioneRapporti from './protocollato/CreateRicezioneRapporti'
-import CreateVisita from './protocollato/CreateVisita'
+import FieldsCreate from './FieldsCreate'
 import ProtocolledSelect from './ProtocolledSelect'
 import NonProtocolledSelect from './NonProtocolledSelect'
-import CreateSenzaRichiestaEvento from './protocollato/CreateSenzaRichiestaEvento'
-import CreateSenzaRichiestaInvioLettera from './protocollato/CreateSenzaRichiestaInvioLettera'
-import CreateNPRichiestaContributo from './nonProtocollato/CreateNPRichiestaContributo'
-import CreateNPPurtroppo from './nonProtocollato/CreateNPPurtroppo'
-import CreateNPGenerici from './nonProtocollato/CreateNPGenerici'
 
 const CreateTask = () => {
+  const { addToast } = useToast()
   const [isProtocolled, setIsProtocolled] = useState('')
-  const [categoria, setCategoria] = useState('')
+  const [categoria, setCategoria] = useState('0')
+  const [fields, setFields] = useState({})
   const [loading, setLoading] = useState(false)
-
-  const [toast, addToast] = useState(0)
-  const toaster = useRef()
 
   const navigate = useNavigate()
 
@@ -61,10 +44,11 @@ const CreateTask = () => {
     // console.log(pratica.cr9b3_protno, checkIfExisting(pratica.cr9b3_protno))
     if (await checkIfExisting(pratica.cr9b3_protno)) {
       const praticaDetailsResponse = await addNewPratica(pratica)
-      console.log('output pratica id', praticaDetailsResponse.data.cr9b3_praticaid)
+      console.log('output pratica id', praticaDetailsResponse)
 
       // assign user to task
       superioriInvitati.map(async (id) => {
+        console.log('adding superior:', id)
         const superiorID = await getSystemUserID(id)
         assignUserToTask(
           superiorID,
@@ -83,13 +67,18 @@ const CreateTask = () => {
       })
 
       setLoading(false)
-      addToast(successCreateTaskToast)
+      addToast('Success! The pratica has been added.', 'Create Pratica', 'success', 3000)
       setTimeout(() => {
         navigate('/tasks')
-      }, 3500) // 1000 = 1 second
+      }, 2000) // 1000 = 1 second
     } else {
       setLoading(false)
-      addToast(duplicateCreateTaskToast)
+      addToast(
+        'Pratica with same protocol number already exists',
+        'Create Pratica',
+        'warning',
+        3000,
+      )
       console.log('pratica already exists')
     }
   }
@@ -121,12 +110,12 @@ const CreateTask = () => {
         // Retrieve the details of the created record
         praticaDetailsResponse = await axiosInstance.get(entityUrl)
       } else {
-        addToast(errorToast)
+        addToast('An error occurred while creating the Pratica.', 'Create Pratica', 'danger', 3000)
         console.error('Entity URL not returned in the response headers.')
       }
       return praticaDetailsResponse
     } catch (error) {
-      addToast(errorToast)
+      // addToast(errorToast)
       if (error.isAxiosError) {
         console.error('Axios error details adding new pratica:', error.response)
         console.error('Error message:', error.message)
@@ -137,98 +126,13 @@ const CreateTask = () => {
     }
   }
 
-  const assignUserToTask = async (userID, praticaID, table) => {
-    const token = await getAccessToken()
-    const axiosInstance = createAxiosInstance(token)
-    console.log('adding superiori invitati', userID)
-    const data = {
-      '@odata.id': `https://orgac85713a.crm4.dynamics.com/api/data/v9.2/cr9b3_praticas(${praticaID})`,
-    }
-    try {
-      // POST request to create a relationship in cr9b3_pratica_superiore
-      const response = await axiosInstance.post(
-        `systemusers(${userID})/${table}/$ref`, //cr9b3_pratica_superiore
-        data,
-      )
-      console.log('Successfully created the user <-> pratica record:', response.data)
-    } catch (error) {
-      addToast(errorToast)
-      console.error(
-        'Error creating user <-> pratica record:',
-        error.response ? error.response.data : error.message,
-      )
-    }
-  }
-
   const onChangeCategoria = (cat) => {
     setCategoria(cat)
+    setFields(getFields(Number(cat)))
   }
-
-  const successCreateTaskToast = (
-    <CToast>
-      <CToastHeader closeButton>
-        <svg
-          className="rounded me-2"
-          width="20"
-          height="20"
-          xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="xMidYMid slice"
-          focusable="false"
-          role="img"
-        >
-          <rect width="100%" height="100%" fill="#198754"></rect>
-        </svg>
-        <div className="fw-bold me-auto">Create Pratica</div>
-        {/* <small>7 min ago</small> */}
-      </CToastHeader>
-      <CToastBody>Success! The pratica has been added.</CToastBody>
-    </CToast>
-  )
-
-  const errorToast = (
-    <CToast>
-      <CToastHeader closeButton>
-        <svg
-          className="rounded me-2"
-          width="20"
-          height="20"
-          xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="xMidYMid slice"
-          focusable="false"
-          role="img"
-        >
-          <rect width="100%" height="100%" fill="#8f3937"></rect>
-        </svg>
-        <div className="fw-bold me-auto">Create Pratica</div>
-        {/* <small>7 min ago</small> */}
-      </CToastHeader>
-      <CToastBody>An error occurred while creating the Pratica.</CToastBody>
-    </CToast>
-  )
-
-  const duplicateCreateTaskToast = (
-    <CToast>
-      <CToastHeader closeButton>
-        <svg
-          className="rounded me-2"
-          width="20"
-          height="20"
-          xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="xMidYMid slice"
-          focusable="false"
-          role="img"
-        >
-          <rect width="100%" height="100%" fill="#8f3937"></rect>
-        </svg>
-        <div className="fw-bold me-auto">Create Pratica</div>
-      </CToastHeader>
-      <CToastBody>Pratica with same protocol number already exists</CToastBody>
-    </CToast>
-  )
 
   return (
     <>
-      <CToaster className="p-3" placement="top-end" push={toast} ref={toaster} />
       <CCard className="p-4 mb-3">
         <CHeader>
           <h4>Create new pratica</h4>
@@ -277,53 +181,10 @@ const CreateTask = () => {
         </CCardBody>
       </CCard>
       {/* Form is shown according to chosen category */}
-      {categoria === '129580000' ? (
+      {categoria != '0' && (
         <CCard className="p-4">
-          <CreateRichiestaContributo />
+          <FieldsCreate onCreate={createTask} fields={fields} categoria={categoria} />
         </CCard>
-      ) : categoria === '129580001' ? (
-        <CCard className="p-4">
-          <CreateProgettoEsterno />
-        </CCard>
-      ) : categoria === '129580002' ? (
-        <CCard className="p-4">
-          <CreateEvento onCreate={createTask} categoria={categoria} />
-        </CCard>
-      ) : categoria === '129580003' ? (
-        <CCard className="p-4">
-          <CreateRicezioneRapporti />
-        </CCard>
-      ) : categoria === '129580004' ? (
-        <CCard className="p-4">
-          <CreateVisita />
-        </CCard>
-      ) : categoria === '129580005' ? (
-        <CCard className="p-4">
-          <CreateSenzaRichiestaEvento />
-        </CCard>
-      ) : categoria === '129580006' ? (
-        <CCard className="p-4">
-          <CreateSenzaRichiestaInvioLettera />
-        </CCard>
-      ) : categoria === '129580010' ? (
-        <CCard className="p-4">
-          <CreateNPRichiestaContributo />
-        </CCard>
-      ) : categoria === '129580007' ? (
-        <CCard className="p-4">
-          <CreateNPPurtroppo />
-        </CCard>
-      ) : categoria === '129580008' ? (
-        <CCard className="p-4">
-          <CreateNPGenerici />
-        </CCard>
-      ) : categoria === '129580000' ? (
-        <CCard className="p-4">
-          {/* <CreateNPGenerici /> */}
-          Messaggi Pontifici
-        </CCard>
-      ) : (
-        ''
       )}
     </>
   )

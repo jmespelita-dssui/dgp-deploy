@@ -4,39 +4,40 @@ import React from 'react'
 import { getAccessTokenForGraph } from './axiosUtils'
 
 export const emptyTask = {
-  cr9b3_prano: null,
-  cr9b3_protno: null,
-  cr9b3_titolo: null,
+  cr9b3_prano: '',
+  cr9b3_protno: '',
+  cr9b3_titolo: '',
   cr9b3_status: 0,
-  cr9b3_categoria: null,
-  cr9b3_datainviomateriale: null,
-  cr9b3_primascadenza: null,
-  cr9b3_istruzionesuperiori: null,
-  cr9b3_istruzioneda: null,
-  cr9b3_datatimbrosuperiore: null,
-  cr9b3_datarichiestacontributo: null,
-  cr9b3_datainoltrataresponsabile: null,
-  cr9b3_enteinviante: null,
-  cr9b3_enterichiedente: null,
-  cr9b3_entericevente: null,
-  cr9b3_personarichiedente: null,
-  cr9b3_dssuiorganizzatore: null,
-  cr9b3_destinatari: null,
-  cr9b3_indirizzidestinatari: null,
-  cr9b3_dataevento: null,
-  cr9b3_titoloevento: null,
-  cr9b3_luogoevento: null,
-  cr9b3_temacontributo: null,
-  cr9b3_materiarapporto: null,
-  cr9b3_superioriinvitati: null,
-  cr9b3_sezioneresponsabile: null,
-  cr9b3_nopartecipanti: null,
-  cr9b3_dssuipartecipanti: null,
-  cr9b3_paese: null,
-  cr9b3_regione: null,
-  cr9b3_citta: null,
-  cr9b3_sharepointlink: null,
-  cr9b3_corrispondenza: null,
+  cr9b3_categoria: '',
+  cr9b3_datainviomateriale: '',
+  cr9b3_primascadenza: '',
+  cr9b3_istruzionesuperiori: '',
+  cr9b3_istruzioneda: '',
+  cr9b3_datatimbrosuperiore: '',
+  cr9b3_datarichiestacontributo: '',
+  cr9b3_datainoltrataresponsabile: '',
+  cr9b3_enteinviante: '',
+  cr9b3_enterichiedente: '',
+  cr9b3_entericevente: '',
+  cr9b3_personarichiedente: '',
+  cr9b3_dssuiorganizzatore: '',
+  cr9b3_destinatari: '',
+  cr9b3_indirizzidestinatari: '',
+  cr9b3_dataevento: '',
+  cr9b3_titoloevento: '',
+  cr9b3_luogoevento: '',
+  cr9b3_temacontributo: '',
+  cr9b3_materiarapporto: '',
+  cr9b3_superioriinvitati: '',
+  cr9b3_sezioneresponsabile: '',
+  cr9b3_nopartecipanti: '',
+  cr9b3_dssuipartecipanti: '',
+  cr9b3_paese: '',
+  cr9b3_regione: '',
+  cr9b3_citta: '',
+  cr9b3_sharepointlink: '',
+  cr9b3_corrispondenza: '',
+  cr9b3_notes: '',
 }
 
 export const getFields = (categoria) => {
@@ -98,6 +99,7 @@ export const getFields = (categoria) => {
     case 129580000: //RICHIESTA CONTRIBUTO
       fields = {
         ...template,
+        category: '129580000 RICHIESTA CONTRIBUTO',
         data_richiesta_contributo: true,
         ente_richiedente: true,
         tema_contributo: true,
@@ -106,6 +108,7 @@ export const getFields = (categoria) => {
     case 129580001: //PROGETTO ESTERNO
       fields = {
         ...template,
+        category: '129580001 PROGETTO ESTERNO',
         ente_inviante: true,
         paese: true,
         regione: true,
@@ -115,6 +118,7 @@ export const getFields = (categoria) => {
     case 129580002: //EVENTO
       fields = {
         ...template,
+        category: '129580002 EVENTO',
         data_prima_scadenza: true,
         ente_richiedente: true,
         persona_richiedente: true,
@@ -126,6 +130,7 @@ export const getFields = (categoria) => {
     case 129580003: //RICEZIONE RAPPORTI
       fields = {
         ...template,
+        category: '129580003 RICEZIONE RAPPORTI',
         ente_inviante: true,
         materia_rapporto: true,
       }
@@ -133,6 +138,7 @@ export const getFields = (categoria) => {
     case 129580004: //VISITA
       fields = {
         ...template,
+        category: '129580004 VISITA',
         ente_richiedente: true,
         persona_richiedente: true,
         data_evento: true,
@@ -144,6 +150,7 @@ export const getFields = (categoria) => {
     case 129580005: //SENZA RICHIESTA - EVENTO
       fields = {
         ...template,
+        category: '129580005 SENZA RICHIESTA - EVENTO',
         dssui_organizzatore: true,
         titolo_evento: true,
         dssui_partecipanti: true,
@@ -152,12 +159,14 @@ export const getFields = (categoria) => {
     case 129580006: //SENZA RICHIESTA - LETTERA
       fields = {
         ...template,
+        category: '129580006 SENZA RICHIESTA - LETTERA',
         ente_ricevente: true,
       }
       break
     case 129580007: //PURTROPPO
       fields = {
         ...template,
+        category: '129580007 PURTROPPO',
         ente_richiedente: true,
         persona_richiedente: true,
         data_evento: true,
@@ -168,6 +177,7 @@ export const getFields = (categoria) => {
     case 129580008: //GENERICO
       fields = {
         ...template,
+        category: '129580008 GENERICO',
         data_invio_materiale: true,
         destinatari: true,
         indirizzi_destinatari: true,
@@ -177,11 +187,13 @@ export const getFields = (categoria) => {
     case 129580009: //MESSAGGI PONTIFICI
       fields = {
         ...template,
+        category: '129580009 MESSAGGI PONTIFICI',
       }
       break
     case 129580010: //RICHIESTA CONTRIBUTO (NP)
       fields = {
         ...template,
+        category: '129580010 RICHIESTA CONTRIBUTO (NP)',
         ente_richiedente: true,
         data_evento: true,
         titolo_evento: true,
@@ -202,7 +214,6 @@ export const getUserGraphDetails = async (userID) => {
 
     // Fetch user details using systemuserid
     const response = await axiosInstance.get(`https://graph.microsoft.com/v1.0/users/${userID}`)
-    console.log('graph data for', userID, response.data)
     return response.data
   } catch (error) {
     console.error('Error fetching user details:', error)
@@ -215,16 +226,16 @@ export const getSystemUserID = async (user) => {
   const axiosInstance = createAxiosInstance(token)
   let userID
   try {
-    console.log('getting user id', user.id)
+    // console.log('getting user id', user)
     const response = await axiosInstance.get(
       `systemusers?$filter=azureactivedirectoryobjectid eq '${user.id}'`,
     )
-    console.log(
-      'user id',
-      response.data.value[0],
-      response.data.value[0].yomifullname,
-      response.data.value[0].systemuserid,
-    )
+    // console.log(
+    //   'user id',
+    //   response.data.value[0],
+    //   response.data.value[0].yomifullname,
+    //   response.data.value[0].systemuserid,
+    // )
     userID = response.data.value[0].systemuserid
   } catch (error) {
     if (error.isAxiosError) {
@@ -258,6 +269,29 @@ export const successCreateTaskToast = (
     <CToastBody>Task successfully created!</CToastBody>
   </CToast>
 )
+
+export const assignUserToTask = async (userID, praticaID, table) => {
+  const token = await getAccessToken()
+  const axiosInstance = createAxiosInstance(token)
+  console.log('adding superiori invitati', userID)
+  const data = {
+    '@odata.id': `https://orgac85713a.crm4.dynamics.com/api/data/v9.2/cr9b3_praticas(${praticaID})`,
+  }
+  try {
+    // POST request to create a relationship in cr9b3_pratica_superiore
+    const response = await axiosInstance.post(
+      `systemusers(${userID})/${table}/$ref`, //cr9b3_pratica_superiore
+      data,
+    )
+    console.log('Successfully created the user <-> pratica record:', response.data)
+  } catch (error) {
+    // addToast(errorToast)
+    console.error(
+      'Error creating user <-> pratica record:',
+      error.response ? error.response.data : error.message,
+    )
+  }
+}
 
 {
   /* <CCard className="m-3">

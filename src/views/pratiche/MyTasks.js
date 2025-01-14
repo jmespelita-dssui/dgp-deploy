@@ -28,19 +28,20 @@ import CIcon from '@coreui/icons-react'
 import moment from 'moment'
 import msalConfig from 'src/msalConfig'
 import { getAccessToken, createAxiosInstance } from 'src/util/axiosUtils'
+import { emptyTask } from 'src/util/taskUtils'
 
 import Summary from './Summary'
 import Pratica from './Pratica'
 import { Person } from '@microsoft/mgt-react'
 
 const MyTasks = () => {
-  const [people, setPeople] = useState([])
   const [praticheList, setPraticheList] = useState([])
   const [details, setDetails] = useState([])
   const [activeKey, setActiveKey] = useState(1)
   const [visible, setVisible] = useState(false)
   const [selectedPratica, setSelectedPratica] = useState([])
   const [loading, setLoading] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -50,7 +51,8 @@ const MyTasks = () => {
         const axiosInstance = createAxiosInstance(token)
         const response = await axiosInstance.get('cr9b3_praticas?$orderby=createdon desc')
         setPraticheList(response.data.value)
-        console.log(`read ${response.data.value.length} data entries`)
+        console.log(response.data.value)
+        // console.log(`read ${response.data.value.length} data entries:`, response.data.value)
       } catch (error) {
         console.error('Error fetching tasks:', error)
       } finally {
@@ -58,7 +60,7 @@ const MyTasks = () => {
       }
     }
     fetchTasks()
-  }, [])
+  }, [refreshKey])
 
   const columns = [
     { key: 'summary', label: '', _style: { width: '1%' }, sorter: false },
@@ -67,15 +69,15 @@ const MyTasks = () => {
     { key: 'cr9b3_protno', label: 'Prot. No.' },
     {
       key: 'cr9b3_titolo',
-      label: 'Title',
+      label: 'Titolo',
     },
-    { key: 'cr9b3_categoria', label: 'Category' },
+    { key: 'cr9b3_categoria', label: 'Categoria' },
     // { key: '_cr9b3_superioriinvitati_value', label: 'Superiori Invitati' },
     // { key: 'cr9b3_', label: 'Assigned to' },
-    { key: 'dssui_primascadenza', label: 'Deadline' },
+    { key: 'dssui_primascadenza', label: 'Prima Scadenza' },
     {
       key: 'createdon',
-      label: 'Created on',
+      label: 'Creato',
       sorter: (date1, date2) => {
         const a = new Date(date1.registered)
         const b = new Date(date2.registered)
@@ -97,16 +99,14 @@ const MyTasks = () => {
 
   const openPratica = (item) => {
     setVisible(true)
+    // console.log('selectedPratica', item)
     setSelectedPratica(item)
   }
 
   const onClosePratica = () => {
+    setSelectedPratica(emptyTask)
     setVisible(false)
-    window.location.reload()
-  }
-
-  const handlePeopleSelect = (e) => {
-    setPeople(e.target.selectedPeople)
+    setRefreshKey((prevKey) => prevKey + 1)
   }
 
   const getLabelColor = (index) => {
@@ -114,43 +114,43 @@ const MyTasks = () => {
     let label
     switch (index) {
       case 129580000:
-        color = 'warning'
+        color = 'dark'
         label = 'RICHIESTA CONTRIBUTO'
         break
       case 129580001:
-        color = 'info'
+        color = 'blue'
         label = 'PROGETTO ESTERNO'
         break
       case 129580002:
-        color = 'secondary'
+        color = 'indigo'
         label = 'EVENTO'
         break
       case 129580003:
-        color = 'success'
+        color = 'purple'
         label = 'RICEZIONE RAPPORTI'
         break
       case 129580004:
-        color = 'success'
+        color = 'green'
         label = 'VISITA'
         break
       case 129580005:
-        color = 'success'
+        color = 'teal'
         label = 'SENZA RICHIESTA - EVENTO'
         break
       case 129580006:
-        color = 'success'
+        color = 'cyan'
         label = 'SENZA RICHIESTA - LETTERA'
         break
       case 129580007:
-        color = 'success'
+        color = 'gray'
         label = 'PURTROPPO'
         break
       case 129580008:
-        color = 'success'
+        color = 'warning'
         label = 'GENERICO'
         break
       case 129580009:
-        color = 'success'
+        color = 'info'
         label = 'MESSAGGI PONTIFICI'
         break
       default:
@@ -176,6 +176,7 @@ const MyTasks = () => {
         pratica={selectedPratica}
         labelColor={getLabelColor(selectedPratica.cr9b3_categoria).color}
         label={getLabelColor(selectedPratica.cr9b3_categoria).label}
+        refresh={() => setRefreshKey((prevKey) => prevKey + 1)}
       />
       <CCard className="mb-4">
         <CNav variant="tabs" className="m-3">
@@ -197,6 +198,7 @@ const MyTasks = () => {
         </CNav>
         <CCardBody>
           <CSmartTable
+            key={refreshKey}
             tableFilter
             cleaner
             columns={columns}
@@ -204,10 +206,15 @@ const MyTasks = () => {
             itemsPerPage={10}
             pagination
             items={
-              activeKey === 1
-                ? praticheList.filter((p) => p.cr9b3_status < 5)
-                : praticheList.filter((p) => p.cr9b3_status === 5)
+              // activeKey === 1
+              //   ? praticheList.filter((p) => p.cr9b3_status < 100 && p.cr9b3_status > 0)
+              //   : praticheList.filter((p) => p.cr9b3_status === 100 )
               // praticheList
+              activeKey === 1
+                ? praticheList.filter((p) => p.cr9b3_status < 100 && p.cr9b3_status > 0)
+                : activeKey === 2
+                ? praticheList.filter((p) => p.cr9b3_status === 100)
+                : praticheList.filter((p) => p.cr9b3_status === 0)
             }
             loading={loading}
             tableProps={{
@@ -251,20 +258,34 @@ const MyTasks = () => {
                   <td>
                     <CPopover
                       content={
-                        item.cr9b3_status === 0
+                        item.cr9b3_status === 10
                           ? 'New'
-                          : item.cr9b3_status === 1
-                          ? 'Assigned to section'
-                          : item.cr9b3_status === 2
+                          : item.cr9b3_status === 30
+                          ? 'In progress'
+                          : item.cr9b3_status === 50
+                          ? 'Pending response from recipient'
+                          : item.cr9b3_status === 70
+                          ? 'Pending approval from superior'
+                          : item.cr9b3_status === 40
                           ? 'On hold'
-                          : item.cr9b3_status === 5
-                          ? 'Completed'
-                          : 'Archived'
+                          : item.cr9b3_status === 0
+                          ? 'Archived'
+                          : 'Completed'
                       }
                       placement="top"
                       trigger={['hover', 'focus']}
                     >
-                      <CProgress value={(Number(item.cr9b3_status) / 5) * 100} height={10} />
+                      <CProgress
+                        value={Number(item.cr9b3_status)}
+                        height={10}
+                        color={
+                          item.cr9b3_status === 40
+                            ? 'gray'
+                            : item.cr9b3_status > 10 && item.cr9b3_status < 100
+                            ? 'warning'
+                            : 'success'
+                        }
+                      />
                     </CPopover>
                   </td>
                 )
