@@ -49,9 +49,8 @@ const MyTasks = () => {
         setLoading(true)
         const token = await getAccessToken(msalConfig)
         const axiosInstance = createAxiosInstance(token)
-        const response = await axiosInstance.get('cr9b3_praticas?$orderby=createdon desc')
+        const response = await axiosInstance.get('cr9b3_praticas?$orderby=modifiedon desc')
         setPraticheList(response.data.value)
-        console.log(response.data.value)
         // console.log(`read ${response.data.value.length} data entries:`, response.data.value)
       } catch (error) {
         console.error('Error fetching tasks:', error)
@@ -299,7 +298,7 @@ const MyTasks = () => {
                       trigger={['hover', 'focus']}
                     >
                       <a
-                        href={item.cr9b3_cartellaprincipale}
+                        href={item.cr9b3_sharepointlink}
                         className="d-inline-block text-body-secondary"
                         tabIndex={0}
                         target="_blank"

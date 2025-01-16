@@ -1,8 +1,8 @@
 /* eslint-disable react/prop-types */
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import moment from 'moment'
 
-import { getAccessToken, createAxiosInstance, getAccessTokenForGraph } from 'src/util/axiosUtils'
+import { getAccessToken, createAxiosInstance } from 'src/util/axiosUtils'
 
 import {
   CModal,
@@ -23,11 +23,10 @@ import {
   CContainer,
   CBadge,
   CProgress,
-  CPopover,
 } from '@coreui/react-pro'
 
 import CIcon from '@coreui/icons-react'
-import { cilPencil, cilPlus, cilX } from '@coreui/icons'
+import { cilPlus } from '@coreui/icons'
 import Fields from './Fields'
 import { getSystemUserID, getUserGraphDetails, assignUserToTask } from 'src/util/taskUtils'
 import { useToast } from 'src/context/ToastContext'
@@ -39,8 +38,8 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
   const [visibleCorr, setVisibleCorr] = useState(false)
   const [visibleLogs, setVisibleLogs] = useState(false)
   const [visibleConfirmClose, setVisibleConfirmClose] = useState(false)
-  const [status, setStatus] = useState('')
-  const [confirmCloseBody, setConfirmCloseBody] = useState({
+  const [status, setStatus] = useState()
+  const [confirmCloseBody] = useState({
     title: 'Confirm',
     text: 'Your changes may not have been saved. Continue?',
   })
@@ -73,11 +72,11 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
     const response = await axiosInstance.get(
       `cr9b3_praticas?$filter=cr9b3_praticaid eq '${pratica.cr9b3_praticaid}'&$expand=${tableName}`,
     )
-    if (tableName == 'cr9b3_pratica_superiore') {
+    if (tableName === 'cr9b3_pratica_superiore') {
       user = response.data.value[0].cr9b3_pratica_superiore
-    } else if (tableName == 'cr9b3_pratica_responsabile') {
+    } else if (tableName === 'cr9b3_pratica_responsabile') {
       user = response.data.value[0].cr9b3_pratica_responsabile
-    } else if (tableName == 'cr9b3_pratica_officiali_incaricati') {
+    } else if (tableName === 'cr9b3_pratica_officiali_incaricati') {
       user = response.data.value[0].cr9b3_pratica_officiali_incaricati
     }
 
@@ -168,6 +167,7 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
     superioriInvitatiList,
     responsabileList,
     officialiIncaricatiList,
+    action,
   ) => {
     setLoading(true)
     const token = await getAccessToken()
@@ -249,7 +249,7 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
       console.log('Error assigning superior', error)
     }
 
-    console.log('assigning/unassigning officali incaricati pre edit', officialiIncaricati)
+    // console.log('assigning/unassigning officali incaricati pre edit', officialiIncaricati)
     try {
       newOfficialiIncaricatiList = await Promise.all(
         officialiIncaricatiList.map(async (id) => {
@@ -285,7 +285,7 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
     }
 
     try {
-      console.log('editing pratica', pratica.cr9b3_praticaid)
+      // console.log('editing pratica', pratica.cr9b3_praticaid)
       setStatus(pratica.cr9b3_status)
 
       response = await axiosInstance.patch(`cr9b3_praticas(${pratica.cr9b3_praticaid})`, pratica)
@@ -293,9 +293,21 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
       entityUrl = response.headers['odata-entityid']
 
       if (entityUrl) {
-        console.log(`Pratica edited! Entity URL: ${entityUrl}`)
+        // console.log(`Pratica edited! Entity URL: ${entityUrl}`)
         setLoading(false)
-        addToast('Success! Your changes have been saved.', 'Edit Pratica', 'success', 3000)
+        if (action === 'archive') {
+          addToast('Pratica has been archived.', 'Edit Pratica', 'warning', 3000)
+          setTimeout(() => {
+            window.location.reload() // Refresh the page after 3 seconds
+          }, 2000)
+        } else if (action === 'unarchive') {
+          addToast('Pratica has been unarchived.', 'Edit Pratica', 'success', 3000)
+          setTimeout(() => {
+            window.location.reload() // Refresh the page after 3 seconds
+          }, 2000)
+        } else {
+          addToast('Success! Your changes have been saved.', 'Edit Pratica', 'success', 3000)
+        }
 
         // Retrieve the details of the created record
         praticaDetailsResponse = await axiosInstance.get(entityUrl)
@@ -334,35 +346,16 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
         backdrop="static"
         visible={visible}
         onClose={onClose}
-        aria-labelledby="StaticBackdropExampleLabel"
+        aria-labelledby="Pratica"
         size="xl"
       >
         <CModalHeader>
           <CCol md={3}>
-            <CModalTitle id="StaticBackdropExampleLabel">
+            <CModalTitle id="Pratica">
               Prat. No. {pratica.cr9b3_prano} / Prot. {pratica.cr9b3_protno}
             </CModalTitle>
           </CCol>
 
-          {/* <CPopover
-            content={
-              status === 10
-                ? 'New'
-                : status === 30
-                ? 'In progress'
-                : status === 50
-                ? 'Pending response from recipient'
-                : status === 70
-                ? 'Pending approval from superior'
-                : status === 40
-                ? 'On hold'
-                : status === 0
-                ? 'Archived'
-                : 'Completed'
-            }
-            placement="top"
-            trigger={['hover', 'focus']}
-          > */}
           <CCol md={8} className="m-3">
             <CProgress
               value={Number(status)}
@@ -372,6 +365,7 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
               animated
             />
           </CCol>
+
           {/* </CPopover> */}
         </CModalHeader>
         <CModalBody>
@@ -402,13 +396,9 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
                   <CRow>
                     Created by {createdBy} on {moment(pratica.createdon).format('DD/MM/YYYY HH:mm')}
                   </CRow>
-                  {/* <CRow>
-                  Forwarded to responsabile on{' '}
-                  {moment(initialPratica.cr9b3_datainoltrataresponsabile).format('DD/MM/YYYY')}
-                </CRow> */}
                   <CRow>
-                    Last modified by {modifiedBy} on{' '}
-                    {moment(pratica.modifiedon).format('DD/MM/YYYY HH:mm')}
+                    {pratica.cr9b3_status === 0 ? 'Archived by' : 'Last modified'} by {modifiedBy}{' '}
+                    on {moment(pratica.modifiedon).format('DD/MM/YYYY HH:mm')}
                   </CRow>
                 </CCardBody>
               </CCol>
@@ -456,7 +446,7 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
                 </CNav>
                 {/* CORRESPONDENCE */}
                 <CCollapse visible={visibleCorr}>
-                  <CButton color="light" className="mb-3">
+                  <CButton color="light" className="mb-3" disabled>
                     <CIcon
                       icon={cilPlus}
                       className="text-body-secondary icon-link"
@@ -466,10 +456,14 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
                     />
                     Add correspondence
                   </CButton>
-                  <CContainer className="scrollable-container"></CContainer>
+
+                  <CContainer className="scrollable-container">
+                    This feature is not yet available.
+                  </CContainer>
                 </CCollapse>
                 {/* LINKS */}
                 <CCollapse visible={visibleLinks}>
+                  <p>This feature is not yet available.</p>
                   <CCard className="mb-3">
                     <CCardBody>
                       <h6>RELATED PRATICA</h6>
@@ -479,7 +473,7 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
                       </CListGroupItem>
                     </CListGroup> */}
                       <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <CButton color="light" className="mt-3">
+                        <CButton color="light" className="mt-3" disabled>
                           <CIcon icon={cilPlus} className="me-md-2" />
                           Add link
                         </CButton>
@@ -490,7 +484,7 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
                     <CCardBody>
                       <h6>REQUEST</h6>
                       <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <CButton color="light" className="mt-3">
+                        <CButton color="light" className="mt-3" disabled>
                           <CIcon icon={cilPlus} className="me-md-2" />
                           Add link
                         </CButton>
@@ -501,7 +495,7 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
                     <CCardBody>
                       <h6>FOLLOW UP</h6>
                       <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <CButton color="light" className="mt-3">
+                        <CButton color="light" className="mt-3" disabled>
                           <CIcon icon={cilPlus} className="me-md-2" />
                           Add link
                         </CButton>
@@ -514,6 +508,7 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
                 <CCollapse visible={visibleLogs}>
                   <CCard className="mb-3">
                     <CCardBody className="scrollable-container">
+                      This feature is not yet available.
                       <CListGroup flush></CListGroup>
                     </CCardBody>
                   </CCard>

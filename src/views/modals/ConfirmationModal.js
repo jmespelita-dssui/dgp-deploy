@@ -8,9 +8,9 @@ import {
   CModalHeader,
   CModalTitle,
 } from '@coreui/react-pro'
-import React, { useState } from 'react'
+import React from 'react'
 
-const ConfirmationModal = ({ visible, onClose, onSubmit, popupMsg }) => {
+const ConfirmationModal = ({ visible, onClose, onSubmit }) => {
   return (
     <>
       <CModal visible={visible} size="sm" backdrop="static" onClose={onClose}>

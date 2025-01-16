@@ -24,6 +24,16 @@ async function initializeMsal() {
 
 initializeMsal()
 
+const originalConsoleError = console.error
+
+console.error = (message, ...args) => {
+  if (typeof message === 'string' && message.includes('WebSocket connection to')) {
+    // Suppress WebSocket connection errors
+    return
+  }
+  originalConsoleError(message, ...args) // Log other errors normally
+}
+
 root.render(
   <Provider store={store}>
     <App />

@@ -14,23 +14,20 @@ import {
 import { PeoplePicker } from '@microsoft/mgt-react'
 import { useToast } from 'src/context/ToastContext'
 
-import { getFields } from 'src/util/taskUtils'
-import { CountrySelect, CitySelect, StateSelect } from 'react-country-state-city'
-import { GetCountries } from 'react-country-state-city'
+import { CountrySelect } from 'react-country-state-city'
+// import { GetCountries } from 'react-country-state-city'
 import 'react-country-state-city/dist/react-country-state-city.css'
 
 const FieldsCreate = ({ onCreate, categoria, fields }) => {
-  const [newPratica, setNewPratica] = useState()
+  const [newPratica, setNewPratica] = useState({ cr9b3_sharepointlink: '' })
   const [superioriInvitati, setSuperioriInvitati] = useState([])
   const [responsabili, setResponsabili] = useState([])
-  const [dssuiPartecipanti, setDssuiPartecipanti] = useState([])
-  const [country, setCountry] = useState({ id: null })
-  const [currentState, setCurrentState] = useState({ id: null })
-  const [currentCity, setCurrentCity] = useState({ id: null })
-  const [countriesList, setCountriesList] = useState([])
-  const [defaultCountry, setDefaultCountry] = useState()
-  const [url, setUrl] = useState('')
-  const [isValid, setIsValid] = useState(true)
+  // const [dssuiPartecipanti, setDssuiPartecipanti] = useState([])
+  // const [countriesList, setCountriesList] = useState([])
+  // const [country, setCountry] = useState()
+  // const [defaultCountry, setDefaultCountry] = useState()
+  // const [url, setUrl] = useState('')
+  const [isValid, setIsValid] = useState(false)
   const { addToast } = useToast()
 
   useEffect(() => {
@@ -40,10 +37,10 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
       cr9b3_status: 10,
       cr9b3_categoria: categoria,
     })
-    GetCountries().then((result) => {
-      setCountriesList(result)
-      setDefaultCountry(result.find((country) => country.id === 200))
-    })
+    // GetCountries().then((result) => {
+    //   setCountriesList(result)
+    //   setDefaultCountry(result.find((country) => country.id === 200))
+    // })
   }, [categoria])
 
   const onSubmit = async (e) => {
@@ -131,6 +128,7 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
               onChange={(e) => {
                 setNewPratica({ ...newPratica, cr9b3_istruzionesuperiori: e.target.value.trim() })
               }}
+              maxLength={200}
               required
             />
           </CCol>
@@ -228,6 +226,7 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
                 onChange={(e) => {
                   setNewPratica({ ...newPratica, cr9b3_titoloevento: e.target.value.trim() })
                 }}
+                maxLength={100}
               />
             </CCol>
           )}
@@ -239,6 +238,7 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
                 onChange={(e) => {
                   setNewPratica({ ...newPratica, cr9b3_luogoevento: e.target.value.trim() })
                 }}
+                maxLength={100}
               />
             </CCol>
           )}
@@ -250,6 +250,7 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
                 onChange={(e) => {
                   setNewPratica({ ...newPratica, cr9b3_temacontributo: e.target.value.trim() })
                 }}
+                maxLength={100}
               />
             </CCol>
           )}
@@ -264,6 +265,7 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
                     cr9b3_materiacontributo: e.target.value.trim(),
                   })
                 }}
+                maxLength={100}
               />
             </CCol>
           )}
@@ -275,6 +277,7 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
                 onChange={(e) => {
                   setNewPratica({ ...newPratica, cr9b3_materiarapporto: e.target.value.trim() })
                 }}
+                maxLength={100}
               />
             </CCol>
           )}
@@ -286,6 +289,7 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
                 onChange={(e) => {
                   setNewPratica({ ...newPratica, cr9b3_nopartecipanti: e.target.value.trim() })
                 }}
+                type="number"
               />
             </CCol>
           )}
@@ -294,44 +298,38 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
           <>
             <CRow>
               <CCol md={4} className="mb-3">
+                <span>Country</span>
                 <CountrySelect
-                  value={'SK'}
                   containerClassName="form-group"
                   inputClassName=""
                   onChange={(_country) => {
-                    setCountry(_country)
-                    console.log(_country)
+                    setNewPratica({ ...newPratica, cr9b3_paese: _country.id.toString() })
+                    // setCountry(_country)
                   }}
                   placeHolder="Select Country"
                 />
               </CCol>
-            </CRow>
-            <CRow>
-              {fields.regione && country.id && (
+              {fields.regione && (
                 <CCol md={4} className="mb-3">
-                  <StateSelect
-                    countryid={country.id || ''}
-                    containerClassName="form-group"
-                    inputClassName=""
-                    onChange={(_state) => {
-                      setCurrentState(_state)
-                      console.log(_state)
+                  <CFormInput
+                    label="Regione"
+                    id="regione"
+                    onChange={(e) => {
+                      setNewPratica({ ...newPratica, cr9b3_regione: e.target.value })
                     }}
-                    placeHolder="Select State"
+                    maxLength={100}
                   />
                 </CCol>
               )}
-            </CRow>
-            <CRow>
-              {fields.citta && currentState.id && (
+              {fields.citta && (
                 <CCol md={4} className="mb-5">
-                  <CitySelect
-                    countryid={country.id || ''}
-                    stateid={currentState.id || ''}
-                    containerClassName="form-group"
-                    inputClassName=""
-                    onChange={(_city) => setCurrentCity(_city)}
-                    placeHolder="Select City"
+                  <CFormInput
+                    label="Città"
+                    id="citta"
+                    onChange={(e) => {
+                      setNewPratica({ ...newPratica, cr9b3_citta: e.target.value })
+                    }}
+                    maxLength={100}
                   />
                 </CCol>
               )}
@@ -348,6 +346,7 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
                 onChange={(e) => {
                   setNewPratica({ ...newPratica, cr9b3_enteinviante: e.target.value.trim() })
                 }}
+                maxLength={100}
               />
             </CCol>
           )}
@@ -359,6 +358,7 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
                 onChange={(e) => {
                   setNewPratica({ ...newPratica, cr9b3_enterichiedente: e.target.value.trim() })
                 }}
+                maxLength={100}
               />
             </CCol>
           )}
@@ -370,6 +370,7 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
                 onChange={(e) => {
                   setNewPratica({ ...newPratica, cr9b3_entericevente: e.target.value.trim() })
                 }}
+                maxLength={100}
               />
             </CCol>
           )}
@@ -381,6 +382,7 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
                 onChange={(e) => {
                   setNewPratica({ ...newPratica, cr9b3_personarichiedente: e.target.value.trim() })
                 }}
+                maxLength={100}
               />
             </CCol>
           )}
@@ -395,6 +397,7 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
                 onChange={(e) => {
                   setNewPratica({ ...newPratica, cr9b3_destinatari: e.target.value.trim() })
                 }}
+                maxLength={1000}
               />
             </CCol>
             {fields.indirizzi_destinatari && (
@@ -409,6 +412,7 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
                       cr9b3_indirizzidestinatari: e.target.value.trim(),
                     })
                   }}
+                  maxLength={1000}
                 />
               </CCol>
             )}
@@ -440,7 +444,7 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
             />
           </CCol>
         </CRow>
-        {fields.dssui_partecipanti && (
+        {/* {fields.dssui_partecipanti && (
           <CRow className="mb-5">
             <CCol md={4}>
               Partecipanti DSSUI
@@ -453,7 +457,7 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
               />
             </CCol>
           </CRow>
-        )}
+        )} */}
 
         <CRow className="mb-5">
           <CCol md={5}>
@@ -466,8 +470,9 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
                 setNewPratica({ ...newPratica, cr9b3_sharepointlink: e.target.value.trim() })
               }}
               feedbackInvalid="Please insert a valid SharePoint link."
-              invalid={!isValid}
+              invalid={!isValid && newPratica.cr9b3_sharepointlink !== ''}
               valid={isValid}
+              maxLength={1000}
               required
             />
           </CCol>
@@ -475,11 +480,11 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
         <CRow className="mb-5">
           <CCol md={8}>
             <CFormTextarea
-              id="corrispondenza"
-              label="Corrispondenza"
+              id="notes"
+              label="Notes"
               rows={5}
               onChange={(e) => {
-                setNewPratica({ ...newPratica, cr9b3_corrispondenza: e.target.value.trim() })
+                setNewPratica({ ...newPratica, cr9b3_notes: e.target.value.trim() })
               }}
             />
           </CCol>

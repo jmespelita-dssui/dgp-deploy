@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { AppAside, AppContent, AppSidebar, AppFooter, AppHeader } from '../components/index'
 
-import { Login, Providers, ProviderState } from '@microsoft/mgt-react'
+import { Providers, ProviderState } from '@microsoft/mgt-react'
 import LoginPage from 'src/views/login/LoginPage'
 
 function useIsSignIn() {

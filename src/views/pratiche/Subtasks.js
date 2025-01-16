@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { CCardBody, CRow, CCol, CFormCheck } from '@coreui/react-pro'
-import { People, Person, Providers } from '@microsoft/mgt-react'
+import { Person } from '@microsoft/mgt-react'
 import ConfirmationModal from '../modals/ConfirmationModal'
 
 const Tasks = (tasks) => {
@@ -33,14 +33,7 @@ const Tasks = (tasks) => {
             </CRow>
             <CRow>
               <CCol xs={7}>
-                <CFormCheck
-                  label="Send to richiedente before sundown, while the birds fly on high."
-                  // disabled
-                  // onChange={() => {
-                  //   // console.log('hello')
-                  //   setVisibleConfirmation(true)
-                  // }}
-                />
+                <CFormCheck label="Send to richiedente before sundown, while the birds fly on high." />
               </CCol>
               <CCol xs={2}>
                 {/* {userIds.map((userId) => (
@@ -73,10 +66,7 @@ const Tasks = (tasks) => {
             </CRow>
             <CRow>
               <CCol xs={7}>
-                <CFormCheck
-                  label="Draft letter to recipient"
-                  onChange={() => console.log('hello')}
-                />
+                <CFormCheck label="Draft letter to recipient" />
               </CCol>
               <CCol xs={2}>
                 <Person

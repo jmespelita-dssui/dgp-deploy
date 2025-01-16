@@ -1,7 +1,6 @@
 /* eslint-disable react/prop-types */
 import React from 'react'
-import PropTypes from 'prop-types'
-import { CToaster, CToast, CToastClose, CToastBody, CToastHeader } from '@coreui/react-pro'
+import { CToaster, CToast, CToastBody, CToastHeader } from '@coreui/react-pro'
 
 const ToastManager = ({ toasts, removeToast }) => {
   return (
@@ -10,7 +9,7 @@ const ToastManager = ({ toasts, removeToast }) => {
         <CToast
           key={toast.id} // Use a unique identifier, e.g., `toast.id`, instead of `index`
           visible
-          autohide={3000}
+          autohide={true}
           onClose={() => removeToast(toast.id)} // Pass `toast.id` to identify which toast to remove
         >
           <CToastHeader closeButton>

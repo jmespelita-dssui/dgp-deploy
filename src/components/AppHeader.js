@@ -12,7 +12,7 @@ import {
   CNavItem,
 } from '@coreui/react-pro'
 import CIcon from '@coreui/icons-react'
-import { cilApplicationsSettings, cilMenu } from '@coreui/icons'
+import { cilMenu } from '@coreui/icons'
 
 import { Login } from '@microsoft/mgt-react'
 
@@ -24,7 +24,7 @@ import logo from 'src/assets/brand/dssui-logo.png'
 const AppHeader = () => {
   const dispatch = useDispatch()
   const sidebarShow = useSelector((state) => state.sidebarShow)
-  const asideShow = useSelector((state) => state.asideShow)
+  // const asideShow = useSelector((state) => state.asideShow)
 
   return (
     <CHeader position="sticky" className="mb-4">

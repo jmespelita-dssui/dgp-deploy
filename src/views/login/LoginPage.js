@@ -1,7 +1,5 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
 import {
-  CButton,
   CCard,
   CCardBody,
   CCardGroup,
@@ -9,13 +7,8 @@ import {
   CCol,
   CContainer,
   CForm,
-  CFormInput,
-  CInputGroup,
-  CInputGroupText,
   CRow,
 } from '@coreui/react-pro'
-import CIcon from '@coreui/icons-react'
-import { cilLockLocked, cilUser } from '@coreui/icons'
 
 import { Login } from '@microsoft/mgt-react'
 import loginImg from 'src/assets/img/login.jpg'

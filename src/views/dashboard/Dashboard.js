@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { getAccessToken, createAxiosInstance } from 'src/util/axiosUtils'
 import msalConfig from 'src/msalConfig'
 
 const Dashboard = () => {
-  const [tasks, setTasks] = useState([])
+  // const [tasks, setTasks] = useState([])
   useEffect(() => {
     const fetchTasks = async () => {
       try {
         const token = await getAccessToken(msalConfig)
         const axiosInstance = createAxiosInstance(token)
         const response = await axiosInstance.get('crebd_tasks')
-        setTasks(response.data.value)
+        // setTasks(response.data.value)
         console.log(response.data.value)
       } catch (error) {
         console.error('Error fetching tasks:', error)

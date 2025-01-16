@@ -273,7 +273,7 @@ export const successCreateTaskToast = (
 export const assignUserToTask = async (userID, praticaID, table) => {
   const token = await getAccessToken()
   const axiosInstance = createAxiosInstance(token)
-  console.log('adding superiori invitati', userID)
+  // console.log('adding superiori invitati', userID)
   const data = {
     '@odata.id': `https://orgac85713a.crm4.dynamics.com/api/data/v9.2/cr9b3_praticas(${praticaID})`,
   }
@@ -284,12 +284,13 @@ export const assignUserToTask = async (userID, praticaID, table) => {
       data,
     )
     console.log('Successfully created the user <-> pratica record:', response.data)
+    return true
   } catch (error) {
-    // addToast(errorToast)
     console.error(
       'Error creating user <-> pratica record:',
       error.response ? error.response.data : error.message,
     )
+    return false
   }
 }
 

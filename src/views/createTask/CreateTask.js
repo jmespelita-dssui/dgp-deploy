@@ -4,7 +4,6 @@ import {
   CCol,
   CContainer,
   CForm,
-  CFormInput,
   CFormSelect,
   CHeader,
   CRow,
@@ -15,7 +14,7 @@ import {
 
 import { useToast } from 'src/context/ToastContext'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState } from 'react'
 import { getAccessToken, createAxiosInstance } from 'src/util/axiosUtils'
 import { getSystemUserID, assignUserToTask, getFields } from 'src/util/taskUtils'
 import { useNavigate } from 'react-router-dom'
@@ -45,32 +44,45 @@ const CreateTask = () => {
     if (await checkIfExisting(pratica.cr9b3_protno)) {
       const praticaDetailsResponse = await addNewPratica(pratica)
       console.log('output pratica id', praticaDetailsResponse)
+      if (praticaDetailsResponse) {
+        // assign user to task
+        superioriInvitati.map(async (id) => {
+          console.log('adding superior:', id)
+          const superiorID = await getSystemUserID(id)
+          assignUserToTask(
+            superiorID,
+            praticaDetailsResponse.data.cr9b3_praticaid,
+            'cr9b3_pratica_superiore',
+          )
+        })
 
-      // assign user to task
-      superioriInvitati.map(async (id) => {
-        console.log('adding superior:', id)
-        const superiorID = await getSystemUserID(id)
-        assignUserToTask(
-          superiorID,
-          praticaDetailsResponse.data.cr9b3_praticaid,
-          'cr9b3_pratica_superiore',
-        )
-      })
-
-      responsabili.map(async (id) => {
-        const respID = await getSystemUserID(id)
-        assignUserToTask(
-          respID,
-          praticaDetailsResponse.data.cr9b3_praticaid,
-          'cr9b3_pratica_responsabile',
-        )
-      })
+        responsabili.map(async (id) => {
+          const respID = await getSystemUserID(id)
+          if (
+            !assignUserToTask(
+              respID,
+              praticaDetailsResponse.data.cr9b3_praticaid,
+              'cr9b3_pratica_responsabile',
+            )
+          ) {
+            addToast(
+              'An error occured while creating the pratica.',
+              'Create Pratica',
+              'danger',
+              3000,
+            )
+            return
+          }
+        })
+        addToast('Success! The pratica has been added.', 'Create Pratica', 'success', 3000)
+        setTimeout(() => {
+          navigate('/tasks')
+        }, 2000) // 1000 = 1 second
+      } else {
+        addToast('An error occured while creating the pratica.', 'Create Pratica', 'danger', 3000)
+      }
 
       setLoading(false)
-      addToast('Success! The pratica has been added.', 'Create Pratica', 'success', 3000)
-      setTimeout(() => {
-        navigate('/tasks')
-      }, 2000) // 1000 = 1 second
     } else {
       setLoading(false)
       addToast(
@@ -115,7 +127,7 @@ const CreateTask = () => {
       }
       return praticaDetailsResponse
     } catch (error) {
-      // addToast(errorToast)
+      addToast('An error occurred while creating the Pratica.', 'Create Pratica', 'danger', 3000)
       if (error.isAxiosError) {
         console.error('Axios error details adding new pratica:', error.response)
         console.error('Error message:', error.message)
@@ -180,7 +192,6 @@ const CreateTask = () => {
           )}
         </CCardBody>
       </CCard>
-      {/* Form is shown according to chosen category */}
       {categoria != '0' && (
         <CCard className="p-4">
           <FieldsCreate onCreate={createTask} fields={fields} categoria={categoria} />

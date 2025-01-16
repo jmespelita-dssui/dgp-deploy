@@ -9,12 +9,8 @@ import {
   CCallout,
   CListGroup,
   CListGroupItem,
-  CButton,
 } from '@coreui/react-pro'
-import { cilCheckCircle, cilFolderOpen, cilPencil, cilSpreadsheet } from '@coreui/icons'
-import CIcon from '@coreui/icons-react'
 import Tasks from './Subtasks'
-import { Person } from '@microsoft/mgt-react'
 import { getFields } from 'src/util/taskUtils'
 import { createAxiosInstance, getAccessToken } from 'src/util/axiosUtils'
 import moment from 'moment'

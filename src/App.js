@@ -7,7 +7,6 @@ import msalInstance from './msalConfig'
 import { InteractionRequiredAuthError } from '@azure/msal-browser'
 
 import './scss/style.scss'
-import MyTasks from './views/pratiche/MyTasks'
 
 // Containers
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))

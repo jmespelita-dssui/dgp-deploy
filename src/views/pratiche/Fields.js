@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import moment from 'moment'
 
 import { getFields } from 'src/util/taskUtils'
+import { GetCountries } from 'react-country-state-city'
 
 import {
   CInputGroup,
@@ -12,21 +13,21 @@ import {
   CDatePicker,
   CCol,
   CRow,
-  CCardBody,
   CButton,
   CForm,
   CFormTextarea,
-  CLoadingButton,
   CFormSelect,
   CLink,
+  CPopover,
 } from '@coreui/react-pro'
 import { PeoplePicker, Person } from '@microsoft/mgt-react'
 import CIcon from '@coreui/icons-react'
-import { cilPencil, cilX } from '@coreui/icons'
+import { cilInbox, cilPencil, cilTrash, cilX } from '@coreui/icons'
 import { useToast } from 'src/context/ToastContext'
 import ConfirmClose from '../modals/ConfirmClose'
 import { emptyTask } from 'src/util/taskUtils'
-import { CountrySelect, CitySelect, StateSelect } from 'react-country-state-city'
+import { CountrySelect } from 'react-country-state-city'
+import 'react-country-state-city/dist/react-country-state-city.css'
 
 const Fields = ({
   pratica,
@@ -44,19 +45,17 @@ const Fields = ({
   const [superioriInvitatiList, setSuperioriInvitatiList] = useState([])
   const [responsabileList, setResponsabileList] = useState([])
   const [officilaliIncaricatiList, setOfficialiIncaricatiList] = useState([])
-  const [dssuiPratecipantiList, setDssuiPartecipantiList] = useState([])
-  const [country, setCountry] = useState({ id: null })
-  const [currentState, setCurrentState] = useState({ id: null })
-  const [currentCity, setCurrentCity] = useState({ id: null })
+  // const [dssuiPratecipantiList, setDssuiPartecipantiList] = useState([])
   const [isValid, setIsValid] = useState(true)
   const { addToast } = useToast()
+  const [confirmAction, setConfirmAction] = useState('')
 
   const [visibleConfirmClose, setVisibleConfirmClose] = useState(false)
   const [confirmCloseBody, setConfirmCloseBody] = useState({
     title: 'Confirm',
     text: 'Your changes may not have been saved. Continue?',
   })
-
+  const [country, setCountry] = useState({ id: null })
   const [render, setRender] = useState(0)
 
   useEffect(() => {
@@ -66,6 +65,11 @@ const Fields = ({
     setResponsabileList(responsabile)
     setOfficialiIncaricatiList(officialiIncaricati)
     setFormData(changeNullToEmptyString(pratica))
+    setIsModified(false)
+    setIsView(true)
+    GetCountries().then((result) => {
+      setCountry(result.find((country) => country.id === Number(pratica.cr9b3_paese)))
+    })
   }, [superioriInvitati, responsabile, officialiIncaricati, render])
 
   const changeNullToEmptyString = (obj) => {
@@ -81,20 +85,20 @@ const Fields = ({
   }
 
   const showConfirmClose = () => {
-    setConfirmCloseBody({
-      title: 'Confirm',
-      text: 'Your changes may not have been saved. Continue?',
-    })
     setVisibleConfirmClose(true)
-    // setIsView(true)
   }
 
   const onSubmit = async (e) => {
     e.preventDefault()
-    console.log('EDITED PRATICA', praticaEdits)
-    // console.log('edit me', officilaliIncaricatiList)
+    // console.log('EDITED PRATICA', praticaEdits)
     if (isValid) {
-      onSaveEdit(praticaEdits, superioriInvitatiList, responsabileList, officilaliIncaricatiList)
+      onSaveEdit(
+        praticaEdits,
+        superioriInvitatiList,
+        responsabileList,
+        officilaliIncaricatiList,
+        '',
+      )
       setIsView(true)
     } else {
       addToast('Please insert valid SharePoint link', 'Create Pratica', 'warning')
@@ -108,8 +112,27 @@ const Fields = ({
   }
 
   const onExit = () => {
-    // refreshData()
-    forceRerender()
+    if (confirmAction === 'close') {
+      forceRerender()
+    } else if (confirmAction === 'archive') {
+      setFormData({ ...formData, cr9b3_status: 0 })
+      onSaveEdit(
+        { ...praticaEdits, cr9b3_status: 0 },
+        superioriInvitatiList,
+        responsabileList,
+        officilaliIncaricatiList,
+        'archive',
+      )
+    } else {
+      setFormData({ ...formData, cr9b3_status: 10 })
+      onSaveEdit(
+        { ...praticaEdits, cr9b3_status: 10 },
+        superioriInvitatiList,
+        responsabileList,
+        officilaliIncaricatiList,
+        'unarchive',
+      )
+    }
     setIsView(true)
     setVisibleConfirmClose(false)
   }
@@ -139,31 +162,76 @@ const Fields = ({
 
         <div className="d-grid gap-2 d-md-flex justify-content-md-end">
           {!isView && (
-            // <CRow className="d-flex justify-content-end">
             <CButton className="mt-3" disabled={!isModified} type="submit">
               Save changes
             </CButton>
-            // </CRow>
           )}
-          <CButton
-            color={isView ? 'primary' : 'light'}
-            className="mt-3"
-            onClick={() => {
-              if (!isView) {
-                showConfirmClose()
-              } else {
-                setIsView(false)
-              }
-            }}
-          >
-            <CIcon icon={isView ? cilPencil : cilX} className="me-md-2" />
-            {isView ? 'Edit' : 'Cancel'}
-          </CButton>
+          {formData.cr9b3_status > 0 && (
+            <CButton
+              color={isView ? 'primary' : 'light'}
+              className="mt-3"
+              onClick={() => {
+                if (!isView) {
+                  setConfirmCloseBody({
+                    ...confirmCloseBody,
+                    text: 'Your changes may not have been saved. Continue?',
+                  })
+                  setConfirmAction('close')
+                  showConfirmClose()
+                } else {
+                  setIsView(false)
+                }
+              }}
+            >
+              <CIcon icon={isView ? cilPencil : cilX} className="me-md-2" />
+              {isView ? 'Edit' : 'Cancel'}
+            </CButton>
+          )}
+          {isView && formData.cr9b3_status > 0 ? (
+            <CPopover content={'Archive'} placement="top" trigger={['hover', 'focus']}>
+              <CButton
+                className="mt-3"
+                variant="ghost"
+                color="primary"
+                onClick={() => {
+                  setConfirmAction('archive')
+                  setConfirmCloseBody({
+                    ...confirmCloseBody,
+                    text: 'Are you sure you want to archive this pratica?',
+                  })
+                  showConfirmClose()
+                }}
+              >
+                <CIcon icon={cilTrash} />
+              </CButton>
+            </CPopover>
+          ) : isView && formData.cr9b3_status === 0 ? (
+            <CPopover content={'Unarchive'} placement="top" trigger={['hover', 'focus']}>
+              <CButton
+                className="mt-3"
+                variant="ghost"
+                color="primary"
+                onClick={() => {
+                  setConfirmAction('unarchive')
+                  setConfirmCloseBody({
+                    ...confirmCloseBody,
+                    text: 'Are you sure you want to unarchive this pratica?',
+                  })
+                  showConfirmClose()
+                }}
+              >
+                <CIcon icon={cilInbox} />
+              </CButton>
+            </CPopover>
+          ) : (
+            ''
+          )}
         </div>
         <CContainer className="mt-5">
           <CCol md={6} className="mb-3">
             <CFormSelect
               aria-label="Status"
+              label="Status:"
               value={formData.cr9b3_status}
               options={[
                 { label: 'New', value: '10' },
@@ -171,7 +239,7 @@ const Fields = ({
                 { label: 'Pending response from recipient', value: '50' },
                 { label: 'Pending approval from superior', value: '70' },
                 { label: 'On hold', value: '40' },
-                { label: 'Archive', value: '0' },
+                { label: 'Archived', value: '0', disabled: true },
                 { label: 'Completed', value: '100' },
               ]}
               onChange={(e) => {
@@ -280,7 +348,7 @@ const Fields = ({
                 className="m-3"
                 personQuery={s.mail}
                 personCardInteraction="hover"
-                showPresence={false} // Optional: show presence status
+                showPresence={false}
                 view="twoLines"
               />
             ))
@@ -292,10 +360,9 @@ const Fields = ({
                 selectedPeople={responsabileList}
                 selectionChanged={(e) => {
                   setResponsabileList(e.target.selectedPeople)
-                  console.log('people picker set responsabile list', responsabileList)
+                  // console.log('people picker set responsabile list', responsabileList)
                   setIsModified(true)
                 }}
-                // visible={isView}
               />
             </>
           )}
@@ -329,7 +396,7 @@ const Fields = ({
                   className="m-3"
                   personQuery={s.mail}
                   personCardInteraction="hover"
-                  showPresence={false} // Optional: show presence status
+                  showPresence={false}
                   view="twoLines"
                 />
               ))
@@ -341,10 +408,9 @@ const Fields = ({
                   selectedPeople={officilaliIncaricatiList}
                   selectionChanged={(e) => {
                     setOfficialiIncaricatiList(e.target.selectedPeople)
-                    console.log('people picker set officiale list', e.target.selectedPeople)
+                    // console.log('people picker set officiale list', e.target.selectedPeople)
                     setIsModified(true)
                   }}
-                  // visible={isView}
                 />
               </>
             )}
@@ -364,7 +430,7 @@ const Fields = ({
                       className="m-3"
                       personQuery={s.mail}
                       personCardInteraction="hover"
-                      showPresence={false} // Optional: show presence status
+                      showPresence={false}
                       view="twoLines"
                     />
                   ))
@@ -374,7 +440,6 @@ const Fields = ({
                     groupId="317aa3d0-a94a-4c7c-bcb9-8870cfececa4"
                     selectedPeople={superioriInvitatiList}
                     selectionChanged={(e) => {
-                      // setSuperioriInvitatiList({ ...superioriInvitatiList, e.target.selectedPeople })
                       setSuperioriInvitatiList(e.target.selectedPeople)
                       setIsModified(true)
                     }}
@@ -397,6 +462,7 @@ const Fields = ({
                   setPraticaEdits({ ...praticaEdits, cr9b3_enteinviante: e.target.value.trim() })
                   setIsModified(true)
                 }}
+                maxLength={100}
                 disabled={isView}
                 readOnly={isView}
               />
@@ -419,6 +485,7 @@ const Fields = ({
                   setIsModified(true)
                   setPraticaEdits({ ...praticaEdits, cr9b3_enterichiedente: e.target.value.trim() })
                 }}
+                maxLength={100}
               />
             </CInputGroup>
           )}
@@ -436,6 +503,7 @@ const Fields = ({
                 }}
                 disabled={isView}
                 readOnly={isView}
+                maxLength={100}
               />
             </CInputGroup>
           )}
@@ -456,6 +524,7 @@ const Fields = ({
                 }}
                 disabled={isView}
                 readOnly={isView}
+                maxLength={100}
               />
             </CInputGroup>
           )}
@@ -473,6 +542,7 @@ const Fields = ({
                 }}
                 disabled={isView}
                 readOnly={isView}
+                maxLength={1000}
               />
             </CInputGroup>
           )}
@@ -493,6 +563,7 @@ const Fields = ({
                 }}
                 disabled={isView}
                 readOnly={isView}
+                maxLength={1000}
               />
             </CInputGroup>
           )}
@@ -531,6 +602,7 @@ const Fields = ({
                 }}
                 disabled={isView}
                 readOnly={isView}
+                maxLength={100}
               />
             </CInputGroup>
           )}
@@ -548,6 +620,7 @@ const Fields = ({
                 }}
                 disabled={isView}
                 readOnly={isView}
+                maxLength={100}
               />
             </CInputGroup>
           )}
@@ -565,6 +638,7 @@ const Fields = ({
                 }}
                 disabled={isView}
                 readOnly={isView}
+                maxLength={100}
               />
             </CInputGroup>
           )}
@@ -585,6 +659,7 @@ const Fields = ({
                 }}
                 disabled={isView}
                 readOnly={isView}
+                maxLength={100}
               />
             </CInputGroup>
           )}
@@ -610,72 +685,95 @@ const Fields = ({
 
         <CContainer className="mb-5">
           {fields.paese && (
-            <>
-              <CRow>
-                <CCol md={4} className="mb-3">
-                  <CountrySelect
-                    containerClassName="form-group"
-                    inputClassName=""
-                    onChange={(_country) => setCountry(_country)}
-                    onTextChange={(_txt) => console.log(_txt)}
-                    placeHolder="Select Country"
-                  />
-                </CCol>
-              </CRow>
-              <CRow>
-                {fields.regione && country.id && (
-                  <CCol md={4} className="mb-3">
-                    <StateSelect
-                      countryid={country.id || ''}
-                      containerClassName="form-group"
-                      inputClassName=""
-                      onChange={(_state) => setCurrentState(_state)}
-                      onTextChange={(_txt) => console.log(_txt)}
-                      placeHolder="Select State"
-                    />
-                  </CCol>
-                )}
-              </CRow>
-              <CRow>
-                {fields.citta && currentState.id && (
-                  <CCol md={4} className="mb-5">
-                    <CitySelect
-                      countryid={country.id || ''}
-                      stateid={currentState.id || ''}
-                      containerClassName="form-group"
-                      inputClassName=""
-                      onChange={(_city) => setCurrentCity(_city)}
-                      onTextChange={(_txt) => console.log(_txt)}
-                      placeHolder="Select City"
-                    />
-                  </CCol>
-                )}
-              </CRow>
-            </>
+            <CRow>
+              <CCol md={6} className="mb-3">
+                <p>Country:</p>
+                <CountrySelect
+                  defaultValue={country}
+                  containerClassName="form-group"
+                  inputClassName=""
+                  onChange={(_country) => {
+                    setCountry(_country)
+                    setFormData({ ...formData, cr9b3_paese: _country.id.toString() })
+                    setPraticaEdits({ ...praticaEdits, cr9b3_paese: _country.id.toString() })
+                    setIsModified(true)
+                    // setCurrentState({ id: null })
+                    // setCurrentCity({ id: null })
+                  }}
+                  placeHolder="Select Country"
+                  disabled={isView}
+                />
+              </CCol>
+            </CRow>
+          )}
+
+          {fields.regione && (
+            <CCol md={6} className="mb-3">
+              <CFormInput
+                label="Regione"
+                value={formData.cr9b3_regione}
+                aria-label="Regione"
+                aria-describedby="regione"
+                onChange={(e) => {
+                  setIsModified(true)
+                  setFormData({ ...formData, cr9b3_regione: e.target.value })
+                  setPraticaEdits({
+                    ...praticaEdits,
+                    cr9b3_regione: e.target.value.trim(),
+                  })
+                }}
+                disabled={isView}
+                readOnly={isView}
+                maxLength={100}
+              />
+            </CCol>
+          )}
+          {fields.citta && (
+            <CCol md={6} className="mb-5">
+              <CFormInput
+                label="Città"
+                value={formData.cr9b3_citta}
+                aria-label="Citta"
+                aria-describedby="citta"
+                onChange={(e) => {
+                  setIsModified(true)
+                  setFormData({ ...formData, cr9b3_citta: e.target.value })
+                  setPraticaEdits({
+                    ...praticaEdits,
+                    cr9b3_citta: e.target.value.trim(),
+                  })
+                }}
+                disabled={isView}
+                readOnly={isView}
+                maxLength={100}
+              />
+            </CCol>
           )}
 
           <CRow className="mb-5">
-            <CFormInput
-              id="cartella-principale"
-              value={formData.cr9b3_sharepointlink}
-              label="SharePoint link:"
-              aria-label="No. partecipanti"
-              aria-describedby="no-partecipanti"
-              onChange={(e) => {
-                const value = e.target.value
-                console.log(isValid)
-                setIsValid(validateUrl(value))
-                setIsModified(true)
-                setFormData({ ...formData, cr9b3_sharepointlink: e.target.value })
-                setPraticaEdits({ ...praticaEdits, cr9b3_sharepointlink: e.target.value.trim() })
-              }}
-              feedbackInvalid="Please insert a valid SharePoint link."
-              disabled={isView}
-              readOnly={isView}
-              invalid={!isValid}
-              valid={isValid}
-              required
-            />
+            <CCol>
+              <CFormInput
+                id="cartella-principale"
+                value={formData.cr9b3_sharepointlink}
+                label="SharePoint link:"
+                aria-label="No. partecipanti"
+                aria-describedby="no-partecipanti"
+                onChange={(e) => {
+                  const value = e.target.value
+                  setIsValid(validateUrl(value))
+                  setIsModified(true)
+                  setFormData({ ...formData, cr9b3_sharepointlink: e.target.value })
+                  setPraticaEdits({ ...praticaEdits, cr9b3_sharepointlink: e.target.value.trim() })
+                }}
+                feedbackInvalid="Please insert a valid SharePoint link."
+                disabled={isView}
+                readOnly={isView}
+                valid={isValid && !isView}
+                invalid={!isValid}
+                maxLength={1000}
+                required
+              />
+            </CCol>
           </CRow>
 
           <CFormTextarea
