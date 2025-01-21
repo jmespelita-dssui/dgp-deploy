@@ -13,34 +13,26 @@ const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 
 class App extends Component {
   componentDidMount() {
-    const accounts = msalInstance.getAllAccounts();
-if (accounts.length > 0) {
-  const tokenRequest = {
-    scopes: ["User.Read"],
-    account: accounts[0],
-  };
+    const account = msalInstance.getActiveAccount() // Get the logged-in user's account
 
-  msalInstance.acquireTokenSilent(tokenRequest)
-    .then(tokenResponse => {
-      console.log("Original token:", tokenResponse.accessToken);
+    if (account) {
+      const request = {
+        scopes: ['User.Read'], // Replace with your app's required scopes
+        account: account,
+      }
 
-      // Simulate expiry
-      setTimeout(() => {
-        console.log("Simulating token expiry...");
-        msalInstance.acquireTokenSilent(tokenRequest)
-          .then(newTokenResponse => {
-            console.log("New token after expiry:", newTokenResponse.accessToken);
-          })
-          .catch(error => {
-            console.error("Token refresh failed:", error);
-          });
-      }, 5000); // Simulate after 5 seconds
-    })
-    .catch(error => {
-      console.error("Error fetching token:", error);
-    });
-}
-
+      // Attempt silent token acquisition
+      msalInstance.acquireTokenSilent(request).catch((error) => {
+        if (error instanceof InteractionRequiredAuthError) {
+          // Redirect if user interaction is required
+          msalInstance.acquireTokenRedirect(request)
+        } else {
+          console.error('Token acquisition error:', error)
+        }
+      })
+    } else {
+      console.warn('No active account found. User may not be logged in.')
+    }
   }
 
   render() {

@@ -6,13 +6,14 @@ import { Providers } from '@microsoft/mgt-element'
  * For a full list of MSAL.js configuration parameters, visit:
  * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/configuration.md
  */
-console.log('Crypto subtle:', window.crypto, window.crypto.subtle) // Check if it's available in production
+// console.log('Crypto subtle:', window.crypto, window.crypto.subtle) // Check if it's available in production
 
 const msalConfig = {
   auth: {
     clientId: 'b781906d-dabc-418d-b1e6-cca04e3ad35f',
     authority: 'https://login.microsoftonline.com/organizations',
-    redirectUri: 'https://10.7.12.4/dssui/gestione-pratiche',
+    // redirectUri: 'https://10.7.12.4/dssui/gestione-pratiche',
+    redirectUri: 'http://localhost:3000',
     scopes: 'https://orgac85713a.crm4.dynamics.com/.default',
   },
   cache: {

@@ -5,9 +5,9 @@ import { CToaster, CToast, CToastBody, CToastHeader } from '@coreui/react-pro'
 const ToastManager = ({ toasts, removeToast }) => {
   return (
     <CToaster placement="top-end">
-      {toasts.map((toast) => (
+      {toasts.map((toast, index) => (
         <CToast
-          key={toast.id} // Use a unique identifier, e.g., `toast.id`, instead of `index`
+          key={index}
           visible
           autohide={true}
           onClose={() => removeToast(toast.id)} // Pass `toast.id` to identify which toast to remove

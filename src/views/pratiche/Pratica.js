@@ -342,13 +342,7 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
         onCancel={() => setVisibleConfirmClose(false)}
         onExit={onExitConfirmClose}
       />
-      <CModal
-        backdrop="static"
-        visible={visible}
-        onClose={onClose}
-        aria-labelledby="Pratica"
-        size="xl"
-      >
+      <CModal backdrop="static" visible={visible} onClose={onClose} size="xl">
         <CModalHeader>
           <CCol md={3}>
             <CModalTitle id="Pratica">
