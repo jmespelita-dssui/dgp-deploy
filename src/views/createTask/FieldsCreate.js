@@ -46,8 +46,8 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
   const onSubmit = async (e) => {
     e.preventDefault()
     if (isValid) {
-      console.log('superiori invitati', superioriInvitati)
-      console.log('responsabili', responsabili)
+      // console.log('superiori invitati', superioriInvitati)
+      // console.log('responsabili', responsabili)
       onCreate(newPratica, superioriInvitati, responsabili)
     } else {
       addToast('Please insert valid SharePoint link', 'Create Pratica', 'warning')
@@ -153,7 +153,7 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
               label="Data timbro Superiore"
               locale="it-IT"
               onDateChange={(e) => {
-                console.log(e)
+                // console.log(e)
                 setNewPratica({ ...newPratica, cr9b3_datatimbrosuperiore: e })
               }}
             />
@@ -165,7 +165,7 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
                 label="Data prima scadenza"
                 locale="it-IT"
                 onDateChange={(e) => {
-                  console.log(e)
+                  // console.log(e)
                   setNewPratica({ ...newPratica, dssui_primascadenza: e })
                 }}
               />

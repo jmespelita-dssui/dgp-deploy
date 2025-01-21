@@ -39,59 +39,69 @@ const CreateTask = () => {
       behavior: 'smooth', // Smooth scrolling animation
     })
 
-    console.log('input', pratica)
-    // console.log(pratica.cr9b3_protno, checkIfExisting(pratica.cr9b3_protno))
-    if (await checkIfExisting(pratica.cr9b3_protno)) {
-      const praticaDetailsResponse = await addNewPratica(pratica)
-      console.log('output pratica id', praticaDetailsResponse)
-      if (praticaDetailsResponse) {
-        // assign user to task
-        superioriInvitati.map(async (id) => {
-          console.log('adding superior:', id)
-          const superiorID = await getSystemUserID(id)
-          assignUserToTask(
-            superiorID,
-            praticaDetailsResponse.data.cr9b3_praticaid,
-            'cr9b3_pratica_superiore',
-          )
-        })
-
-        responsabili.map(async (id) => {
-          const respID = await getSystemUserID(id)
-          if (
-            !assignUserToTask(
-              respID,
+    // console.log('input', pratica)
+    try {
+      // console.log(pratica.cr9b3_protno, checkIfExisting(pratica.cr9b3_protno))
+      if (await checkIfExisting(pratica.cr9b3_protno)) {
+        const praticaDetailsResponse = await addNewPratica(pratica)
+        console.log('output pratica id', praticaDetailsResponse)
+        if (praticaDetailsResponse) {
+          // assign user to task
+          superioriInvitati.map(async (id) => {
+            console.log('adding superior:', id)
+            const superiorID = await getSystemUserID(id)
+            assignUserToTask(
+              superiorID,
               praticaDetailsResponse.data.cr9b3_praticaid,
-              'cr9b3_pratica_responsabile',
+              'cr9b3_pratica_superiore',
             )
-          ) {
-            addToast(
-              'An error occured while creating the pratica.',
-              'Create Pratica',
-              'danger',
-              3000,
-            )
-            return
-          }
-        })
-        addToast('Success! The pratica has been added.', 'Create Pratica', 'success', 3000)
-        setTimeout(() => {
-          navigate('/tasks')
-        }, 2000) // 1000 = 1 second
-      } else {
-        addToast('An error occured while creating the pratica.', 'Create Pratica', 'danger', 3000)
-      }
+          })
 
-      setLoading(false)
-    } else {
-      setLoading(false)
-      addToast(
-        'Pratica with same protocol number already exists',
-        'Create Pratica',
-        'warning',
-        3000,
-      )
-      console.log('pratica already exists')
+          responsabili.map(async (id) => {
+            const respID = await getSystemUserID(id)
+            if (
+              !assignUserToTask(
+                respID,
+                praticaDetailsResponse.data.cr9b3_praticaid,
+                'cr9b3_pratica_responsabile',
+              )
+            ) {
+              addToast(
+                'An error occured while creating the pratica.',
+                'Create Pratica',
+                'danger',
+                3000,
+              )
+              return
+            }
+          })
+          addToast('Success! The pratica has been added.', 'Create Pratica', 'success', 3000)
+          setTimeout(() => {
+            navigate('/tasks')
+          }, 2000) // 1000 = 1 second
+        } else {
+          addToast('An error occured while creating the pratica.', 'Create Pratica', 'danger', 3000)
+        }
+
+        setLoading(false)
+      } else {
+        setLoading(false)
+        addToast(
+          'Pratica with same protocol number already exists',
+          'Create Pratica',
+          'warning',
+          3000,
+        )
+        console.log('pratica already exists')
+      }
+    } catch (error) {
+      if (error.isAxiosError) {
+        console.error('Axios error details adding new pratica:', error.response)
+        console.error('Error message:', error.message)
+        console.error('Error response:', error.response.data)
+      } else {
+        console.error('Non-Axios error:', error)
+      }
     }
   }
 
