@@ -9,4 +9,8 @@
 
 module.exports = {
   collectCoverageFrom: ['src/**/*.{js,jsx}', '!**/*index.js'],
+  setupFilesAfterEnv: ['src/jest.setup.js'],
+  transform: {
+    '^.+\\.js$': 'babel-jest',
+  },
 }

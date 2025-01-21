@@ -2,7 +2,7 @@
   "name": "@coreui/coreui-pro-react-admin-template-starter",
   "description": "DSSUI Gestione Pratiche",
   "version": "4.4.0",
-  "homepage": ".",
+  "homepage": "http://10.7.12.4/dssui/gestione-pratiche",
   "bugs": {
     "url": "https://github.com/coreui/coreui-pro-react-admin-template-starter/issues"
   },
@@ -13,10 +13,10 @@
   "license": "SEE LICENSE IN LICENSE",
   "author": "The CoreUI Team (https://github.com/orgs/coreui/people)",
   "scripts": {
-    "build": "react-scripts build",
+    "build": "react-app-rewired build",
     "eject": "react-scripts eject",
     "lint": "eslint \"src/**/*.js\"",
-    "start": "react-scripts start",
+    "start": "react-app-rewired start",
     "test": "react-scripts test",
     "test:cov": "npm test -- --coverage --watchAll=false",
     "test:debug": "react-scripts --inspect-brk test --runInBand"
@@ -46,12 +46,15 @@
     "chart.js": "^3.9.1",
     "classnames": "^2.3.2",
     "core-js": "^3.29.0",
+    "crypto-js": "^4.2.0",
+    "crypto-browserify": "^3.12.1",
     "express": "^4.21.1",
     "moment": "^2.30.1",
     "moment-jdateformatparser": "^1.2.1",
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-app-polyfill": "^3.0.0",
+    "react-app-rewired": "^2.2.1",
     "react-country-state-city": "^1.1.7",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.54.2",
@@ -74,5 +77,8 @@
   "engines": {
     "node": ">=10",
     "npm": ">=6"
-  }
+  },
+  "sideEffects": [
+    "src/polyfills/**/*"
+  ]
 }
