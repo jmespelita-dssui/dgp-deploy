@@ -163,7 +163,7 @@ const CreateTask = () => {
           <CContainer>
             <CForm>
               <CRow className="mb-3 mt-3">
-                <CCol md={3}>
+                <CCol md={6}>
                   <CInputGroup>
                     <CInputGroupText id="categoria">Type</CInputGroupText>
                     <CFormSelect

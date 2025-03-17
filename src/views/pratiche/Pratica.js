@@ -28,10 +28,17 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilPlus } from '@coreui/icons'
 import Fields from './Fields'
-import { getSystemUserID, getUserGraphDetails, assignUserToTask } from 'src/util/taskUtils'
+import {
+  getSystemUserID,
+  getUserGraphDetails,
+  assignUserToTask,
+  getFields,
+  getCorrs,
+} from 'src/util/taskUtils'
 import { useToast } from 'src/context/ToastContext'
 import LoadingOverlay from '../modals/LoadingOverlay'
 import ConfirmClose from '../modals/ConfirmClose'
+import Correspondences from '../corr/Correspondences'
 
 const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
   const [visibleLinks, setVisibleLinks] = useState(true)
@@ -39,17 +46,18 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
   const [visibleLogs, setVisibleLogs] = useState(false)
   const [visibleConfirmClose, setVisibleConfirmClose] = useState(false)
   const [status, setStatus] = useState()
-  const [confirmCloseBody] = useState({
+  const [confirmCloseBody, setConfirmCloseBody] = useState({
     title: 'Confirm',
     text: 'Your changes may not have been saved. Continue?',
   })
   const [superioriInvitati, setSuperioriInvitati] = useState([])
   const [superioriSystemUserIDs, setSuperioriSystemUserIDs] = useState([])
-  // const [superioriAzureIDs, setSuperioriAzureIDs] = useState([])
   const [responsabiliAssegnati, setResponsabiliAssegnati] = useState([])
   const [responsabiliSystemUserIDs, setResponsabiliSystemUserIDs] = useState([])
   const [officialiIncaricati, setOfficialiIncaricati] = useState([])
   const [officialiIncaricatiSystemUserIDs, setOfficialiIncaricatiUserIDs] = useState([])
+  const [corrs, setCorrs] = useState([])
+  const [categoryLabel, setCategoryLabel] = useState('')
   const [createdBy, setCreatedBy] = useState('')
   const [modifiedBy, setModifiedBy] = useState('')
   const [isView, setIsView] = useState(true)
@@ -61,6 +69,8 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
     getAssignedUsers()
     setStatus(pratica.cr9b3_status)
     setLoading(false)
+    // console.log(getFields(pratica.cr9b3_categoria).label)
+    setCategoryLabel(getFields(pratica.cr9b3_categoria).label)
   }, [pratica])
 
   const getUserIDs = async (tableName) => {
@@ -366,17 +376,9 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
           <CCardBody className="p-3">
             <CRow>
               <CCol className="mb-3 scrollable-container">
-                <CBadge color={labelColor} className="mb-2">
-                  {label}
-                </CBadge>
-                <h3>{pratica.cr9b3_titolo}</h3>
-                <span className="fw-bold">Istruzioni superiori: </span>
-                {pratica.cr9b3_istruzioneda} - {pratica.cr9b3_istruzionesuperiori}
-                {/* <CRow className="mt-4">
-                  <Tasks />
-                </CRow> */}
                 <Fields
                   pratica={pratica}
+                  categoryLabel={categoryLabel}
                   superioriInvitati={superioriInvitati}
                   responsabile={responsabiliAssegnati}
                   officialiIncaricati={officialiIncaricati}
@@ -385,6 +387,7 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
                   loading={loading}
                   setIsView={changeMode}
                   forceRerender={refresh}
+                  labelColor={labelColor}
                 />
                 <CCardBody className="text-body-secondary font-size-sm lh-2 m-4">
                   <CRow>
@@ -399,7 +402,7 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
 
               {/* NAV LINKS */}
 
-              <CCol xs={6} className="mt-2 overflow-auto">
+              <CCol xs={6} className="mt-2 overflow-auto scrollable-container">
                 <CNav variant="underline" className="mb-3">
                   <CNavItem>
                     <CNavLink
@@ -440,20 +443,7 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
                 </CNav>
                 {/* CORRESPONDENCE */}
                 <CCollapse visible={visibleCorr}>
-                  <CButton color="light" className="mb-3" disabled>
-                    <CIcon
-                      icon={cilPlus}
-                      className="text-body-secondary icon-link"
-                      // onClick={() => {
-                      //   toggleDetails(item.prat_no)
-                      // }}
-                    />
-                    Add correspondence
-                  </CButton>
-
-                  <CContainer className="scrollable-container">
-                    This feature is not yet available.
-                  </CContainer>
+                  <Correspondences pratica={pratica} />
                 </CCollapse>
                 {/* LINKS */}
                 <CCollapse visible={visibleLinks}>

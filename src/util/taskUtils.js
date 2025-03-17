@@ -6,13 +6,13 @@ import { getAccessTokenForGraph } from './axiosUtils'
 export const emptyTask = {
   cr9b3_prano: '',
   cr9b3_protno: '',
+  cr9b3_protno2: '',
   cr9b3_titolo: '',
   cr9b3_status: 0,
   cr9b3_categoria: '',
   cr9b3_datainviomateriale: '',
   cr9b3_primascadenza: '',
   cr9b3_istruzionesuperiori: '',
-  cr9b3_istruzioneda: '',
   cr9b3_datatimbrosuperiore: '',
   cr9b3_datarichiestacontributo: '',
   cr9b3_datainoltrataresponsabile: '',
@@ -100,6 +100,7 @@ export const getFields = (categoria) => {
       fields = {
         ...template,
         category: '129580000 RICHIESTA CONTRIBUTO',
+        label: 'RICHIESTA CONTRIBUTO - articolo/messaggio',
         data_richiesta_contributo: true,
         ente_richiedente: true,
         tema_contributo: true,
@@ -109,6 +110,7 @@ export const getFields = (categoria) => {
       fields = {
         ...template,
         category: '129580001 PROGETTO ESTERNO',
+        label: 'PROGETTO ESTERNO',
         ente_inviante: true,
         paese: true,
         regione: true,
@@ -119,6 +121,7 @@ export const getFields = (categoria) => {
       fields = {
         ...template,
         category: '129580002 EVENTO',
+        label: 'EVENTO - viaggio estero/italia/roma',
         data_prima_scadenza: true,
         ente_richiedente: true,
         persona_richiedente: true,
@@ -131,6 +134,7 @@ export const getFields = (categoria) => {
       fields = {
         ...template,
         category: '129580003 RICEZIONE RAPPORTI',
+        label: 'RICEZIONE DI RAPPORTI - partners, perm miss, Ap. N.',
         ente_inviante: true,
         materia_rapporto: true,
       }
@@ -139,6 +143,7 @@ export const getFields = (categoria) => {
       fields = {
         ...template,
         category: '129580004 VISITA',
+        label: 'VISITA - ogni tipo di partner',
         ente_richiedente: true,
         persona_richiedente: true,
         data_evento: true,
@@ -151,6 +156,7 @@ export const getFields = (categoria) => {
       fields = {
         ...template,
         category: '129580005 SENZA RICHIESTA - EVENTO',
+        label: 'SENZA RICHIESTA - nostra iniziativa/co-organizzata (invito evento)',
         dssui_organizzatore: true,
         titolo_evento: true,
         dssui_partecipanti: true,
@@ -159,7 +165,8 @@ export const getFields = (categoria) => {
     case 129580006: //SENZA RICHIESTA - LETTERA
       fields = {
         ...template,
-        category: '129580006 SENZA RICHIESTA - LETTERA',
+        category: 'SENZA RICHIESTA - nostra iniziativa/co-organizzata (invio lettera)',
+        label: 'SENZA RICHIESTA - nostra iniziativa/co-organizzata (invio lettera)',
         ente_ricevente: true,
       }
       break
@@ -167,6 +174,7 @@ export const getFields = (categoria) => {
       fields = {
         ...template,
         category: '129580007 PURTROPPO',
+        label: 'PURTROPPO - richiesta evento/contributo/altro',
         ente_richiedente: true,
         persona_richiedente: true,
         data_evento: true,
@@ -178,6 +186,7 @@ export const getFields = (categoria) => {
       fields = {
         ...template,
         category: '129580008 GENERICO',
+        label: 'RAPPORTI/DOCUMENTI/INVITI GENERICI - partners, newsletters',
         data_invio_materiale: true,
         destinatari: true,
         indirizzi_destinatari: true,
@@ -188,12 +197,14 @@ export const getFields = (categoria) => {
       fields = {
         ...template,
         category: '129580009 MESSAGGI PONTIFICI',
+        label: 'MESSAGGI PONTIFICI',
       }
       break
     case 129580010: //RICHIESTA CONTRIBUTO (NP)
       fields = {
         ...template,
         category: '129580010 RICHIESTA CONTRIBUTO (NP)',
+        label: 'RICHIESTA CONTRIBUTO (NP)',
         ente_richiedente: true,
         data_evento: true,
         titolo_evento: true,
@@ -249,6 +260,25 @@ export const getSystemUserID = async (user) => {
   return userID
 }
 
+export const getCorrs = async (pratica) => {
+  const token = await getAccessToken()
+  const axiosInstance = createAxiosInstance(token)
+  try {
+    const response = await axiosInstance.get(
+      `cr9b3_praticas(${pratica.cr9b3_praticaid})/cr9b3_Pratica_Correspondence?$orderby=createdon desc`,
+    )
+    return response.data.value
+  } catch (error) {
+    if (error.isAxiosError) {
+      console.error('Axios error getting correspondences:', error.response)
+      console.error('Error message:', error.message)
+      console.error('Error response:', error.response.data)
+    } else {
+      console.error('Non-Axios error:', error)
+    }
+  }
+}
+
 export const successCreateTaskToast = (
   <CToast>
     <CToastHeader closeButton>
@@ -294,6 +324,15 @@ export const assignUserToTask = async (userID, praticaID, table) => {
   }
 }
 
+export const getPratica = async (praticaID) => {
+  const token = await getAccessToken()
+  const axiosInstance = createAxiosInstance(token)
+  const response = await axiosInstance.get(
+    `cr9b3_praticas?$filter=cr9b3_praticaid eq '${praticaID}'`,
+  )
+  return response.data.value[0]
+  // ?$filter=cr9b3_praticaid eq '${pratica.cr9b3_praticaid}
+}
 {
   /* <CCard className="m-3">
                     <CCardHeader>2/11/2024 by Jena Espelita</CCardHeader>

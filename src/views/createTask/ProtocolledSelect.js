@@ -2,13 +2,13 @@
 import { CFormSelect, CInputGroup, CInputGroupText } from '@coreui/react-pro'
 import React from 'react'
 
-const ProtocolledSelect = ({ onChangeCategoria }) => {
+const ProtocolledSelect = ({ onChangeCategoria, isEdit, cat }) => {
   return (
     <CInputGroup className="mb-3">
       <CInputGroupText id="categoria">Categoria</CInputGroupText>
       <CFormSelect
         aria-label="Default select example"
-        defaultValue={'Choose category'}
+        defaultValue={isEdit ? cat : '0'}
         options={[
           { label: 'Choose category', value: '0' },
           { label: 'EVENTO - viaggio estero/italia/roma', value: '129580002' },

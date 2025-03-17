@@ -17,11 +17,15 @@ import { useToast } from 'src/context/ToastContext'
 import { CountrySelect } from 'react-country-state-city'
 // import { GetCountries } from 'react-country-state-city'
 import 'react-country-state-city/dist/react-country-state-city.css'
+import { cilPlus, cilX } from '@coreui/icons'
+import CIcon from '@coreui/icons-react'
 
 const FieldsCreate = ({ onCreate, categoria, fields }) => {
   const [newPratica, setNewPratica] = useState({ cr9b3_sharepointlink: '' })
   const [superioriInvitati, setSuperioriInvitati] = useState([])
   const [responsabili, setResponsabili] = useState([])
+  const [protNos, setProtNos] = useState(0)
+  const [protNoValues, setProtNoValues] = useState(['']) // Stores input values
   // const [dssuiPartecipanti, setDssuiPartecipanti] = useState([])
   // const [countriesList, setCountriesList] = useState([])
   // const [country, setCountry] = useState()
@@ -33,7 +37,6 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
   useEffect(() => {
     setNewPratica({
       ...newPratica,
-      cr9b3_istruzioneda: 'AS',
       cr9b3_status: 10,
       cr9b3_categoria: categoria,
     })
@@ -43,12 +46,47 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
     // })
   }, [categoria])
 
+  // Handle input changes
+  const handleInputChange = (index, value) => {
+    const updatedValues = [...protNoValues]
+    updatedValues[index] = value
+    setProtNoValues(updatedValues)
+  }
+
+  // Add new protNo input
+  const addProtNo = () => {
+    setProtNos((prev) => prev + 1)
+    setProtNoValues((prev) => [...prev]) // Add empty value for new input
+  }
+
+  // Remove last protNo input
+  const removeProtNo = () => {
+    if (protNos > 0) {
+      setProtNos((prev) => prev - 1)
+      setProtNoValues((prev) => prev.slice(0, -1)) // Remove last value
+    }
+  }
+
+  // Log or submit values
+  const triggerAction = () => {
+    console.log('Stored Protocol Numbers:', JSON.stringify(protNoValues))
+  }
+
   const onSubmit = async (e) => {
     e.preventDefault()
     if (isValid) {
       // console.log('superiori invitati', superioriInvitati)
       // console.log('responsabili', responsabili)
-      onCreate(newPratica, superioriInvitati, responsabili)
+      // console.log(
+      //   { ...newPratica, cr9b3_protno2: JSON.stringify(protNoValues) },
+      //   superioriInvitati,
+      //   responsabili,
+      // )
+      onCreate(
+        { ...newPratica, cr9b3_protno2: JSON.stringify(protNoValues) },
+        superioriInvitati,
+        responsabili,
+      )
     } else {
       addToast('Please insert valid SharePoint link', 'Create Pratica', 'warning')
     }
@@ -96,11 +134,11 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
             </CCol>
           </CRow>
         )}
-        <CRow className="mb-5">
+        <CRow className="mb-3">
           <CCol md={2}>
             <CFormInput
               id="prot-no"
-              label="Prot. no."
+              label="Initial prot. no."
               onChange={(e) => {
                 setNewPratica({ ...newPratica, cr9b3_protno: e.target.value })
               }}
@@ -120,6 +158,44 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
             />
           </CCol>
         </CRow>
+        <>
+          {Array.from({ length: protNos }).map((_, index) => (
+            <CRow key={index}>
+              <CCol md={3} className="mb-3">
+                <CFormInput
+                  id={`protno-${index}`}
+                  placeholder="Additional prot. no."
+                  maxLength={5}
+                  value={protNoValues[index] || ''}
+                  onChange={(e) => handleInputChange(index, e.target.value)}
+                />
+              </CCol>
+              {index === protNos - 1 && (
+                <CCol>
+                  <CButton color="link" onClick={removeProtNo}>
+                    <CIcon icon={cilX} className="me-md-2" />
+                    Remove
+                  </CButton>
+                </CCol>
+              )}
+            </CRow>
+          ))}
+
+          <CRow className="mb-5">
+            <CCol md={3}>
+              <CButton color="link" onClick={addProtNo}>
+                <CIcon icon={cilPlus} className="me-md-2" />
+                Add prot. no
+              </CButton>
+            </CCol>
+            <CCol md={3}>
+              <CButton color="link" onClick={triggerAction}>
+                <CIcon icon={cilPlus} className="me-md-2" />
+                Trigger!!!
+              </CButton>
+            </CCol>
+          </CRow>
+        </>
         <CRow className="mb-3">
           <CCol md={5}>
             <CFormInput
@@ -130,19 +206,6 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
               }}
               maxLength={200}
               required
-            />
-          </CCol>
-          <CCol md={2}>
-            <CFormSelect
-              aria-label="Default select example"
-              options={[
-                { label: 'AS', value: 'AS' },
-                { label: 'AE', value: 'AE' },
-              ]}
-              label="Da"
-              onChange={(e) => {
-                setNewPratica({ ...newPratica, cr9b3_istruzioneda: e.target.value })
-              }}
             />
           </CCol>
         </CRow>
