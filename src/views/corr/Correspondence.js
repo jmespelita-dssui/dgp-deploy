@@ -3,7 +3,6 @@ import { CCard, CCardBody, CCardHeader, CContainer } from '@coreui/react-pro'
 import React, { useEffect, useState } from 'react'
 import CorrDisplay from './CorrDisplay'
 import moment from 'moment'
-import { getUserGraphDetails } from 'src/util/taskUtils'
 import { createAxiosInstance, getAccessToken } from 'src/util/axiosUtils'
 
 const Correspondence = ({ corr }) => {
@@ -36,7 +35,7 @@ const Correspondence = ({ corr }) => {
       </CCard>
       <div className="text-end">
         <figcaption className="blockquote-footer">
-          {createdBy} on{' '}
+          Logged by {createdBy} on{' '}
           <cite title="Source Title">{moment(corr.createdon).format('DD/MM/YYYY HH:mm')}</cite>
         </figcaption>
       </div>

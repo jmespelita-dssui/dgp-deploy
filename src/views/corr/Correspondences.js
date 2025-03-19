@@ -41,7 +41,7 @@ const Correspondences = ({ pratica }) => {
     if (newCorr.length > 10000) {
       console.log(newCorr.length)
       addToast(
-        'Message exceeds character limit. Keep it short and sweet!',
+        'Message exceeds character limit. Keep it short and sweet! Remove any photos or logos.',
         'Add update',
         'warning',
         3000,
@@ -51,7 +51,7 @@ const Correspondences = ({ pratica }) => {
     }
     const token = await getAccessToken()
     const axiosInstance = createAxiosInstance(token)
-    console.log('saving correspondence', newCorr)
+    // console.log('saving correspondence', newCorr)
     const requestBody = {
       cr9b3_type: title,
       cr9b3_message: newCorr,
@@ -63,7 +63,7 @@ const Correspondences = ({ pratica }) => {
         requestBody,
       )
       addToast('Successfully added correspondence.', 'Add update', 'success', 3000)
-      console.log('Successfully added correspondence:', response)
+      // console.log('Successfully added correspondence:', response)
       setNewCorr('')
       setTitle('')
       setDate(null)

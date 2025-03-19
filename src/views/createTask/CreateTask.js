@@ -16,7 +16,12 @@ import { useToast } from 'src/context/ToastContext'
 
 import React, { useState } from 'react'
 import { getAccessToken, createAxiosInstance } from 'src/util/axiosUtils'
-import { getSystemUserID, assignUserToTask, getFields } from 'src/util/taskUtils'
+import {
+  getSystemUserID,
+  assignUserToTask,
+  getFields,
+  checkIfExistingProt,
+} from 'src/util/taskUtils'
 import { useNavigate } from 'react-router-dom'
 
 import FieldsCreate from './FieldsCreate'
@@ -38,11 +43,12 @@ const CreateTask = () => {
       top: 0, // Scroll to the top
       behavior: 'smooth', // Smooth scrolling animation
     })
+    let exists = await checkIfExistingProt(pratica.cr9b3_protno)
 
     // console.log('input', pratica)
     try {
       // console.log(pratica.cr9b3_protno, checkIfExisting(pratica.cr9b3_protno))
-      if (await checkIfExisting(pratica.cr9b3_protno)) {
+      if (!exists) {
         const praticaDetailsResponse = await addNewPratica(pratica)
         console.log('output pratica id', praticaDetailsResponse)
         if (praticaDetailsResponse) {
@@ -103,15 +109,6 @@ const CreateTask = () => {
         console.error('Non-Axios error:', error)
       }
     }
-  }
-
-  //check if pratica with prot
-  const checkIfExisting = async (protNo) => {
-    const token = await getAccessToken()
-    const axiosInstance = createAxiosInstance(token)
-    const response = await axiosInstance.get(`cr9b3_praticas?$filter=cr9b3_protno eq '${protNo}'`)
-    console.log('does it exist???', response.data.value)
-    return response.data.value && response.data.value.length === 0
   }
 
   const addNewPratica = async (pratica) => {

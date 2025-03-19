@@ -21,7 +21,6 @@ import {
   CFormSelect,
   CLink,
   CPopover,
-  CTooltip,
 } from '@coreui/react-pro'
 import { PeoplePicker, Person } from '@microsoft/mgt-react'
 import CIcon from '@coreui/icons-react'
@@ -32,6 +31,7 @@ import { emptyTask } from 'src/util/taskUtils'
 import { CountrySelect } from 'react-country-state-city'
 import 'react-country-state-city/dist/react-country-state-city.css'
 import ChooseCategory from '../createTask/ChooseCategory'
+import ProtNos from '../createTask/ProtNos'
 
 const Fields = ({
   pratica,
@@ -52,8 +52,7 @@ const Fields = ({
   const [responsabileList, setResponsabileList] = useState([])
   const [officilaliIncaricatiList, setOfficialiIncaricatiList] = useState([])
   const [label, setLabel] = useState(categoryLabel)
-  const [protNos, setProtNos] = useState(JSON.parse(pratica.cr9b3_protno2).length)
-  const [protNoValues, setProtNoValues] = useState(JSON.parse(pratica.cr9b3_protno2)) // Stores input values
+  const [protNoArray, setProtNoArray] = useState([])
 
   const [isValid, setIsValid] = useState(true)
   const { addToast } = useToast()
@@ -68,14 +67,15 @@ const Fields = ({
   const [country, setCountry] = useState({ id: null })
 
   useEffect(() => {
+    // console.log('starting data', pratica)
     setFields(getFields(formData.cr9b3_categoria))
     // setFields(getFields(12958))
     setSuperioriInvitatiList(superioriInvitati)
     setResponsabileList(responsabile)
     setOfficialiIncaricatiList(officialiIncaricati)
     setFormData(changeNullToEmptyString(pratica))
+    setFormData(pratica)
     setIsModified(false)
-    setIsView(true)
     GetCountries().then((result) => {
       setCountry(result.find((country) => country.id === Number(formData.cr9b3_paese)))
     })
@@ -88,25 +88,14 @@ const Fields = ({
     }, {})
   }
 
-  // Handle input changes
-  const handleInputChange = (index, value) => {
-    const updatedValues = [...protNoValues]
-    updatedValues[index] = value
-    setProtNoValues(updatedValues)
-  }
-
-  // Add new protNo input
-  const addProtNo = () => {
-    setProtNos((prev) => prev + 1)
-    setProtNoValues((prev) => [...prev]) // Add empty value for new input
-  }
-
-  // Remove last protNo input
-  const removeProtNo = () => {
-    if (protNos > 0) {
-      setProtNos((prev) => prev - 1)
-      setProtNoValues((prev) => prev.slice(0, -1)) // Remove last value
-    }
+  const triggerUpdateProtNos = (e) => {
+    let protNoArr = e && e.length > 0 ? e : ''
+    let stringifiedArr = Array.isArray(protNoArr) ? JSON.stringify(protNoArr) : protNoArr
+    setFormData({ ...formData, cr9b3_protno2: stringifiedArr })
+    setProtNoArray(stringifiedArr)
+    // setPraticaEdits({ ...praticaEdits, cr9b3_protno2: protNoArray })
+    setIsModified(true)
+    // console.log(protNoArr)
   }
 
   const showConfirmClose = () => {
@@ -125,16 +114,16 @@ const Fields = ({
 
   const onSubmit = async (e) => {
     e.preventDefault()
-    // console.log('EDITED PRATICA', praticaEdits)
+
     if (isValid) {
       onSaveEdit(
-        praticaEdits,
+        { ...praticaEdits, cr9b3_protno2: protNoArray.length ? protNoArray : null },
         superioriInvitatiList,
         responsabileList,
         officilaliIncaricatiList,
         '',
       )
-      setIsView(true)
+      // setIsView(true)
     } else {
       addToast('Please insert valid SharePoint link', 'Create Pratica', 'warning')
     }
@@ -148,6 +137,7 @@ const Fields = ({
   const onExit = async () => {
     if (confirmAction === 'close') {
       let refreshPratica = changeNullToEmptyString(await getPratica(formData.cr9b3_praticaid))
+      // let refreshPratica = await getPratica(formData.cr9b3_praticaid)
       console.log(refreshPratica)
       setFormData(refreshPratica)
       setLabel(categoryLabel)
@@ -250,6 +240,7 @@ const Fields = ({
                   setIsModified(true)
                 }}
                 maxLength={500}
+                required
               />
             </CInputGroup>
           </>
@@ -344,29 +335,50 @@ const Fields = ({
           )}
         </div>
         <CContainer className="mt-5">
-          {protNoValues.map((no, index) => (
-            <CRow key={index}>
-              <CCol md={3} className="mb-3">
+          {!isView ? (
+            <CRow className="mb-3">
+              <CCol md={6}>
                 <CFormInput
-                  id={`protno-${index}`}
-                  placeholder="Additional prot. no."
+                  value={formData.cr9b3_protno}
+                  id="prot-no"
+                  label="Initial prot. no."
+                  onChange={(e) => {
+                    setFormData({ ...formData, cr9b3_protno: e.target.value })
+                    setPraticaEdits({ ...praticaEdits, cr9b3_protno: e.target.value })
+                    setIsModified(true)
+                  }}
                   maxLength={5}
-                  // value={protNoValues[index] || ''}
-                  value={no}
-                  onChange={(e) => handleInputChange(index, e.target.value)}
+                  required
                 />
               </CCol>
-              {index === protNos - 1 && (
-                <CCol>
-                  <CButton color="link" onClick={removeProtNo}>
-                    <CIcon icon={cilX} className="me-md-2" />
-                    Remove
-                  </CButton>
-                </CCol>
-              )}
+              <CCol md={6}>
+                <CFormInput
+                  value={formData.cr9b3_prano}
+                  label="Prat. no."
+                  id="prat-no"
+                  onChange={(e) => {
+                    setFormData({ ...formData, cr9b3_prano: e.target.value })
+                    setPraticaEdits({ ...praticaEdits, cr9b3_prano: e.target.value })
+                    setIsModified(true)
+                  }}
+                  maxLength={5}
+                  required
+                />
+              </CCol>
             </CRow>
-          ))}
-          <CCol md={6} className="mb-3">
+          ) : (
+            ''
+          )}
+          <CCol>
+            <p>Additional protocol numbers:</p>
+            <ProtNos
+              triggerUpdateProtNos={triggerUpdateProtNos}
+              isView={isView}
+              values={formData.cr9b3_protno2 ? JSON.parse(formData.cr9b3_protno2) : ['']}
+            />
+          </CCol>
+
+          <CCol md={6} className="mb-3 mt-4">
             <CFormSelect
               aria-label="Status"
               label="Status:"

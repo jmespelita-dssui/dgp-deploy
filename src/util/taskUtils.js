@@ -20,7 +20,6 @@ export const emptyTask = {
   cr9b3_enterichiedente: '',
   cr9b3_entericevente: '',
   cr9b3_personarichiedente: '',
-  cr9b3_dssuiorganizzatore: '',
   cr9b3_destinatari: '',
   cr9b3_indirizzidestinatari: '',
   cr9b3_dataevento: '',
@@ -50,7 +49,6 @@ export const getFields = (categoria) => {
     ente_richiedente: false,
     ente_ricevente: false,
     persona_richiedente: false,
-    dssui_organizzatore: false,
     destinatari: false,
     indirizzi_destinatari: false,
     data_evento: false,
@@ -276,6 +274,26 @@ export const getCorrs = async (pratica) => {
     } else {
       console.error('Non-Axios error:', error)
     }
+  }
+}
+
+// Check if pratica with protNo exists
+export const checkIfExistingProt = async (protNo) => {
+  try {
+    const token = await getAccessToken()
+    const axiosInstance = createAxiosInstance(token)
+
+    // Perform the API request
+    const response = await axiosInstance.get(`cr9b3_praticas?$filter=cr9b3_protno eq '${protNo}'`)
+
+    // Check if the response contains data
+    const exists = response.data.value && response.data.value.length > 0
+
+    // console.log('Does it exist???', exists)
+    return exists
+  } catch (error) {
+    console.error('Error checking protNo existence:', error)
+    return false // Return false in case of error (depends on your use case)
   }
 }
 

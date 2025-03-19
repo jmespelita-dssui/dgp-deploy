@@ -17,8 +17,8 @@ import { useToast } from 'src/context/ToastContext'
 import { CountrySelect } from 'react-country-state-city'
 // import { GetCountries } from 'react-country-state-city'
 import 'react-country-state-city/dist/react-country-state-city.css'
-import { cilPlus, cilX } from '@coreui/icons'
-import CIcon from '@coreui/icons-react'
+
+import ProtNos from './ProtNos'
 
 const FieldsCreate = ({ onCreate, categoria, fields }) => {
   const [newPratica, setNewPratica] = useState({ cr9b3_sharepointlink: '' })
@@ -26,11 +26,6 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
   const [responsabili, setResponsabili] = useState([])
   const [protNos, setProtNos] = useState(0)
   const [protNoValues, setProtNoValues] = useState(['']) // Stores input values
-  // const [dssuiPartecipanti, setDssuiPartecipanti] = useState([])
-  // const [countriesList, setCountriesList] = useState([])
-  // const [country, setCountry] = useState()
-  // const [defaultCountry, setDefaultCountry] = useState()
-  // const [url, setUrl] = useState('')
   const [isValid, setIsValid] = useState(false)
   const { addToast } = useToast()
 
@@ -40,48 +35,16 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
       cr9b3_status: 10,
       cr9b3_categoria: categoria,
     })
-    // GetCountries().then((result) => {
-    //   setCountriesList(result)
-    //   setDefaultCountry(result.find((country) => country.id === 200))
-    // })
   }, [categoria])
 
-  // Handle input changes
-  const handleInputChange = (index, value) => {
-    const updatedValues = [...protNoValues]
-    updatedValues[index] = value
-    setProtNoValues(updatedValues)
-  }
-
-  // Add new protNo input
-  const addProtNo = () => {
-    setProtNos((prev) => prev + 1)
-    setProtNoValues((prev) => [...prev]) // Add empty value for new input
-  }
-
-  // Remove last protNo input
-  const removeProtNo = () => {
-    if (protNos > 0) {
-      setProtNos((prev) => prev - 1)
-      setProtNoValues((prev) => prev.slice(0, -1)) // Remove last value
-    }
-  }
-
-  // Log or submit values
-  const triggerAction = () => {
-    console.log('Stored Protocol Numbers:', JSON.stringify(protNoValues))
+  const triggerUpdateProtNos = (e) => {
+    setProtNoValues(e)
+    console.log(e)
   }
 
   const onSubmit = async (e) => {
     e.preventDefault()
     if (isValid) {
-      // console.log('superiori invitati', superioriInvitati)
-      // console.log('responsabili', responsabili)
-      // console.log(
-      //   { ...newPratica, cr9b3_protno2: JSON.stringify(protNoValues) },
-      //   superioriInvitati,
-      //   responsabili,
-      // )
       onCreate(
         { ...newPratica, cr9b3_protno2: JSON.stringify(protNoValues) },
         superioriInvitati,
@@ -158,44 +121,8 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
             />
           </CCol>
         </CRow>
-        <>
-          {Array.from({ length: protNos }).map((_, index) => (
-            <CRow key={index}>
-              <CCol md={3} className="mb-3">
-                <CFormInput
-                  id={`protno-${index}`}
-                  placeholder="Additional prot. no."
-                  maxLength={5}
-                  value={protNoValues[index] || ''}
-                  onChange={(e) => handleInputChange(index, e.target.value)}
-                />
-              </CCol>
-              {index === protNos - 1 && (
-                <CCol>
-                  <CButton color="link" onClick={removeProtNo}>
-                    <CIcon icon={cilX} className="me-md-2" />
-                    Remove
-                  </CButton>
-                </CCol>
-              )}
-            </CRow>
-          ))}
+        <ProtNos triggerUpdateProtNos={triggerUpdateProtNos} />
 
-          <CRow className="mb-5">
-            <CCol md={3}>
-              <CButton color="link" onClick={addProtNo}>
-                <CIcon icon={cilPlus} className="me-md-2" />
-                Add prot. no
-              </CButton>
-            </CCol>
-            <CCol md={3}>
-              <CButton color="link" onClick={triggerAction}>
-                <CIcon icon={cilPlus} className="me-md-2" />
-                Trigger!!!
-              </CButton>
-            </CCol>
-          </CRow>
-        </>
         <CRow className="mb-3">
           <CCol md={5}>
             <CFormInput

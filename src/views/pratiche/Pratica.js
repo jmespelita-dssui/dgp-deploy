@@ -20,8 +20,6 @@ import {
   CNavItem,
   CNavLink,
   CListGroup,
-  CContainer,
-  CBadge,
   CProgress,
 } from '@coreui/react-pro'
 
@@ -33,14 +31,14 @@ import {
   getUserGraphDetails,
   assignUserToTask,
   getFields,
-  getCorrs,
+  checkIfExistingProt,
 } from 'src/util/taskUtils'
 import { useToast } from 'src/context/ToastContext'
 import LoadingOverlay from '../modals/LoadingOverlay'
 import ConfirmClose from '../modals/ConfirmClose'
 import Correspondences from '../corr/Correspondences'
 
-const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
+const Pratica = ({ pratica, visible, onClose, labelColor, refresh }) => {
   const [visibleLinks, setVisibleLinks] = useState(true)
   const [visibleCorr, setVisibleCorr] = useState(false)
   const [visibleLogs, setVisibleLogs] = useState(false)
@@ -50,27 +48,34 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
     title: 'Confirm',
     text: 'Your changes may not have been saved. Continue?',
   })
+  const [pratNo, setPratNo] = useState('')
+  const [protNo, setProtNo] = useState('')
   const [superioriInvitati, setSuperioriInvitati] = useState([])
   const [superioriSystemUserIDs, setSuperioriSystemUserIDs] = useState([])
   const [responsabiliAssegnati, setResponsabiliAssegnati] = useState([])
   const [responsabiliSystemUserIDs, setResponsabiliSystemUserIDs] = useState([])
   const [officialiIncaricati, setOfficialiIncaricati] = useState([])
   const [officialiIncaricatiSystemUserIDs, setOfficialiIncaricatiUserIDs] = useState([])
-  const [corrs, setCorrs] = useState([])
   const [categoryLabel, setCategoryLabel] = useState('')
   const [createdBy, setCreatedBy] = useState('')
   const [modifiedBy, setModifiedBy] = useState('')
+  const [protNoIsModified, setProtNoIsModified] = useState(false)
   const [isView, setIsView] = useState(true)
   const [loading, setLoading] = useState(false)
   const { addToast } = useToast()
 
   useEffect(() => {
-    setIsView(true)
+    // console.log('starting pratica', pratica)
+    setVisibleLinks(true)
+    setVisibleCorr(false)
+    setVisibleLogs(false)
+    setPratNo(pratica.cr9b3_prano)
+    setProtNo(pratica.cr9b3_protno)
     getAssignedUsers()
     setStatus(pratica.cr9b3_status)
     setLoading(false)
-    // console.log(getFields(pratica.cr9b3_categoria).label)
     setCategoryLabel(getFields(pratica.cr9b3_categoria).label)
+    setIsView(true)
   }, [pratica])
 
   const getUserIDs = async (tableName) => {
@@ -173,12 +178,13 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
   }
 
   const onSaveEdit = async (
-    pratica,
+    prat,
     superioriInvitatiList,
     responsabileList,
     officialiIncaricatiList,
     action,
   ) => {
+    console.log(prat)
     setLoading(true)
     const token = await getAccessToken()
     const axiosInstance = createAxiosInstance(token)
@@ -188,7 +194,13 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
     let response
     let praticaDetailsResponse
     let entityUrl
+    let exists = await checkIfExistingProt(prat.cr9b3_protno)
 
+    if (exists && prat.cr9b3_protno !== pratica.cr9b3_protno) {
+      addToast('Pratica with same protocol number already exists!', 'Edit Pratica', 'warning', 3000)
+      setLoading(false)
+      return
+    }
     // console.log('assigning/unassigning superiors pre edit', superioriSystemUserIDs)
     try {
       newSuperioriList = await Promise.all(
@@ -210,13 +222,13 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
       if (superioriToUnassign.length > 0) {
         superioriToUnassign.map(async (id) => {
           response = await axiosInstance.delete(
-            `cr9b3_praticas(${pratica.cr9b3_praticaid})/cr9b3_pratica_superiore(${id})/$ref`,
+            `cr9b3_praticas(${prat.cr9b3_praticaid})/cr9b3_pratica_superiore(${id})/$ref`,
           )
         })
       }
       if (superioriToAssign.length > 0) {
         superioriToAssign.map(async (id) => {
-          assignUserToTask(id, pratica.cr9b3_praticaid, 'cr9b3_pratica_superiore')
+          assignUserToTask(id, prat.cr9b3_praticaid, 'cr9b3_pratica_superiore')
         })
       }
     } catch (error) {
@@ -245,13 +257,13 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
       if (responsabiliToUnassign.length > 0) {
         responsabiliToUnassign.map(async (id) => {
           response = await axiosInstance.delete(
-            `cr9b3_praticas(${pratica.cr9b3_praticaid})/cr9b3_pratica_responsabile(${id})/$ref`,
+            `cr9b3_praticas(${prat.cr9b3_praticaid})/cr9b3_pratica_responsabile(${id})/$ref`,
           )
         })
       }
       if (responsabiliToAssign.length > 0) {
         responsabiliToAssign.map(async (id) => {
-          assignUserToTask(id, pratica.cr9b3_praticaid, 'cr9b3_pratica_responsabile')
+          assignUserToTask(id, prat.cr9b3_praticaid, 'cr9b3_pratica_responsabile')
         })
       }
     } catch (error) {
@@ -280,13 +292,13 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
       if (officialiIncaricatiToUnassign.length > 0) {
         officialiIncaricatiToUnassign.map(async (id) => {
           response = await axiosInstance.delete(
-            `cr9b3_praticas(${pratica.cr9b3_praticaid})/cr9b3_pratica_officiali_incaricati(${id})/$ref`,
+            `cr9b3_praticas(${prat.cr9b3_praticaid})/cr9b3_pratica_officiali_incaricati(${id})/$ref`,
           )
         })
       }
       if (officialiIncaricatiToAssign.length > 0) {
         officialiIncaricatiToAssign.map(async (id) => {
-          assignUserToTask(id, pratica.cr9b3_praticaid, 'cr9b3_pratica_officiali_incaricati')
+          assignUserToTask(id, prat.cr9b3_praticaid, 'cr9b3_pratica_officiali_incaricati')
         })
       }
     } catch (error) {
@@ -296,15 +308,14 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
 
     try {
       // console.log('editing pratica', pratica.cr9b3_praticaid)
-      setStatus(pratica.cr9b3_status)
+      setStatus(prat.cr9b3_status)
 
-      response = await axiosInstance.patch(`cr9b3_praticas(${pratica.cr9b3_praticaid})`, pratica)
+      response = await axiosInstance.patch(`cr9b3_praticas(${prat.cr9b3_praticaid})`, prat)
       // Get the OData-EntityId from the response headers
       entityUrl = response.headers['odata-entityid']
 
       if (entityUrl) {
         // console.log(`Pratica edited! Entity URL: ${entityUrl}`)
-        setLoading(false)
         if (action === 'archive') {
           addToast('Pratica has been archived.', 'Edit Pratica', 'warning', 3000)
           setTimeout(() => {
@@ -317,17 +328,23 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
           }, 2000)
         } else {
           addToast('Success! Your changes have been saved.', 'Edit Pratica', 'success', 3000)
+          setLoading(false)
+          setIsView(true)
+          if (prat.cr9b3_prano) setPratNo(prat.cr9b3_prano)
+          if (prat.cr9b3_protno) setProtNo(prat.cr9b3_protno)
         }
 
         // Retrieve the details of the created record
         praticaDetailsResponse = await axiosInstance.get(entityUrl)
       } else {
         addToast('Error occurred while saving changes.', 'Edit Pratica', 'warning', 3000)
+        setLoading(false)
         console.error('Entity URL not returned in the response headers.')
       }
       return praticaDetailsResponse
     } catch (error) {
       addToast('Error occurred while saving changes.', 'Edit Pratica', 'warning', 3000)
+      setLoading(false)
       if (error.isAxiosError) {
         console.error('Axios error details adding new pratica:', error.response)
         console.error('Error message:', error.message)
@@ -356,7 +373,7 @@ const Pratica = ({ pratica, visible, onClose, labelColor, label, refresh }) => {
         <CModalHeader>
           <CCol md={3}>
             <CModalTitle id="Pratica">
-              Prat. No. {pratica.cr9b3_prano} / Prot. {pratica.cr9b3_protno}
+              Prat. No. {pratNo} / Prot. {protNo}
             </CModalTitle>
           </CCol>
 

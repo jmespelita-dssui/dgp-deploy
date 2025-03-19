@@ -1,0 +1,18 @@
+[33m04aa15c[m[33m ([m[1;36mHEAD[m[33m, [m[1;31morigin/main[m[33m)[m HEAD@{0}: pull origin main --rebase (start): checkout 04aa15cfde2333adf32d260891c4fc360797d842
+[33m822144b[m[33m ([m[1;32mmain[m[33m)[m HEAD@{1}: commit: correspondence feature
+[33m3c3c082[m[33m ([m[1;31morigin/master[m[33m)[m HEAD@{2}: commit: cookie bug fix
+[33medffcd3[m HEAD@{3}: pull: Merge made by the 'ort' strategy.
+[33mc7bac5c[m HEAD@{4}: commit: token bug fix
+[33m0a763e2[m HEAD@{5}: commit: ready from 1st uat
+[33ma97e9ee[m HEAD@{6}: commit: polished create task, edit task, archive
+[33m97d6963[m HEAD@{7}: commit: edit pratica. missing peoplepicker
+[33m807500a[m HEAD@{8}: commit: task typology and assign superiors
+[33m9a082a0[m HEAD@{9}: commit: created interface for each type of pratica
+[33m2a4c4df[m HEAD@{10}: commit: making sure everything is committed
+[33mbe8cfda[m HEAD@{11}: commit: added pages base
+[33m9404ef3[m HEAD@{12}: commit: interface for Dashboard, Pratica and Summary
+[33m25cecc3[m HEAD@{13}: commit: check commit
+[33mcfa4d88[m HEAD@{14}: 
+[33mcfa4d88[m HEAD@{15}: Branch: renamed refs/heads/master to refs/heads/main
+[33mcfa4d88[m HEAD@{17}: checkout: moving from master to master
+[33mcfa4d88[m HEAD@{18}: commit (initial): Initial commit
