@@ -12,10 +12,12 @@ import {
   CSpinner,
 } from '@coreui/react-pro'
 
+import moment from 'moment-timezone'
+
 import { useToast } from 'src/context/ToastContext'
 
 import React, { useState } from 'react'
-import { getAccessToken, createAxiosInstance } from 'src/util/axiosUtils'
+import { initializeAxiosInstance } from 'src/util/axiosUtils'
 import {
   getSystemUserID,
   assignUserToTask,
@@ -27,6 +29,7 @@ import { useNavigate } from 'react-router-dom'
 import FieldsCreate from './FieldsCreate'
 import ProtocolledSelect from './ProtocolledSelect'
 import NonProtocolledSelect from './NonProtocolledSelect'
+import { logActivity } from 'src/util/activityLogUtils'
 
 const CreateTask = () => {
   const { addToast } = useToast()
@@ -81,6 +84,21 @@ const CreateTask = () => {
               return
             }
           })
+          const axiosInstance = await initializeAxiosInstance()
+          const modifiedByPromise = await axiosInstance.get(
+            `systemusers(${praticaDetailsResponse.data._modifiedby_value})`,
+          )
+
+          let finalLogEntry = [
+            {
+              user: modifiedByPromise.data.fullname,
+              actionType: 'created pratica.',
+              actions: null,
+              timestamp: moment().tz('Europe/Rome').format('YYYY-MM-DD HH:mm:ss'),
+            },
+          ]
+          logActivity(praticaDetailsResponse.data.cr9b3_praticaid, finalLogEntry)
+
           addToast('Success! The pratica has been added.', 'Create Pratica', 'success', 3000)
           setTimeout(() => {
             navigate('/tasks')
@@ -112,8 +130,7 @@ const CreateTask = () => {
   }
 
   const addNewPratica = async (pratica) => {
-    const token = await getAccessToken()
-    const axiosInstance = createAxiosInstance(token)
+    const axiosInstance = await initializeAxiosInstance()
     let response
     let praticaDetailsResponse
     let entityUrl

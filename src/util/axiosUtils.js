@@ -48,3 +48,8 @@ export const createAxiosInstance = (token) => {
 
   return axiosInstance
 }
+
+export const initializeAxiosInstance = async () => {
+  const token = await getAccessToken()
+  return createAxiosInstance(token)
+}

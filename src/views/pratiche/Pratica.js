@@ -1,8 +1,9 @@
 /* eslint-disable react/prop-types */
 import React, { useEffect, useState } from 'react'
-import moment from 'moment'
+// import moment from 'moment'
+import moment from 'moment-timezone'
 
-import { getAccessToken, createAxiosInstance } from 'src/util/axiosUtils'
+import { initializeAxiosInstance } from 'src/util/axiosUtils'
 
 import {
   CModal,
@@ -19,12 +20,13 @@ import {
   CNav,
   CNavItem,
   CNavLink,
-  CListGroup,
   CProgress,
+  CLink,
+  CCallout,
 } from '@coreui/react-pro'
 
 import CIcon from '@coreui/icons-react'
-import { cilPlus } from '@coreui/icons'
+import { cilFolderOpen } from '@coreui/icons'
 import Fields from './Fields'
 import {
   getSystemUserID,
@@ -32,18 +34,28 @@ import {
   assignUserToTask,
   getFields,
   checkIfExistingProt,
+  getUserName,
 } from 'src/util/taskUtils'
 import { useToast } from 'src/context/ToastContext'
 import LoadingOverlay from '../modals/LoadingOverlay'
 import ConfirmClose from '../modals/ConfirmClose'
 import Correspondences from '../corr/Correspondences'
+import RelatedPratica from '../links/RelatedPratica'
+import Links from '../links/Links'
+import ActivityLogs from '../activityLog/ActivityLogs'
+import {
+  generateActivityLogEntry,
+  getUpdatedActivityLog,
+  logActivity,
+} from 'src/util/activityLogUtils'
 
-const Pratica = ({ pratica, visible, onClose, labelColor, refresh }) => {
+const Pratica = ({ pratica, praticheList, visible, onClose, labelColor, refresh }) => {
   const [visibleLinks, setVisibleLinks] = useState(true)
   const [visibleCorr, setVisibleCorr] = useState(false)
   const [visibleLogs, setVisibleLogs] = useState(false)
   const [visibleConfirmClose, setVisibleConfirmClose] = useState(false)
   const [status, setStatus] = useState()
+  const [sharepointLink, setSharePointLink] = useState(pratica.cr9b3_sharepointlink)
   const [confirmCloseBody, setConfirmCloseBody] = useState({
     title: 'Confirm',
     text: 'Your changes may not have been saved. Continue?',
@@ -52,6 +64,7 @@ const Pratica = ({ pratica, visible, onClose, labelColor, refresh }) => {
   const [protNo, setProtNo] = useState('')
   const [superioriInvitati, setSuperioriInvitati] = useState([])
   const [superioriSystemUserIDs, setSuperioriSystemUserIDs] = useState([])
+  const [relatedPratiche, setRelatedPratiche] = useState([])
   const [responsabiliAssegnati, setResponsabiliAssegnati] = useState([])
   const [responsabiliSystemUserIDs, setResponsabiliSystemUserIDs] = useState([])
   const [officialiIncaricati, setOfficialiIncaricati] = useState([])
@@ -59,10 +72,14 @@ const Pratica = ({ pratica, visible, onClose, labelColor, refresh }) => {
   const [categoryLabel, setCategoryLabel] = useState('')
   const [createdBy, setCreatedBy] = useState('')
   const [modifiedBy, setModifiedBy] = useState('')
-  const [protNoIsModified, setProtNoIsModified] = useState(false)
   const [isView, setIsView] = useState(true)
   const [loading, setLoading] = useState(false)
   const { addToast } = useToast()
+
+  const [activityLogs, setActivityLogs] = useState([])
+  const [activityLogEntry, setActivityLogEntry] = useState()
+  const [isSaved, setIsSaved] = useState(false)
+  const [modifiedByUserID, setModifiedByUserID] = useState('')
 
   useEffect(() => {
     // console.log('starting pratica', pratica)
@@ -71,16 +88,40 @@ const Pratica = ({ pratica, visible, onClose, labelColor, refresh }) => {
     setVisibleLogs(false)
     setPratNo(pratica.cr9b3_prano)
     setProtNo(pratica.cr9b3_protno)
+    setActivityLogs(pratica.cr9b3_activitylog ? JSON.parse(pratica.cr9b3_activitylog) : [])
     getAssignedUsers()
+    getRelatedPratiche()
     setStatus(pratica.cr9b3_status)
     setLoading(false)
     setCategoryLabel(getFields(pratica.cr9b3_categoria).label)
     setIsView(true)
+    setIsSaved(false)
   }, [pratica])
 
+  const getRelatedPratiche = async () => {
+    const axiosInstance = await initializeAxiosInstance()
+
+    if (pratica.cr9b3_praticaid) {
+      try {
+        const response = await axiosInstance.get(
+          `cr9b3_praticas?$filter=cr9b3_praticaid eq '${pratica.cr9b3_praticaid}'&$expand=cr9b3_related_pratica`,
+        )
+        // console.log(response.data.value)
+        setRelatedPratiche(response.data.value[0].cr9b3_related_pratica)
+      } catch (error) {
+        if (error.isAxiosError) {
+          console.error('Axios error getting related pratica:', error.response)
+          console.error('Error message:', error.message)
+          console.error('Error response:', error.response.data)
+        } else {
+          console.error('Non-Axios error:', error)
+        }
+      }
+    }
+  }
+
   const getUserIDs = async (tableName) => {
-    const token = await getAccessToken()
-    const axiosInstance = createAxiosInstance(token)
+    const axiosInstance = await initializeAxiosInstance()
     let user
     let azureactivedirectoryobjectid
     let systemuserid
@@ -105,8 +146,7 @@ const Pratica = ({ pratica, visible, onClose, labelColor, refresh }) => {
   }
 
   const getAssignedUsers = async () => {
-    const token = await getAccessToken()
-    const axiosInstance = createAxiosInstance(token)
+    const axiosInstance = await initializeAxiosInstance()
 
     try {
       // Perform same operations for both invited superiors and assigned responsible
@@ -114,7 +154,6 @@ const Pratica = ({ pratica, visible, onClose, labelColor, refresh }) => {
         const superioriIDs = await getUserIDs('cr9b3_pratica_superiore')
         const responsabiliIDs = await getUserIDs('cr9b3_pratica_responsabile')
         const officialiIncaricatiIDs = await getUserIDs('cr9b3_pratica_officiali_incaricati')
-
         const superiorUserDetailsPromises = superioriIDs.azureactivedirectoryobjectid.map(
           async (userID) => {
             return await getUserGraphDetails(userID)
@@ -145,12 +184,10 @@ const Pratica = ({ pratica, visible, onClose, labelColor, refresh }) => {
         setOfficialiIncaricatiUserIDs(officialiIncaricatiIDs.systemuserid)
 
         // Get system information on creator and modifier
-        const createdByPromise = await axiosInstance.get(`systemusers(${pratica._createdby_value})`)
-        const modifiedByPromise = await axiosInstance.get(
-          `systemusers(${pratica._modifiedby_value})`,
-        )
-        setCreatedBy(createdByPromise.data.fullname)
-        setModifiedBy(modifiedByPromise.data.fullname)
+        const createdBy = await getUserName(pratica._createdby_value)
+        const modifiedBy = await getUserName(pratica._modifiedby_value)
+        setCreatedBy(createdBy)
+        setModifiedBy(modifiedBy)
       }
     } catch (error) {
       if (error.isAxiosError) {
@@ -164,17 +201,38 @@ const Pratica = ({ pratica, visible, onClose, labelColor, refresh }) => {
     // return userID
   }
 
+  const checkForLogs = async () => {
+    let finalLogEntry
+
+    if (isSaved) {
+      let logs = await getUpdatedActivityLog(pratica.cr9b3_praticaid)
+      console.log(logs)
+      setLoading(true)
+      finalLogEntry = [
+        ...logs,
+        {
+          user: modifiedByUserID,
+          actions: activityLogEntry,
+          timestamp: moment().tz('Europe/Rome').format('YYYY-MM-DD HH:mm:ss'),
+        },
+      ]
+      console.log('check for logs:', finalLogEntry)
+      logActivity(pratica.cr9b3_praticaid, finalLogEntry)
+    }
+    onClose()
+  }
+
   const showConfirmClose = () => {
     if (!isView) {
       setVisibleConfirmClose(true)
     } else {
-      onClose()
+      checkForLogs()
     }
   }
 
   const onExitConfirmClose = () => {
     setVisibleConfirmClose(false)
-    onClose()
+    checkForLogs()
   }
 
   const onSaveEdit = async (
@@ -184,41 +242,48 @@ const Pratica = ({ pratica, visible, onClose, labelColor, refresh }) => {
     officialiIncaricatiList,
     action,
   ) => {
-    console.log(prat)
     setLoading(true)
-    const token = await getAccessToken()
-    const axiosInstance = createAxiosInstance(token)
+    const axiosInstance = await initializeAxiosInstance()
     let newSuperioriList = []
+    let superioriToAssign = []
+    let superioriToUnassign = []
     let newResponsabiliList = []
+    let responsabiliToAssign = []
+    let responsabiliToUnassign = []
     let newOfficialiIncaricatiList = []
+    let officialiIncaricatiToUnassign = []
+    let officialiIncaricatiToAssign = []
     let response
     let praticaDetailsResponse
     let entityUrl
     let exists = await checkIfExistingProt(prat.cr9b3_protno)
 
+    //check for duplicates if protno was changed
     if (exists && prat.cr9b3_protno !== pratica.cr9b3_protno) {
       addToast('Pratica with same protocol number already exists!', 'Edit Pratica', 'warning', 3000)
       setLoading(false)
       return
     }
-    // console.log('assigning/unassigning superiors pre edit', superioriSystemUserIDs)
+
     try {
+      //get system user ids of all assigned superiors
       newSuperioriList = await Promise.all(
         superioriInvitatiList.map(async (id) => {
           return getSystemUserID(id)
         }),
       )
 
-      let superioriToUnassign = superioriSystemUserIDs.filter(
+      //determine which superiors were removed
+      superioriToUnassign = superioriSystemUserIDs.filter(
         (value) => !newSuperioriList.includes(value),
       )
-      // console.log('superioriToUnassign', superioriToUnassign)
 
+      //determine which superiors were added
       let superioriToAssign = newSuperioriList.filter(
         (value) => !superioriSystemUserIDs.includes(value),
       )
-      // console.log('superioriToAssign', superioriToAssign)
 
+      //axios delete superiors
       if (superioriToUnassign.length > 0) {
         superioriToUnassign.map(async (id) => {
           response = await axiosInstance.delete(
@@ -226,6 +291,8 @@ const Pratica = ({ pratica, visible, onClose, labelColor, refresh }) => {
           )
         })
       }
+
+      //axios add superiors
       if (superioriToAssign.length > 0) {
         superioriToAssign.map(async (id) => {
           assignUserToTask(id, prat.cr9b3_praticaid, 'cr9b3_pratica_superiore')
@@ -236,24 +303,25 @@ const Pratica = ({ pratica, visible, onClose, labelColor, refresh }) => {
       console.log('Error unassigning superior', error)
     }
 
-    // console.log('assigning/unassigning responsabile pre edit', responsabiliSystemUserIDs)
     try {
+      //get system user ids of assigned responsible
       newResponsabiliList = await Promise.all(
         responsabileList.map(async (id) => {
           return getSystemUserID(id)
         }),
       )
 
-      let responsabiliToUnassign = responsabiliSystemUserIDs.filter(
+      //determine which responsibles were removed
+      responsabiliToUnassign = responsabiliSystemUserIDs.filter(
         (value) => !newResponsabiliList.includes(value),
       )
-      // console.log('responsabiliToUnassign', responsabiliToUnassign)
 
-      let responsabiliToAssign = newResponsabiliList.filter(
+      //determine which responsibles were added
+      responsabiliToAssign = newResponsabiliList.filter(
         (value) => !responsabiliSystemUserIDs.includes(value),
       )
-      // console.log('responsabiliToAssign', responsabiliToAssign)
 
+      //axios delete responsible
       if (responsabiliToUnassign.length > 0) {
         responsabiliToUnassign.map(async (id) => {
           response = await axiosInstance.delete(
@@ -261,6 +329,8 @@ const Pratica = ({ pratica, visible, onClose, labelColor, refresh }) => {
           )
         })
       }
+
+      //axios add responsible
       if (responsabiliToAssign.length > 0) {
         responsabiliToAssign.map(async (id) => {
           assignUserToTask(id, prat.cr9b3_praticaid, 'cr9b3_pratica_responsabile')
@@ -271,24 +341,25 @@ const Pratica = ({ pratica, visible, onClose, labelColor, refresh }) => {
       console.log('Error assigning superior', error)
     }
 
-    // console.log('assigning/unassigning officali incaricati pre edit', officialiIncaricati)
     try {
+      //get system user ids of assigned officiali
       newOfficialiIncaricatiList = await Promise.all(
         officialiIncaricatiList.map(async (id) => {
           return getSystemUserID(id)
         }),
       )
 
-      let officialiIncaricatiToUnassign = officialiIncaricatiSystemUserIDs.filter(
+      //determine which officiali were removed
+      officialiIncaricatiToUnassign = officialiIncaricatiSystemUserIDs.filter(
         (value) => !newOfficialiIncaricatiList.includes(value),
       )
-      // console.log('responsabiliToUnassign', responsabiliToUnassign)
 
-      let officialiIncaricatiToAssign = newOfficialiIncaricatiList.filter(
+      //determine which officiali were added
+      officialiIncaricatiToAssign = newOfficialiIncaricatiList.filter(
         (value) => !officialiIncaricatiSystemUserIDs.includes(value),
       )
-      // console.log('responsabiliToAssign', responsabiliToAssign)
 
+      //axios delete officiali
       if (officialiIncaricatiToUnassign.length > 0) {
         officialiIncaricatiToUnassign.map(async (id) => {
           response = await axiosInstance.delete(
@@ -296,6 +367,8 @@ const Pratica = ({ pratica, visible, onClose, labelColor, refresh }) => {
           )
         })
       }
+
+      //axios add officiali
       if (officialiIncaricatiToAssign.length > 0) {
         officialiIncaricatiToAssign.map(async (id) => {
           assignUserToTask(id, prat.cr9b3_praticaid, 'cr9b3_pratica_officiali_incaricati')
@@ -307,15 +380,13 @@ const Pratica = ({ pratica, visible, onClose, labelColor, refresh }) => {
     }
 
     try {
-      // console.log('editing pratica', pratica.cr9b3_praticaid)
       setStatus(prat.cr9b3_status)
-
       response = await axiosInstance.patch(`cr9b3_praticas(${prat.cr9b3_praticaid})`, prat)
+
       // Get the OData-EntityId from the response headers
       entityUrl = response.headers['odata-entityid']
 
       if (entityUrl) {
-        // console.log(`Pratica edited! Entity URL: ${entityUrl}`)
         if (action === 'archive') {
           addToast('Pratica has been archived.', 'Edit Pratica', 'warning', 3000)
           setTimeout(() => {
@@ -328,6 +399,7 @@ const Pratica = ({ pratica, visible, onClose, labelColor, refresh }) => {
           }, 2000)
         } else {
           addToast('Success! Your changes have been saved.', 'Edit Pratica', 'success', 3000)
+          setSharePointLink(prat.cr9b3_sharepointlink)
           setLoading(false)
           setIsView(true)
           if (prat.cr9b3_prano) setPratNo(prat.cr9b3_prano)
@@ -335,7 +407,27 @@ const Pratica = ({ pratica, visible, onClose, labelColor, refresh }) => {
         }
 
         // Retrieve the details of the created record
-        praticaDetailsResponse = await axiosInstance.get(entityUrl)
+        const whoami = await axiosInstance.get('WhoAmI')
+        let logModifier = await getUserName(whoami.data.UserId)
+        setModifiedByUserID(logModifier)
+
+        setIsSaved(true)
+        setActivityLogEntry(
+          generateActivityLogEntry(
+            prat,
+            superioriToUnassign.length + superioriToAssign.length > 0
+              ? superioriInvitatiList
+              : null,
+            responsabiliToUnassign.length + responsabiliToAssign.length > 0
+              ? responsabileList
+              : null,
+            officialiIncaricatiToUnassign.length + officialiIncaricatiToAssign.length > 0
+              ? officialiIncaricatiList
+              : null,
+            responsabileList,
+            officialiIncaricatiList,
+          ),
+        )
       } else {
         addToast('Error occurred while saving changes.', 'Edit Pratica', 'warning', 3000)
         setLoading(false)
@@ -367,9 +459,9 @@ const Pratica = ({ pratica, visible, onClose, labelColor, refresh }) => {
         visible={visibleConfirmClose}
         body={confirmCloseBody}
         onCancel={() => setVisibleConfirmClose(false)}
-        onExit={onExitConfirmClose}
+        onContinue={onExitConfirmClose}
       />
-      <CModal backdrop="static" visible={visible} onClose={onClose} size="xl">
+      <CModal backdrop="static" visible={visible} onClose={() => checkForLogs()} size="xl">
         <CModalHeader>
           <CCol md={3}>
             <CModalTitle id="Pratica">
@@ -464,53 +556,34 @@ const Pratica = ({ pratica, visible, onClose, labelColor, refresh }) => {
                 </CCollapse>
                 {/* LINKS */}
                 <CCollapse visible={visibleLinks}>
-                  <p>This feature is not yet available.</p>
+                  {isView && (
+                    <CCallout color="primary">
+                      <CLink href={sharepointLink} target="_blank">
+                        <CIcon icon={cilFolderOpen} />
+                        <span style={{ paddingLeft: '10px' }}>Home folder</span>
+                      </CLink>
+                    </CCallout>
+                  )}
+
                   <CCard className="mb-3">
                     <CCardBody>
                       <h6>RELATED PRATICA</h6>
-                      {/* <CListGroup flush>
-                      <CListGroupItem>
-                        <CLink>Share QSN Convention_report-compressé.pdf</CLink>
-                      </CListGroupItem>
-                    </CListGroup> */}
-                      <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <CButton color="light" className="mt-3" disabled>
-                          <CIcon icon={cilPlus} className="me-md-2" />
-                          Add link
-                        </CButton>
-                      </div>
+                      <RelatedPratica
+                        relatedPratiche={relatedPratiche}
+                        praticheList={praticheList}
+                        pratica={pratica}
+                        refreshRelatedPratiche={getRelatedPratiche}
+                      />
                     </CCardBody>
                   </CCard>
-                  <CCard className="mb-3">
-                    <CCardBody>
-                      <h6>REQUEST</h6>
-                      <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <CButton color="light" className="mt-3" disabled>
-                          <CIcon icon={cilPlus} className="me-md-2" />
-                          Add link
-                        </CButton>
-                      </div>
-                    </CCardBody>
-                  </CCard>
-                  <CCard className="mb-3">
-                    <CCardBody>
-                      <h6>FOLLOW UP</h6>
-                      <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <CButton color="light" className="mt-3" disabled>
-                          <CIcon icon={cilPlus} className="me-md-2" />
-                          Add link
-                        </CButton>
-                      </div>
-                    </CCardBody>
-                  </CCard>
+                  <Links links={pratica.cr9b3_links} praticaID={pratica.cr9b3_praticaid} />
                 </CCollapse>
 
                 {/* ACTIVITY LOG */}
                 <CCollapse visible={visibleLogs}>
                   <CCard className="mb-3">
-                    <CCardBody className="scrollable-container">
-                      This feature is not yet available.
-                      <CListGroup flush></CListGroup>
+                    <CCardBody>
+                      <ActivityLogs activityLogs={activityLogs} />
                     </CCardBody>
                   </CCard>
                 </CCollapse>

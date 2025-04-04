@@ -19,7 +19,6 @@ import {
   CForm,
   CFormTextarea,
   CFormSelect,
-  CLink,
   CPopover,
 } from '@coreui/react-pro'
 import { PeoplePicker, Person } from '@microsoft/mgt-react'
@@ -114,6 +113,11 @@ const Fields = ({
 
   const onSubmit = async (e) => {
     e.preventDefault()
+    console.log(pratica, praticaEdits)
+
+    if (praticaEdits.cr9b3_datainoltrataresponsabile === pratica.cr9b3_datainoltrataresponsabile) {
+      console.log('macchè')
+    }
 
     if (isValid) {
       onSaveEdit(
@@ -187,7 +191,7 @@ const Fields = ({
         visible={visibleConfirmClose}
         body={confirmCloseBody}
         onCancel={onCancel}
-        onExit={onExit}
+        onContinue={onExit}
       />
       <CForm onSubmit={onSubmit} className="mt-3">
         {isView ? (
@@ -212,7 +216,7 @@ const Fields = ({
               </CButton>
             </CPopover>
             <CFormInput
-              value={formData.cr9b3_titolo}
+              value={formData.cr9b3_titolo ? formData.cr9b3_titolo : ''}
               maxLength={100}
               type="text"
               size="lg"
@@ -221,6 +225,7 @@ const Fields = ({
               onChange={(e) => {
                 setFormData({ ...formData, cr9b3_titolo: e.target.value })
                 setPraticaEdits({ ...praticaEdits, cr9b3_titolo: e.target.value.trim() })
+                console.log(praticaEdits)
                 setIsModified(true)
               }}
               required
@@ -228,7 +233,7 @@ const Fields = ({
             <CInputGroup className="mb-3">
               <CInputGroupText id="istruzioni-superiori">Istruzioni:</CInputGroupText>
               <CFormInput
-                value={formData.cr9b3_istruzionesuperiori}
+                value={formData.cr9b3_istruzionesuperiori ? formData.cr9b3_istruzionesuperiori : ''}
                 aria-label="Istruzioni"
                 aria-describedby="istruzioni-superiori"
                 onChange={(e) => {
@@ -251,7 +256,7 @@ const Fields = ({
           className="mb-3"
           label="Debrief:"
           rows={5}
-          value={formData.cr9b3_debrief}
+          value={formData.cr9b3_debrief ? formData.cr9b3_debrief : ''}
           aria-label="debrief"
           aria-describedby="debrief"
           maxLength={1000}
@@ -262,10 +267,6 @@ const Fields = ({
           }}
           readOnly={isView}
         />
-
-        <CLink href={formData.cr9b3_sharepointlink} target="_blank">
-          Open Home SharePoint folder
-        </CLink>
 
         <div className="d-grid gap-2 d-md-flex justify-content-md-end">
           {formData.cr9b3_status > 0 && (
@@ -339,7 +340,7 @@ const Fields = ({
             <CRow className="mb-3">
               <CCol md={6}>
                 <CFormInput
-                  value={formData.cr9b3_protno}
+                  value={formData.cr9b3_protno ? formData.cr9b3_protno : ''}
                   id="prot-no"
                   label="Initial prot. no."
                   onChange={(e) => {
@@ -353,7 +354,7 @@ const Fields = ({
               </CCol>
               <CCol md={6}>
                 <CFormInput
-                  value={formData.cr9b3_prano}
+                  value={formData.cr9b3_prano ? formData.cr9b3_prano : ''}
                   label="Prat. no."
                   id="prat-no"
                   onChange={(e) => {
@@ -378,11 +379,11 @@ const Fields = ({
             />
           </CCol>
 
-          <CCol md={6} className="mb-3 mt-4">
+          <CCol md={8} className="mb-3 mt-4">
             <CFormSelect
               aria-label="Status"
               label="Status:"
-              value={formData.cr9b3_status}
+              value={formData.cr9b3_status ? formData.cr9b3_status : ''}
               options={[
                 { label: 'New', value: '10' },
                 { label: 'In progress', value: '30' },
@@ -491,7 +492,7 @@ const Fields = ({
             Responsabile Sezione
             {responsabileList.length === 0 && isView ? ' (not yet assigned)' : ':'}
           </p>
-          {isView ? (
+          {isView && responsabileList.length !== 0 ? (
             responsabileList.map((s) => (
               <Person
                 key={s.id}
@@ -573,7 +574,7 @@ const Fields = ({
                 {superioriInvitatiList.length === 0 && isView ? '(not yet assigned)' : ':'}
               </p>
               <CCol className="mb-5">
-                {isView ? (
+                {isView && superioriInvitatiList.length !== 0 ? (
                   superioriInvitatiList.map((s) => (
                     <Person
                       key={s.id}
@@ -604,7 +605,7 @@ const Fields = ({
             <CInputGroup className="mb-3">
               <CInputGroupText id="ente-inviante">Ente inviante:</CInputGroupText>
               <CFormInput
-                value={formData.cr9b3_enteinviante}
+                value={formData.cr9b3_enteinviante ? formData.cr9b3_enteinviante : ''}
                 aria-label="Ente inviante"
                 aria-describedby="ente-inviante"
                 onChange={(e) => {
@@ -622,7 +623,7 @@ const Fields = ({
             <CInputGroup className="mb-3">
               <CInputGroupText id="ente-richiedente">Ente richiedente:</CInputGroupText>
               <CFormInput
-                value={formData.cr9b3_enterichiedente}
+                value={formData.cr9b3_enterichiedente ? formData.cr9b3_enterichiedente : ''}
                 aria-label="Ente richiedente"
                 aria-describedby="ente-richiedente"
                 disabled={isView}
@@ -643,7 +644,7 @@ const Fields = ({
             <CInputGroup className="mb-3">
               <CInputGroupText id="ente-ricevente">Ente ricevente:</CInputGroupText>
               <CFormInput
-                value={formData.cr9b3_entericevente}
+                value={formData.cr9b3_entericevente ? formData.cr9b3_entericevente : ''}
                 aria-label="Ente ricevente"
                 aria-describedby="ente-ricevente"
                 onChange={(e) => {
@@ -661,7 +662,7 @@ const Fields = ({
             <CInputGroup className="mb-3">
               <CInputGroupText id="persona-richiedente">Persona richiedente:</CInputGroupText>
               <CFormInput
-                value={formData.cr9b3_personarichiedente}
+                value={formData.cr9b3_personarichiedente ? formData.cr9b3_personarichiedente : ''}
                 aria-label="Persona richiedente"
                 aria-describedby="persona-richiedente"
                 onChange={(e) => {
@@ -682,7 +683,7 @@ const Fields = ({
             <CInputGroup className="mb-3">
               <CInputGroupText id="destinatari">Destinatari:</CInputGroupText>
               <CFormTextarea
-                value={formData.cr9b3_destinatari}
+                value={formData.cr9b3_destinatari ? formData.cr9b3_destinatari : ''}
                 aria-label="Destinatari"
                 aria-describedby="destinatari"
                 onChange={(e) => {
@@ -700,7 +701,9 @@ const Fields = ({
             <CInputGroup className="mb-3">
               <CInputGroupText id="indirizzi-destinatari">Indirizzi destinatari:</CInputGroupText>
               <CFormTextarea
-                value={formData.cr9b3_indirizzidestinatari}
+                value={
+                  formData.cr9b3_indirizzidestinatari ? formData.cr9b3_indirizzidestinatari : ''
+                }
                 aria-label="Indirizzi estinatari"
                 aria-describedby="indirizzi-destinatari"
                 onChange={(e) => {
@@ -742,7 +745,7 @@ const Fields = ({
             <CInputGroup className="mb-3">
               <CInputGroupText id="titolo-evento">Titolo evento:</CInputGroupText>
               <CFormInput
-                value={formData.cr9b3_titoloevento}
+                value={formData.cr9b3_titoloevento ? formData.cr9b3_titoloevento : ''}
                 aria-label="Titolo evento"
                 aria-describedby="titolo-evento"
                 onChange={(e) => {
@@ -760,7 +763,7 @@ const Fields = ({
             <CInputGroup className="mb-3">
               <CInputGroupText id="luogo-evento">Luogo evento:</CInputGroupText>
               <CFormInput
-                value={formData.cr9b3_luogoevento}
+                value={formData.cr9b3_luogoevento ? formData.cr9b3_luogoevento : ''}
                 aria-label="Luogo evento"
                 aria-describedby="luogo-evento"
                 onChange={(e) => {
@@ -778,7 +781,7 @@ const Fields = ({
             <CInputGroup className="mb-3">
               <CInputGroupText id="tema-contributo">Tema del contributo:</CInputGroupText>
               <CFormInput
-                value={formData.cr9b3_temacontributo}
+                value={formData.cr9b3_temacontributo ? formData.cr9b3_temacontributo : ''}
                 aria-label="Tema del contributo"
                 aria-describedby="tema-contributo"
                 onChange={(e) => {
@@ -796,7 +799,7 @@ const Fields = ({
             <CInputGroup className="mb-3">
               <CInputGroupText id="materia-contributo">Materia del rapporto:</CInputGroupText>
               <CFormInput
-                value={formData.cr9b3_materiarapporto}
+                value={formData.cr9b3_materiarapporto ? formData.cr9b3_materiarapporto : ''}
                 aria-label="Materia del rapporto"
                 aria-describedby="materia-rapporto"
                 onChange={(e) => {
@@ -818,7 +821,7 @@ const Fields = ({
               <CInputGroupText id="no-partecipanti">No. partecipanti:</CInputGroupText>
               <CFormInput
                 type="number"
-                value={formData.cr9b3_nopartecipanti}
+                value={formData.cr9b3_nopartecipanti ? formData.cr9b3_nopartecipanti : ''}
                 aria-label="No. partecipanti"
                 aria-describedby="no-partecipanti"
                 onChange={(e) => {
@@ -860,7 +863,7 @@ const Fields = ({
             <CCol md={6} className="mb-3">
               <CFormInput
                 label="Regione"
-                value={formData.cr9b3_regione}
+                value={formData.cr9b3_regione ? formData.cr9b3_regione : ''}
                 aria-label="Regione"
                 aria-describedby="regione"
                 onChange={(e) => {
@@ -881,7 +884,7 @@ const Fields = ({
             <CCol md={6} className="mb-5">
               <CFormInput
                 label="Città"
-                value={formData.cr9b3_citta}
+                value={formData.cr9b3_citta ? formData.cr9b3_citta : ''}
                 aria-label="Citta"
                 aria-describedby="citta"
                 onChange={(e) => {
@@ -903,7 +906,7 @@ const Fields = ({
             <CCol>
               <CFormInput
                 id="cartella-principale"
-                value={formData.cr9b3_sharepointlink}
+                value={formData.cr9b3_sharepointlink ? formData.cr9b3_sharepointlink : ''}
                 label="Home SharePoint link:"
                 aria-label="Sharepoint linke"
                 aria-describedby="sharepoint-link"
@@ -930,7 +933,7 @@ const Fields = ({
             label="Notes:"
             rows={3}
             text="Ulteriori dettagli"
-            value={formData.cr9b3_notes}
+            value={formData.cr9b3_notes ? formData.cr9b3_notes : ''}
             maxLength={4000}
             aria-label="Notes"
             aria-describedby="notes"

@@ -173,6 +173,7 @@ const MyTasks = () => {
         visible={visible}
         onClose={onClosePratica}
         pratica={selectedPratica}
+        praticheList={praticheList}
         labelColor={getLabelColor(selectedPratica.cr9b3_categoria).color}
         label={getLabelColor(selectedPratica.cr9b3_categoria).label}
         refresh={() => setRefreshKey((prevKey) => prevKey + 1)}
@@ -346,7 +347,7 @@ const MyTasks = () => {
               details: (item) => {
                 return (
                   <CCollapse visible={details.includes(item.cr9b3_protno)}>
-                    <Summary item={item} />
+                    <Summary pratica={item} />
                   </CCollapse>
                 )
               },

@@ -8,11 +8,17 @@ import CIcon from '@coreui/icons-react'
 import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 import Correspondence from './Correspondence'
-import { createAxiosInstance, getAccessToken } from 'src/util/axiosUtils'
+import { createAxiosInstance, getAccessToken, initializeAxiosInstance } from 'src/util/axiosUtils'
+import moment from 'moment-timezone'
 
 import { useToast } from 'src/context/ToastContext'
-import { getCorrs } from 'src/util/taskUtils'
+import { getCorrs, getUserName } from 'src/util/taskUtils'
 import LoadingOverlay from '../modals/LoadingOverlay'
+import {
+  generateActivityLogEntry,
+  getUpdatedActivityLog,
+  logActivity,
+} from 'src/util/activityLogUtils'
 
 const Correspondences = ({ pratica }) => {
   const [newCorr, setNewCorr] = useState('')
@@ -38,6 +44,7 @@ const Correspondences = ({ pratica }) => {
 
   const saveCorr = async () => {
     setLoading(true)
+    let logEntry = generateActivityLogEntry({ cr9b3_corrispondenza: title })
     if (newCorr.length > 10000) {
       console.log(newCorr.length)
       addToast(
@@ -49,6 +56,7 @@ const Correspondences = ({ pratica }) => {
       setLoading(false)
       return
     }
+
     const token = await getAccessToken()
     const axiosInstance = createAxiosInstance(token)
     // console.log('saving correspondence', newCorr)
@@ -62,6 +70,33 @@ const Correspondences = ({ pratica }) => {
         `cr9b3_praticas(${pratica.cr9b3_praticaid})/cr9b3_Pratica_Correspondence?$return=representation`,
         requestBody,
       )
+      const whoami = await axiosInstance.get('WhoAmI')
+      let logModifier = await getUserName(whoami.data.UserId)
+      let latestLogs = await getUpdatedActivityLog(pratica.cr9b3_praticaid)
+      console.log(latestLogs)
+      // latestLogs = JSON.parse(latestLogs)
+      let finalLogEntry
+
+      if (latestLogs) {
+        finalLogEntry = [
+          ...latestLogs,
+          {
+            user: logModifier,
+            actions: logEntry,
+            timestamp: moment().tz('Europe/Rome').format('YYYY-MM-DD HH:mm:ss'),
+          },
+        ]
+      } else {
+        finalLogEntry = [
+          {
+            user: logModifier,
+            actions: logEntry,
+            timestamp: moment().tz('Europe/Rome').format('YYYY-MM-DD HH:mm:ss'),
+          },
+        ]
+      }
+      console.log('check for logs:', finalLogEntry)
+      logActivity(pratica.cr9b3_praticaid, finalLogEntry)
       addToast('Successfully added correspondence.', 'Add update', 'success', 3000)
       // console.log('Successfully added correspondence:', response)
       setNewCorr('')

@@ -8,6 +8,23 @@ h6 {
   color: $primary;
 }
 
+.link-controls {
+  color: $gray-600;
+  cursor: pointer;
+}
+
+.trash:hover {
+  color: $primary;
+}
+
+.edit:hover {
+  color: orange;
+}
+
+.copy:hover {
+  color: $gray-900;
+}
+
 .login {
   --login-signed-out-button-background: #8f3937;
   --login-signed-out-button-hover-background: rgb(98, 98, 98);
