@@ -54,7 +54,6 @@ const getRow = (title, input) => {
       return { title: 'Status', input: label }
     case 'cr9b3_categoria':
       let category = null
-      console.log(input)
       switch (input) {
         case 129580000:
           category = 'RICHIESTA CONTRIBUTO - articolo/messaggio'
@@ -81,7 +80,6 @@ const getRow = (title, input) => {
           category = 'PURTROPPO - richiesta evento/contributo/altro'
           break
         case 129580008:
-          console.log('damn')
           category = 'RAPPORTI/DOCUMENTI/INVITI GENERICI - partners, newsletters'
           break
         case 129580009:
@@ -182,7 +180,7 @@ export const getUpdatedActivityLog = async (praticaID) => {
   try {
     const axiosInstance = await initializeAxiosInstance()
     let response = await axiosInstance.get(`cr9b3_praticas(${praticaID})/cr9b3_activitylog`)
-    console.log(response.data.value)
+    // console.log(JSON.parse(response.data.value))
     return response.data.value ? JSON.parse(response.data.value) : ''
   } catch (error) {
     if (error.isAxiosError) {
@@ -240,20 +238,22 @@ export const generateActivityLogEntry = (
 
 export const logActivity = async (praticaID, finalLogEntry) => {
   console.log('and finally:', praticaID, finalLogEntry)
-  try {
-    const axiosInstance = await initializeAxiosInstance()
-    let response = await axiosInstance.patch(`cr9b3_praticas(${praticaID})`, {
-      cr9b3_activitylog: JSON.stringify(finalLogEntry),
-    })
-    console.log(finalLogEntry)
-    console.log(response)
-  } catch (error) {
-    if (error.isAxiosError) {
-      console.error('Axios error details adding log entry:', error.response)
-      console.error('Error message:', error.message)
-      console.error('Error response:', error.response.data)
-    } else {
-      console.error('Non-Axios error:', error)
+  if (finalLogEntry.length <= 10000) {
+    try {
+      const axiosInstance = await initializeAxiosInstance()
+      let response = await axiosInstance.patch(`cr9b3_praticas(${praticaID})`, {
+        cr9b3_activitylog: JSON.stringify(finalLogEntry),
+      })
+      console.log(finalLogEntry)
+      console.log(response)
+    } catch (error) {
+      if (error.isAxiosError) {
+        console.error('Axios error details adding log entry:', error.response)
+        console.error('Error message:', error.message)
+        console.error('Error response:', error.response.data)
+      } else {
+        console.error('Non-Axios error:', error)
+      }
     }
   }
 }

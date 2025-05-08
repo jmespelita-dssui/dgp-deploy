@@ -216,6 +216,25 @@ export const getFields = (categoria) => {
   }
   return fields
 }
+export const getGroupMemberCount = async (groupID) => {
+  try {
+    const token = await getAccessTokenForGraph()
+    const axiosInstance = createAxiosInstance(token)
+
+    const response = await axiosInstance.get(
+      `https://graph.microsoft.com/v1.0/groups/${groupID}/members?$count=true`,
+      {
+        headers: {
+          ConsistencyLevel: 'eventual', // Required for $count to work
+        },
+      },
+    )
+    return response.data['@odata.count']
+  } catch (error) {
+    console.error('Error fetching group member count:', error)
+    return null
+  }
+}
 
 export const getUserGraphDetails = async (userID) => {
   try {
@@ -235,6 +254,12 @@ export const getUserName = async (userID) => {
   const axiosInstance = await initializeAxiosInstance()
   const userNamePromise = await axiosInstance.get(`systemusers(${userID})`)
   return userNamePromise.data.fullname
+}
+
+export const getEmailAddress = async (userID) => {
+  const axiosInstance = await initializeAxiosInstance()
+  const userNamePromise = await axiosInstance.get(`systemusers(${userID})`)
+  return userNamePromise.data.internalemailaddress
 }
 
 export const getSystemUserID = async (user) => {
@@ -264,11 +289,29 @@ export const getSystemUserID = async (user) => {
   return userID
 }
 
-export const getCorrs = async (pratica) => {
+export const getCorrs = async (praticaID) => {
   const axiosInstance = await initializeAxiosInstance()
   try {
     const response = await axiosInstance.get(
-      `cr9b3_praticas(${pratica.cr9b3_praticaid})/cr9b3_Pratica_Correspondence?$orderby=createdon desc`,
+      `cr9b3_praticas(${praticaID})/cr9b3_Pratica_Correspondence?$orderby=cr9b3_date desc`,
+    )
+    return response.data.value
+  } catch (error) {
+    if (error.isAxiosError) {
+      console.error('Axios error getting correspondences:', error.response)
+      console.error('Error message:', error.message)
+      console.error('Error response:', error.response.data)
+    } else {
+      console.error('Non-Axios error:', error)
+    }
+  }
+}
+
+export const getTasks = async (praticaID) => {
+  const axiosInstance = await initializeAxiosInstance()
+  try {
+    const response = await axiosInstance.get(
+      `cr9b3_praticas(${praticaID})/cr9b3_pratica_tasks?$orderby=createdon desc`,
     )
     return response.data.value
   } catch (error) {
@@ -333,7 +376,7 @@ export const assignRelatedTask = async (praticaID, relatedPraticaID) => {
   }
 }
 
-export const assignUserToTask = async (userID, praticaID, table) => {
+export const assignUserToPratica = async (userID, praticaID, table) => {
   const axiosInstance = await initializeAxiosInstance()
   // console.log('adding superiori invitati', userID)
   const data = {
@@ -350,6 +393,26 @@ export const assignUserToTask = async (userID, praticaID, table) => {
   } catch (error) {
     console.error(
       'Error creating user <-> pratica record:',
+      error.response ? error.response.data : error.message,
+    )
+    return false
+  }
+}
+
+export const assignUserToTask = async (userID, taskID) => {
+  const axiosInstance = await initializeAxiosInstance()
+  // console.log('adding superiori invitati', userID)
+  const data = {
+    '@odata.id': `https://orgac85713a.crm4.dynamics.com/api/data/v9.2/cr9b3_tasks(${taskID})`,
+  }
+  try {
+    // POST request to create a relationship in cr9b3_task_utente
+    const response = await axiosInstance.post(`systemusers(${userID})/cr9b3_task_utente/$ref`, data)
+    console.log('Successfully assigned user to task:', response.data)
+    return true
+  } catch (error) {
+    console.error(
+      'Error assigning user to task:',
       error.response ? error.response.data : error.message,
     )
     return false

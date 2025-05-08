@@ -351,28 +351,28 @@ const MyTasks = () => {
                   </CCollapse>
                 )
               },
-              _cr9b3_superioriinvitati_value: (item) => {
-                return (
-                  <td>
-                    <div style={{ display: 'flex' }}>
-                      {/* <Person
-                        className="m-1"
-                        // userId={item._cr9b3_superioriinvitati_value}
-                        userId="m.czerny@dssui.org"
-                        showPresence
-                        personCardInteraction="hover"
-                      /> */}
-                      <Person
-                        className="m-1"
-                        // userId={item._cr9b3_superioriinvitati_value}
-                        userId="a.smerilli@dssui.org"
-                        showPresence
-                        personCardInteraction="hover"
-                      />
-                    </div>
-                  </td>
-                )
-              },
+              // _cr9b3_superioriinvitati_value: (item) => {
+              //   return (
+              //     <td>
+              //       <div style={{ display: 'flex' }}>
+              //         {/* <Person
+              //           className="m-1"
+              //           // userId={item._cr9b3_superioriinvitati_value}
+              //           userId="m.czerny@dssui.org"
+              //           showPresence
+              //           personCardInteraction="hover"
+              //         /> */}
+              //         <Person
+              //           className="m-1"
+              //           // userId={item._cr9b3_superioriinvitati_value}
+              //           userId="a.smerilli@dssui.org"
+              //           showPresence
+              //           personCardInteraction="hover"
+              //         />
+              //       </div>
+              //     </td>
+              //   )
+              // },
               dssui_primascadenza: (item) => {
                 let testDate = moment(item.dssui_primascadenza, 'DD/MM/YYYY')
                 let today = moment()

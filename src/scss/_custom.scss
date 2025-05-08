@@ -13,6 +13,11 @@ h6 {
   cursor: pointer;
 }
 
+.delete {
+  color: $primary;
+  cursor: pointer;
+}
+
 .trash:hover {
   color: $primary;
 }

@@ -3,7 +3,7 @@ import React from 'react'
 // examples
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 const MyTasks = React.lazy(() => import('./views/pratiche/MyTasks'))
-const CreateTask = React.lazy(() => import('./views/createTask/CreateTask'))
+const CreateTask = React.lazy(() => import('./views/createTask/CreatePratica'))
 
 const routes = [
   { path: '/', exact: true, name: 'Home' },

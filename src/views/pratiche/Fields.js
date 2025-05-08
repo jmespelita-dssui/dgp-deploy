@@ -108,16 +108,11 @@ const Fields = ({
     setFormData({ ...formData, cr9b3_categoria: cat })
     setPraticaEdits({ ...praticaEdits, cr9b3_categoria: cat })
     setIsModified(true)
-    console.log('YAY!', cat)
   }
 
   const onSubmit = async (e) => {
     e.preventDefault()
-    console.log(pratica, praticaEdits)
-
-    if (praticaEdits.cr9b3_datainoltrataresponsabile === pratica.cr9b3_datainoltrataresponsabile) {
-      console.log('macchè')
-    }
+    // console.log(pratica, praticaEdits)
 
     if (isValid) {
       onSaveEdit(
@@ -142,7 +137,7 @@ const Fields = ({
     if (confirmAction === 'close') {
       let refreshPratica = changeNullToEmptyString(await getPratica(formData.cr9b3_praticaid))
       // let refreshPratica = await getPratica(formData.cr9b3_praticaid)
-      console.log(refreshPratica)
+      // console.log(refreshPratica)
       setFormData(refreshPratica)
       setLabel(categoryLabel)
       setPraticaEdits(refreshPratica)
@@ -225,7 +220,6 @@ const Fields = ({
               onChange={(e) => {
                 setFormData({ ...formData, cr9b3_titolo: e.target.value })
                 setPraticaEdits({ ...praticaEdits, cr9b3_titolo: e.target.value.trim() })
-                console.log(praticaEdits)
                 setIsModified(true)
               }}
               required
@@ -254,7 +248,7 @@ const Fields = ({
         <CFormTextarea
           id="debrief"
           className="mb-3"
-          label="Debrief:"
+          label="Briefing:"
           rows={5}
           value={formData.cr9b3_debrief ? formData.cr9b3_debrief : ''}
           aria-label="debrief"
@@ -574,28 +568,28 @@ const Fields = ({
                 {superioriInvitatiList.length === 0 && isView ? '(not yet assigned)' : ':'}
               </p>
               <CCol className="mb-5">
-                {isView && superioriInvitatiList.length !== 0 ? (
-                  superioriInvitatiList.map((s) => (
-                    <Person
-                      key={s.id}
-                      className="m-3"
-                      personQuery={s.mail}
-                      personCardInteraction="hover"
-                      showPresence={false}
-                      view="twoLines"
-                    />
-                  ))
-                ) : (
-                  <PeoplePicker
-                    className="mt-2"
-                    groupId="317aa3d0-a94a-4c7c-bcb9-8870cfececa4"
-                    selectedPeople={superioriInvitatiList}
-                    selectionChanged={(e) => {
-                      setSuperioriInvitatiList(e.target.selectedPeople)
-                      setIsModified(true)
-                    }}
-                  />
-                )}
+                {isView && superioriInvitatiList.length !== 0
+                  ? superioriInvitatiList.map((s) => (
+                      <Person
+                        key={s.id}
+                        className="m-3"
+                        personQuery={s.mail}
+                        personCardInteraction="hover"
+                        showPresence={false}
+                        view="twoLines"
+                      />
+                    ))
+                  : !isView && (
+                      <PeoplePicker
+                        className="mt-2"
+                        groupId="317aa3d0-a94a-4c7c-bcb9-8870cfececa4"
+                        selectedPeople={superioriInvitatiList}
+                        selectionChanged={(e) => {
+                          setSuperioriInvitatiList(e.target.selectedPeople)
+                          setIsModified(true)
+                        }}
+                      />
+                    )}
               </CCol>
             </>
           )}

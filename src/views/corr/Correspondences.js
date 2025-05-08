@@ -30,33 +30,15 @@ const Correspondences = ({ pratica }) => {
 
   useEffect(() => {
     const update = async () => {
-      let response = await getCorrs(pratica)
+      let response = await getCorrs(pratica.cr9b3_praticaid)
       setCorrespondences(response)
     }
     update()
   }, [])
 
-  // const handleAdd = () => {
-  //   setNewCorr('')
-  //   setTitle('')
-  //   setDate(null)
-  // }
-
   const saveCorr = async () => {
     setLoading(true)
     let logEntry = generateActivityLogEntry({ cr9b3_corrispondenza: title })
-    if (newCorr.length > 10000) {
-      console.log(newCorr.length)
-      addToast(
-        'Message exceeds character limit. Keep it short and sweet! Remove any photos or logos.',
-        'Add update',
-        'warning',
-        3000,
-      )
-      setLoading(false)
-      return
-    }
-
     const token = await getAccessToken()
     const axiosInstance = createAxiosInstance(token)
     // console.log('saving correspondence', newCorr)
@@ -103,7 +85,7 @@ const Correspondences = ({ pratica }) => {
       setTitle('')
       setDate(null)
 
-      setCorrespondences(await getCorrs(pratica))
+      setCorrespondences(await getCorrs(pratica.cr9b3_praticaid))
       setLoading(false)
       return true
     } catch (error) {
@@ -120,8 +102,8 @@ const Correspondences = ({ pratica }) => {
   return (
     <>
       <LoadingOverlay loading={loading} />
-      <CContainer onSubmit={saveCorr}>
-        <CForm>
+      <CContainer>
+        <CForm onSubmit={saveCorr}>
           <CFormInput
             value={title}
             maxLength={100}

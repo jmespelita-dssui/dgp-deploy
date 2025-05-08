@@ -470,6 +470,18 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
         <CRow className="mb-5">
           <CCol md={8}>
             <CFormTextarea
+              id="briefing"
+              label="Briefing"
+              rows={5}
+              onChange={(e) => {
+                setNewPratica({ ...newPratica, cr9b3_debrief: e.target.value.trim() })
+              }}
+            />
+          </CCol>
+        </CRow>
+        <CRow className="mb-5">
+          <CCol md={8}>
+            <CFormTextarea
               id="notes"
               label="Notes"
               rows={5}

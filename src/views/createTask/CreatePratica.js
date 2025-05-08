@@ -20,7 +20,7 @@ import React, { useState } from 'react'
 import { initializeAxiosInstance } from 'src/util/axiosUtils'
 import {
   getSystemUserID,
-  assignUserToTask,
+  assignUserToPratica,
   getFields,
   checkIfExistingProt,
 } from 'src/util/taskUtils'
@@ -59,7 +59,7 @@ const CreateTask = () => {
           superioriInvitati.map(async (id) => {
             console.log('adding superior:', id)
             const superiorID = await getSystemUserID(id)
-            assignUserToTask(
+            assignUserToPratica(
               superiorID,
               praticaDetailsResponse.data.cr9b3_praticaid,
               'cr9b3_pratica_superiore',
@@ -69,7 +69,7 @@ const CreateTask = () => {
           responsabili.map(async (id) => {
             const respID = await getSystemUserID(id)
             if (
-              !assignUserToTask(
+              !assignUserToPratica(
                 respID,
                 praticaDetailsResponse.data.cr9b3_praticaid,
                 'cr9b3_pratica_responsabile',
@@ -226,25 +226,3 @@ const CreateTask = () => {
 }
 
 export default CreateTask
-
-// const [superiors, setSuperiors] = useState([])
-// const [responsibles, setResponsibles] = useState([])
-// useEffect(() => {
-//   const fetchInternalUsers = async () => {
-//     const provider = Providers.globalProvider
-//     const graphClient = provider.graph.client
-
-//     const sups = await graphClient
-//       .api('/groups/317aa3d0-a94a-4c7c-bcb9-8870cfececa4/members')
-//       .get()
-
-//     const resps = await graphClient
-//       .api('/groups/2e227ba3-c594-4117-b106-d9735ddf4d26/members')
-//       .get()
-
-//     setSuperiors(sups.value)
-//     setResponsibles(resps.value)
-//   }
-
-//   fetchInternalUsers()
-// }, [])

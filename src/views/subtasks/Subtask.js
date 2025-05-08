@@ -1,0 +1,472 @@
+/* eslint-disable react/prop-types */
+import React, { useEffect, useState } from 'react'
+import {
+  CCardHeader,
+  CCardBody,
+  CRow,
+  CCol,
+  CCard,
+  CCardFooter,
+  CFormInput,
+  CFormTextarea,
+  CFormSelect,
+  CButton,
+  CContainer,
+  CBadge,
+  CDatePicker,
+  CCollapse,
+} from '@coreui/react-pro'
+
+import { useToast } from 'src/context/ToastContext'
+import { PeoplePicker, Person } from '@microsoft/mgt-react'
+import ConfirmClose from '../modals/ConfirmClose'
+import CIcon from '@coreui/icons-react'
+import { cilCalendar, cilChevronCircleDownAlt, cilChevronCircleUpAlt } from '@coreui/icons'
+import moment from 'moment'
+import { initializeAxiosInstance } from 'src/util/axiosUtils'
+import {
+  assignUserToTask,
+  getEmailAddress,
+  getSystemUserID,
+  getUserGraphDetails,
+} from 'src/util/taskUtils'
+import LoadingOverlay from '../modals/LoadingOverlay'
+
+const Subtask = ({ task, refreshTask }) => {
+  const [isExpand, setIsExpand] = useState(false)
+  const [isReassigned, setIsReassigned] = useState(false)
+  const [isHidden, setIsHidden] = useState(true)
+  const [taskDetails, setTaskDetails] = useState()
+  const [assignedUsers, setAssignedUsers] = useState([])
+  const [taskEdits, setTaskEdits] = useState()
+  const [statusLabel, setStatusLabel] = useState()
+  const [comment, setComment] = useState('')
+  const [comments, setComments] = useState()
+  const [assignedUsersSystemUserIDs, setAssignedUsersSystemUserIDs] = useState([])
+
+  const [loading, setLoading] = useState(false)
+  const [visibleConfirmClose, setVisibleConfirmClose] = useState(false)
+  const { addToast } = useToast()
+
+  const options = [
+    { label: 'New', value: '0', color: 'cyan' },
+    { label: 'In progress', value: '1', color: 'warning' },
+    { label: 'On hold', value: '2', color: 'gray' },
+    { label: 'Waiting for approval', value: '3', color: 'purple' },
+    { label: 'Completed', value: '4' },
+  ]
+
+  useEffect(() => {
+    // setIsExpand(false)
+    // setIsHidden(true)
+    setStatus(task.cr9b3_status)
+    getAssignedUsers()
+    setTaskDetails(task)
+    if (!task.cr9b3_comments) {
+      setComments([])
+    } else {
+      setComments(JSON.parse(task.cr9b3_comments))
+      setComment('')
+    }
+  }, [task])
+
+  const deleteTask = async () => {
+    setLoading(true)
+    setVisibleConfirmClose(false)
+    try {
+      const axiosInstance = await initializeAxiosInstance()
+      console.log('delete', task.cr9b3_tasksid)
+      const response = await axiosInstance.delete(`cr9b3_taskses(${task.cr9b3_tasksid})`)
+      addToast('Subtask deleted!', 'Delete subtask', 'success', 3000)
+      console.log(response)
+    } catch (error) {
+      addToast('Error deleting subtask', 'Delete subtask', 'warning', 3000)
+      if (error.isAxiosError) {
+        console.error('Axios error deleting subtask:', error.response)
+        console.error('Error message:', error.message)
+        console.error('Error response:', error.response.data)
+      } else {
+        console.error('Non-Axios error:', error)
+      }
+    } finally {
+      setLoading(false)
+      refreshTask()
+    }
+  }
+
+  const saveComment = async () => {
+    const axiosInstance = await initializeAxiosInstance()
+    const whoami = (await axiosInstance.get('WhoAmI')).data.UserId
+    const now = new Date().toISOString()
+    let email = await getEmailAddress(whoami)
+    const commentEntry = { timestamp: now, email: email, comment: comment }
+    console.log('comments:', comments)
+    console.log('new comment:', [commentEntry, ...comments])
+
+    try {
+      let response = await axiosInstance.patch(`cr9b3_taskses(${task.cr9b3_tasksid})`, {
+        cr9b3_comments: JSON.stringify([commentEntry, ...comments]),
+      })
+      if (response.status === 204) {
+        console.log('yay!')
+        setComments([commentEntry, ...comments])
+        setComment('')
+      }
+    } catch (error) {
+      if (error.isAxiosError) {
+        console.error('Axios error details adding comment:', error.response)
+        console.error('Error message:', error.message)
+        console.error('Error response:', error.response.data)
+      } else {
+        console.error('Non-Axios error:', error)
+      }
+    }
+  }
+
+  const setStatus = (value) => {
+    const status = options.find((s) => s.value === String(value))
+    setStatusLabel(status)
+    // setTaskStatus(value)
+  }
+
+  const getAssignedUsers = async () => {
+    let assignedUserIDs
+    if (task.cr9b3_tasksid) {
+      assignedUserIDs = await getUserIDs()
+    }
+
+    const detailsPromises = assignedUserIDs.azureactivedirectoryobjectid.map(async (userID) => {
+      return await getUserGraphDetails(userID)
+    })
+
+    const assignedUsersDetails = await Promise.all(detailsPromises)
+    setAssignedUsers(assignedUsersDetails)
+    setAssignedUsersSystemUserIDs(assignedUserIDs.systemuserid)
+    // console.log('assignedusersystemuserids', assignedUserIDs.systemuserid)
+  }
+
+  const getUserIDs = async () => {
+    const axiosInstance = await initializeAxiosInstance()
+    let user
+    let azureactivedirectoryobjectid
+    let systemuserid
+    const response = await axiosInstance.get(
+      `cr9b3_taskses?$filter=cr9b3_tasksid eq '${task.cr9b3_tasksid}'&$expand=cr9b3_task_utente`,
+    )
+    user = response.data.value[0].cr9b3_task_utente
+
+    azureactivedirectoryobjectid = user.map((user) => user.azureactivedirectoryobjectid)
+    systemuserid = user.map((user) => user.systemuserid)
+
+    return {
+      azureactivedirectoryobjectid: azureactivedirectoryobjectid,
+      systemuserid: systemuserid,
+    }
+  }
+
+  const saveTask = async () => {
+    console.log('saving attempt!')
+    const axiosInstance = await initializeAxiosInstance()
+
+    let usersToAssign = []
+    let usersToUnassign = []
+    let newAssignedUsersList = []
+
+    let response
+
+    if (isReassigned) {
+      try {
+        newAssignedUsersList = await Promise.all(
+          assignedUsers.map(async (id) => {
+            return getSystemUserID(id)
+          }),
+        )
+
+        //determine which superiors were removed
+        usersToUnassign = assignedUsersSystemUserIDs.filter(
+          (value) => !newAssignedUsersList.includes(value),
+        )
+
+        //determine which superiors were added
+        usersToAssign = newAssignedUsersList.filter(
+          (value) => !assignedUsersSystemUserIDs.includes(value),
+        )
+
+        console.log(usersToAssign, usersToUnassign)
+
+        //axios delete superiors
+        if (usersToUnassign.length > 0) {
+          usersToUnassign.map(async (id) => {
+            response = await axiosInstance.delete(
+              `cr9b3_taskses(${task.cr9b3_tasksid})/cr9b3_task_utente(${id})/$ref`,
+            )
+          })
+        }
+
+        //axios add superiors
+        if (usersToAssign.length > 0) {
+          usersToAssign.map(async (id) => {
+            assignUserToTask(id, task.cr9b3_tasksid)
+          })
+        }
+      } catch (error) {
+        if (error.isAxiosError) {
+          console.error('Axios error assigning user to task:', error.response)
+          console.error('Error message:', error.message)
+          console.error('Error response:', error.response.data)
+        } else {
+          console.error('Non-Axios error:', error)
+        }
+      }
+    }
+
+    if (taskEdits) {
+      try {
+        console.log(task, taskEdits)
+        response = await axiosInstance.patch(`cr9b3_taskses(${task.cr9b3_tasksid})`, taskEdits)
+
+        if (response) {
+          console.log('task saved!')
+        }
+        setTaskEdits(null)
+      } catch (error) {
+        if (error.isAxiosError) {
+          console.error('Axios error saving task:', error.response)
+          console.error('Error message:', error.message)
+          console.error('Error response:', error.response.data)
+        } else {
+          console.error('Non-Axios error:', error)
+        }
+      }
+    }
+  }
+
+  return (
+    <>
+      <LoadingOverlay loading={loading} />
+
+      <ConfirmClose
+        visible={visibleConfirmClose}
+        body={{ title: 'Delete subtask', text: 'Are you sure you want to delete subtask?' }}
+        onCancel={() => setVisibleConfirmClose(false)}
+        onContinue={deleteTask}
+      />
+      {taskDetails && (
+        <CCard className="mb-4">
+          <CCardHeader
+            onClick={() => {
+              if (!isHidden) {
+                saveTask()
+              }
+              setIsHidden(!isHidden)
+              setIsExpand(false)
+            }}
+          >
+            <h6 className="m-1">
+              <CIcon
+                icon={!isHidden ? cilChevronCircleUpAlt : cilChevronCircleDownAlt}
+                className="me-md-2 link-controls"
+              />{' '}
+              <span>{taskDetails.cr9b3_label}</span>
+              {statusLabel.value === '4' ? (
+                <CBadge shape="rounded-pill" color="success" className="m-2">
+                  Completed
+                </CBadge>
+              ) : (
+                ''
+              )}
+            </h6>
+          </CCardHeader>
+          <CCollapse visible={!isHidden}>
+            <CCardBody className="p-3">
+              {isExpand ? (
+                <>
+                  <CRow className="mb-3">
+                    <CCol>
+                      <CFormInput
+                        // value={formData.cr9b3_prano ? formData.cr9b3_prano : ''}
+                        value={taskDetails.cr9b3_label ? taskDetails.cr9b3_label : ''}
+                        placeholder="Task label"
+                        id="task-label"
+                        size="lg"
+                        onChange={(e) => {
+                          setTaskDetails({ ...taskDetails, cr9b3_label: e.target.value })
+                          setTaskEdits({ ...taskEdits, cr9b3_label: e.target.value })
+                        }}
+                        maxLength={100}
+                        required
+                      />
+                    </CCol>
+                  </CRow>
+                  <CRow className="mb-4">
+                    <CCol>
+                      <CFormSelect
+                        aria-label="Status"
+                        label="Status"
+                        //   value={formData.cr9b3_status ? formData.cr9b3_status : ''}
+                        value={taskDetails.cr9b3_status ? taskDetails.cr9b3_status : 0}
+                        options={options}
+                        onChange={(e) => {
+                          console.log(e.target.value)
+                          setStatus(e.target.value)
+                          setTaskDetails({ ...taskDetails, cr9b3_status: e.target.value })
+                          setTaskEdits({ ...taskEdits, cr9b3_status: e.target.value })
+                        }}
+                        //   disabled={isView}
+                      />
+                    </CCol>
+                    <CCol>
+                      <CDatePicker
+                        label="Deadline"
+                        date={moment(taskDetails.cr9b3_deadline).format('YYYY/MM/DD').toString()}
+                        locale="it-IT"
+                        onDateChange={(e) => {
+                          setTaskDetails({ ...taskDetails, cr9b3_deadline: e })
+                          setTaskEdits({ ...taskEdits, cr9b3_deadline: e })
+                        }}
+                      />
+                    </CCol>
+                  </CRow>
+                  <p>Assigned to</p>
+                  <PeoplePicker
+                    className="mb-4"
+                    groupId="7430b06a-2d45-4576-b6d9-dd969da4d43b"
+                    selectedPeople={assignedUsers}
+                    selectionChanged={(e) => {
+                      setAssignedUsers(e.target.selectedPeople)
+                      setIsReassigned(true)
+                      console.log('people picker set officiale list', e.target.selectedPeople)
+                      // setIsModified(true)
+                    }}
+                  />
+                  <CFormTextarea
+                    //   value={formData.cr9b3_protno ? formData.cr9b3_protno : ''}
+                    value={taskDetails.cr9b3_description}
+                    className="mb-5"
+                    rows={3}
+                    id="desc"
+                    label="Description"
+                    onChange={(e) => {
+                      setTaskDetails({ ...taskDetails, cr9b3_description: e.target.value })
+                      setTaskEdits({ ...taskEdits, cr9b3_description: e.target.value })
+                    }}
+                    maxLength={1000}
+                    required
+                  />
+                  <CFormTextarea
+                    value={comment}
+                    className="mb-1"
+                    id="desc"
+                    label="Comments"
+                    onChange={(e) => {
+                      setComment(e.target.value)
+                    }}
+                    rows={3}
+                    maxLength={300}
+                  />
+                  <div className="d-grid gap-2 d-md-flex justify-content-md-end mb-5">
+                    <CButton
+                      className="mt-3"
+                      // variant="ghost"
+                      color="light"
+                      onClick={() => {
+                        saveComment()
+                      }}
+                      disabled={comment.trim() === ''}
+                    >
+                      Send
+                    </CButton>
+                  </div>
+                  <CContainer className="pb-5">
+                    {comments.map((post, index) => (
+                      <div key={index}>
+                        <CRow className="justify-content-between">
+                          <CCol md={6}>
+                            <small>
+                              <Person className="m-1" userId={post.email} view="oneline" />
+                            </small>
+                          </CCol>
+                          <CCol md={4} className="m-1 text-end">
+                            <small style={{ color: 'gray' }}>
+                              {moment(post.timestamp).format('DD/MM/YYYY HH:mm')}
+                            </small>
+                          </CCol>
+                        </CRow>
+                        <CRow className="m-2">
+                          <CCol className="mb-4">{post.comment}</CCol>
+                        </CRow>
+                      </div>
+                    ))}
+                  </CContainer>
+                </>
+              ) : (
+                <CContainer>
+                  {statusLabel.value < 4 ? (
+                    <CBadge shape="rounded-pill" color={statusLabel.color} className="m-1 mb-3">
+                      {statusLabel.label}
+                    </CBadge>
+                  ) : (
+                    ''
+                  )}
+                  <p>Description: {taskDetails.cr9b3_description}</p>
+                </CContainer>
+              )}
+
+              <CRow className="justify-content-between m-1">
+                <CCol md={3}>
+                  {isExpand && (
+                    <small
+                      className="link-controls text-decoration-underline delete"
+                      onClick={() => {
+                        setVisibleConfirmClose(true)
+                      }}
+                    >
+                      Delete task
+                    </small>
+                  )}
+                </CCol>
+                <CCol md={3} className="text-end">
+                  <small
+                    onClick={() => {
+                      if (isExpand) {
+                        saveTask()
+                      }
+                      setIsExpand(!isExpand)
+                    }}
+                    className="link-controls text-decoration-underline"
+                  >
+                    {isExpand ? <>Save and hide</> : <>Edit</>}
+                  </small>
+                </CCol>
+              </CRow>
+            </CCardBody>
+          </CCollapse>
+
+          <CCardFooter>
+            <CRow className="justify-content-between">
+              <CCol md={6}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1px' }}>
+                  {assignedUsers.map((person, index) => (
+                    <Person
+                      key={index}
+                      className="m-1"
+                      userId={person.mail}
+                      showPresence
+                      personCardInteraction="hover"
+                    />
+                  ))}
+                </div>
+              </CCol>
+              <CCol md={4} className="m-1 text-end">
+                <CIcon icon={cilCalendar} className="me-md-2" />
+                <small>Due {moment(taskDetails.cr9b3_deadline).format('DD/MM/YYYY')}</small>
+              </CCol>
+            </CRow>
+          </CCardFooter>
+        </CCard>
+      )}
+    </>
+  )
+}
+
+export default Subtask

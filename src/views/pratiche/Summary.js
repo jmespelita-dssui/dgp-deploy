@@ -10,10 +10,10 @@ import {
   CListGroup,
   CListGroupItem,
 } from '@coreui/react-pro'
-import Tasks from './Subtasks'
 import { emptyTask, getFields } from 'src/util/taskUtils'
 import { createAxiosInstance, getAccessToken } from 'src/util/axiosUtils'
 import moment from 'moment'
+import Subtasks from '../subtasks/Subtasks'
 
 const Summary = ({ pratica }) => {
   const [item, setItem] = useState(pratica)
@@ -30,7 +30,7 @@ const Summary = ({ pratica }) => {
     }
     getUserDetails()
     setFields(getFields(item.cr9b3_categoria))
-  }, [])
+  }, [pratica])
 
   const getUserDetails = async () => {
     const token = await getAccessToken()
@@ -189,7 +189,8 @@ const Summary = ({ pratica }) => {
             {/* MAIN BODY */}
             <CCol xs={6}>
               {/* task  1*/}
-              <Tasks />
+              {/* <Tasks /> */}
+              {/* <Subtasks /> */}
               {/* <Person personQuery="j.espelita@dssui.org" showName showEmail showPresence /> */}
             </CCol>
           </CRow>

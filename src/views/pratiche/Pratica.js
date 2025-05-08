@@ -26,12 +26,12 @@ import {
 } from '@coreui/react-pro'
 
 import CIcon from '@coreui/icons-react'
-import { cilFolderOpen } from '@coreui/icons'
+import { cilFolderOpen, cilGroup } from '@coreui/icons'
 import Fields from './Fields'
 import {
   getSystemUserID,
   getUserGraphDetails,
-  assignUserToTask,
+  assignUserToPratica,
   getFields,
   checkIfExistingProt,
   getUserName,
@@ -48,14 +48,19 @@ import {
   getUpdatedActivityLog,
   logActivity,
 } from 'src/util/activityLogUtils'
+import Subtasks from '../subtasks/Subtasks'
+import ManageAccess from '../access/ManageAccess'
 
 const Pratica = ({ pratica, praticheList, visible, onClose, labelColor, refresh }) => {
   const [visibleLinks, setVisibleLinks] = useState(true)
+  const [visibleTasks, setVisibleTasks] = useState(false)
   const [visibleCorr, setVisibleCorr] = useState(false)
   const [visibleLogs, setVisibleLogs] = useState(false)
+  const [visibleAccess, setVisibleAccess] = useState(false)
+
   const [visibleConfirmClose, setVisibleConfirmClose] = useState(false)
   const [status, setStatus] = useState()
-  const [sharepointLink, setSharePointLink] = useState(pratica.cr9b3_sharepointlink)
+  const [sharepointLink, setSharePointLink] = useState()
   const [confirmCloseBody, setConfirmCloseBody] = useState({
     title: 'Confirm',
     text: 'Your changes may not have been saved. Continue?',
@@ -76,6 +81,7 @@ const Pratica = ({ pratica, praticheList, visible, onClose, labelColor, refresh 
   const [loading, setLoading] = useState(false)
   const { addToast } = useToast()
 
+  const [actionType, setActionType] = useState('')
   const [activityLogs, setActivityLogs] = useState([])
   const [activityLogEntry, setActivityLogEntry] = useState()
   const [isSaved, setIsSaved] = useState(false)
@@ -83,11 +89,13 @@ const Pratica = ({ pratica, praticheList, visible, onClose, labelColor, refresh 
 
   useEffect(() => {
     // console.log('starting pratica', pratica)
-    setVisibleLinks(true)
-    setVisibleCorr(false)
-    setVisibleLogs(false)
+    // setVisibleLinks(true)
+    // setVisibleTasks(false)
+    // setVisibleCorr(false)
+    // setVisibleLogs(false)
     setPratNo(pratica.cr9b3_prano)
     setProtNo(pratica.cr9b3_protno)
+    setSharePointLink(pratica.cr9b3_sharepointlink)
     setActivityLogs(pratica.cr9b3_activitylog ? JSON.parse(pratica.cr9b3_activitylog) : [])
     getAssignedUsers()
     getRelatedPratiche()
@@ -146,14 +154,13 @@ const Pratica = ({ pratica, praticheList, visible, onClose, labelColor, refresh 
   }
 
   const getAssignedUsers = async () => {
-    const axiosInstance = await initializeAxiosInstance()
-
     try {
       // Perform same operations for both invited superiors and assigned responsible
       if (pratica.cr9b3_praticaid) {
         const superioriIDs = await getUserIDs('cr9b3_pratica_superiore')
         const responsabiliIDs = await getUserIDs('cr9b3_pratica_responsabile')
         const officialiIncaricatiIDs = await getUserIDs('cr9b3_pratica_officiali_incaricati')
+
         const superiorUserDetailsPromises = superioriIDs.azureactivedirectoryobjectid.map(
           async (userID) => {
             return await getUserGraphDetails(userID)
@@ -203,21 +210,35 @@ const Pratica = ({ pratica, praticheList, visible, onClose, labelColor, refresh 
 
   const checkForLogs = async () => {
     let finalLogEntry
-
+    let timestamp = moment().tz('Europe/Rome').format('YYYY-MM-DD HH:mm:ss')
+    // console.log(isSaved)
     if (isSaved) {
-      let logs = await getUpdatedActivityLog(pratica.cr9b3_praticaid)
-      console.log(logs)
       setLoading(true)
-      finalLogEntry = [
-        ...logs,
-        {
-          user: modifiedByUserID,
-          actions: activityLogEntry,
-          timestamp: moment().tz('Europe/Rome').format('YYYY-MM-DD HH:mm:ss'),
-        },
-      ]
-      console.log('check for logs:', finalLogEntry)
-      logActivity(pratica.cr9b3_praticaid, finalLogEntry)
+      console.log('checking for logs')
+      let logs = await getUpdatedActivityLog(pratica.cr9b3_praticaid)
+      if (actionType === 'archived pratica.' || actionType === 'unarchived pratica.') {
+        finalLogEntry = [
+          ...logs,
+          {
+            actionType: actionType,
+            user: modifiedByUserID,
+            actions: null,
+            timestamp: timestamp,
+          },
+        ]
+      } else {
+        finalLogEntry = [
+          ...logs,
+          {
+            actionType: actionType,
+            user: modifiedByUserID,
+            actions: activityLogEntry,
+            timestamp: moment().tz('Europe/Rome').format('YYYY-MM-DD HH:mm:ss'),
+          },
+        ]
+        console.log('check for logs:', finalLogEntry)
+        logActivity(pratica.cr9b3_praticaid, finalLogEntry)
+      }
     }
     onClose()
   }
@@ -295,7 +316,7 @@ const Pratica = ({ pratica, praticheList, visible, onClose, labelColor, refresh 
       //axios add superiors
       if (superioriToAssign.length > 0) {
         superioriToAssign.map(async (id) => {
-          assignUserToTask(id, prat.cr9b3_praticaid, 'cr9b3_pratica_superiore')
+          assignUserToPratica(id, prat.cr9b3_praticaid, 'cr9b3_pratica_superiore')
         })
       }
     } catch (error) {
@@ -333,7 +354,7 @@ const Pratica = ({ pratica, praticheList, visible, onClose, labelColor, refresh 
       //axios add responsible
       if (responsabiliToAssign.length > 0) {
         responsabiliToAssign.map(async (id) => {
-          assignUserToTask(id, prat.cr9b3_praticaid, 'cr9b3_pratica_responsabile')
+          assignUserToPratica(id, prat.cr9b3_praticaid, 'cr9b3_pratica_responsabile')
         })
       }
     } catch (error) {
@@ -371,7 +392,7 @@ const Pratica = ({ pratica, praticheList, visible, onClose, labelColor, refresh 
       //axios add officiali
       if (officialiIncaricatiToAssign.length > 0) {
         officialiIncaricatiToAssign.map(async (id) => {
-          assignUserToTask(id, prat.cr9b3_praticaid, 'cr9b3_pratica_officiali_incaricati')
+          assignUserToPratica(id, prat.cr9b3_praticaid, 'cr9b3_pratica_officiali_incaricati')
         })
       }
     } catch (error) {
@@ -385,18 +406,41 @@ const Pratica = ({ pratica, praticheList, visible, onClose, labelColor, refresh 
 
       // Get the OData-EntityId from the response headers
       entityUrl = response.headers['odata-entityid']
+      // Retrieve the details of the created record
+      const whoami = await axiosInstance.get('WhoAmI')
+      let logModifier = await getUserName(whoami.data.UserId)
+      setModifiedByUserID(logModifier)
 
+      setIsSaved(true)
+      setActivityLogEntry(
+        generateActivityLogEntry(
+          prat,
+          superioriToUnassign.length + superioriToAssign.length > 0 ? superioriInvitatiList : null,
+          responsabiliToUnassign.length + responsabiliToAssign.length > 0 ? responsabileList : null,
+          officialiIncaricatiToUnassign.length + officialiIncaricatiToAssign.length > 0
+            ? officialiIncaricatiList
+            : null,
+          responsabileList,
+          officialiIncaricatiList,
+        ),
+      )
       if (entityUrl) {
         if (action === 'archive') {
+          setIsSaved(true)
           addToast('Pratica has been archived.', 'Edit Pratica', 'warning', 3000)
-          setTimeout(() => {
-            window.location.reload() // Refresh the page after 3 seconds
-          }, 2000)
+          setActionType('archived pratica.')
+          checkForLogs()
+          // setTimeout(() => {
+          //   window.location.reload() // Refresh the page after 3 seconds
+          // }, 2000)
         } else if (action === 'unarchive') {
+          setIsSaved(true)
+          setActionType('unarchived pratica.')
+          checkForLogs()
           addToast('Pratica has been unarchived.', 'Edit Pratica', 'success', 3000)
-          setTimeout(() => {
-            window.location.reload() // Refresh the page after 3 seconds
-          }, 2000)
+          // setTimeout(() => {
+          //   window.location.reload() // Refresh the page after 3 seconds
+          // }, 2000)
         } else {
           addToast('Success! Your changes have been saved.', 'Edit Pratica', 'success', 3000)
           setSharePointLink(prat.cr9b3_sharepointlink)
@@ -405,29 +449,8 @@ const Pratica = ({ pratica, praticheList, visible, onClose, labelColor, refresh 
           if (prat.cr9b3_prano) setPratNo(prat.cr9b3_prano)
           if (prat.cr9b3_protno) setProtNo(prat.cr9b3_protno)
         }
-
-        // Retrieve the details of the created record
-        const whoami = await axiosInstance.get('WhoAmI')
-        let logModifier = await getUserName(whoami.data.UserId)
-        setModifiedByUserID(logModifier)
-
-        setIsSaved(true)
-        setActivityLogEntry(
-          generateActivityLogEntry(
-            prat,
-            superioriToUnassign.length + superioriToAssign.length > 0
-              ? superioriInvitatiList
-              : null,
-            responsabiliToUnassign.length + responsabiliToAssign.length > 0
-              ? responsabileList
-              : null,
-            officialiIncaricatiToUnassign.length + officialiIncaricatiToAssign.length > 0
-              ? officialiIncaricatiList
-              : null,
-            responsabileList,
-            officialiIncaricatiList,
-          ),
-        )
+        setResponsabiliAssegnati(responsabileList)
+        setOfficialiIncaricati(officialiIncaricatiList)
       } else {
         addToast('Error occurred while saving changes.', 'Edit Pratica', 'warning', 3000)
         setLoading(false)
@@ -518,7 +541,9 @@ const Pratica = ({ pratica, praticheList, visible, onClose, labelColor, refresh 
                       active={visibleLinks}
                       onClick={() => {
                         setVisibleCorr(false)
+                        setVisibleTasks(false)
                         setVisibleLinks(true)
+                        setVisibleAccess(false)
                         setVisibleLogs(false)
                       }}
                     >
@@ -527,10 +552,26 @@ const Pratica = ({ pratica, praticheList, visible, onClose, labelColor, refresh 
                   </CNavItem>
                   <CNavItem>
                     <CNavLink
+                      active={visibleTasks}
+                      onClick={() => {
+                        setVisibleCorr(false)
+                        setVisibleTasks(true)
+                        setVisibleLinks(false)
+                        setVisibleAccess(false)
+                        setVisibleLogs(false)
+                      }}
+                    >
+                      To-do
+                    </CNavLink>
+                  </CNavItem>
+                  <CNavItem>
+                    <CNavLink
                       active={visibleCorr}
                       onClick={() => {
                         setVisibleCorr(true)
+                        setVisibleTasks(false)
                         setVisibleLinks(false)
+                        setVisibleAccess(false)
                         setVisibleLogs(false)
                       }}
                     >
@@ -543,17 +584,51 @@ const Pratica = ({ pratica, praticheList, visible, onClose, labelColor, refresh 
                       onClick={() => {
                         setVisibleCorr(false)
                         setVisibleLinks(false)
+                        setVisibleTasks(false)
+                        setVisibleAccess(false)
                         setVisibleLogs(true)
                       }}
                     >
                       Activity log
                     </CNavLink>
                   </CNavItem>
+                  <CNavItem>
+                    <CNavLink
+                      active={visibleAccess}
+                      onClick={() => {
+                        setVisibleCorr(false)
+                        setVisibleLinks(false)
+                        setVisibleTasks(false)
+                        setVisibleLogs(false)
+                        setVisibleAccess(true)
+                      }}
+                    >
+                      <CIcon icon={cilGroup} />
+                    </CNavLink>
+                  </CNavItem>
                 </CNav>
+                {/* Access */}
+                <CCollapse visible={visibleAccess}>
+                  <CCard className="mb-3">
+                    <CCardBody>
+                      <ManageAccess
+                        responsabile={responsabiliAssegnati}
+                        officialiIncaricati={officialiIncaricati}
+                      />
+                    </CCardBody>
+                  </CCard>
+                </CCollapse>
+
                 {/* CORRESPONDENCE */}
                 <CCollapse visible={visibleCorr}>
                   <Correspondences pratica={pratica} />
                 </CCollapse>
+
+                {/* Subtasks */}
+                <CCollapse visible={visibleTasks}>
+                  <Subtasks pratica={pratica} />
+                </CCollapse>
+
                 {/* LINKS */}
                 <CCollapse visible={visibleLinks}>
                   {isView && (
