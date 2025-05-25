@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { Providers } from '@microsoft/mgt-element'
 import msalInstance from 'src/msalConfig'
+import { InteractionRequiredAuthError } from '@azure/msal-browser'
 
 export const getAccessToken = async () => {
   const provider = Providers.globalProvider
@@ -21,15 +22,26 @@ export const getAccessToken = async () => {
 
 export const getAccessTokenForGraph = async () => {
   const provider = Providers.globalProvider
-  // console.log('getting access token for graph')
   if (provider && provider.state === 2) {
     try {
       const response = await msalInstance.acquireTokenSilent({
-        scopes: ['User.Read.All'], // Microsoft Graph API scope
+        scopes: ['User.Read.All', 'Group.Read.All', 'Directory.Read.All'],
       })
       return response.accessToken
     } catch (error) {
-      console.error('Error acquiring token for Microsoft Graph:', error)
+      if (error instanceof InteractionRequiredAuthError) {
+        console.warn('Interaction required, falling back to popup...')
+        try {
+          const response = await msalInstance.acquireTokenPopup({
+            scopes: ['User.Read.All', 'Group.Read.All', 'Directory.Read.All'],
+          })
+          return response.accessToken
+        } catch (popupError) {
+          console.error('Popup failed:', popupError)
+        }
+      } else {
+        console.error('Silent token acquisition error:', error)
+      }
     }
   } else {
     console.error('User is not signed in.')

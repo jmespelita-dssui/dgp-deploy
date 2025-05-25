@@ -56,6 +56,8 @@ Providers.globalProvider = new Msal2Provider({
     'user.readbasic.all',
     'presence.read',
     'user.readwrite',
+    'group.read.all',
+    'directory.read.all',
   ],
   publicClientApplication: msalInstance,
 })

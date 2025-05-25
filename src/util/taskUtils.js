@@ -236,6 +236,27 @@ export const getGroupMemberCount = async (groupID) => {
   }
 }
 
+export const getGroupMembers = async (groupId) => {
+  try {
+    const token = await getAccessTokenForGraph()
+    const axiosInstance = createAxiosInstance(token)
+
+    const response = await axiosInstance.get(
+      `https://graph.microsoft.com/v1.0/groups/${groupId}/members`,
+      {
+        headers: {
+          ConsistencyLevel: 'eventual', // Required for $count to work
+        },
+      },
+    )
+    return response.data.value
+    // return response.data['@odata.count']
+  } catch (error) {
+    console.error('Error fetching group member count:', error)
+    return null
+  }
+}
+
 export const getUserGraphDetails = async (userID) => {
   try {
     const token = await getAccessTokenForGraph()
@@ -251,22 +272,31 @@ export const getUserGraphDetails = async (userID) => {
 }
 
 export const getUserName = async (userID) => {
+  //systemuserid
   const axiosInstance = await initializeAxiosInstance()
   const userNamePromise = await axiosInstance.get(`systemusers(${userID})`)
   return userNamePromise.data.fullname
 }
 
 export const getEmailAddress = async (userID) => {
+  //systemuserid
   const axiosInstance = await initializeAxiosInstance()
   const userNamePromise = await axiosInstance.get(`systemusers(${userID})`)
   return userNamePromise.data.internalemailaddress
 }
+export const getUser = async (userID) => {
+  //systemuserid
+  const axiosInstance = await initializeAxiosInstance()
+  const userNamePromise = await axiosInstance.get(`systemusers(${userID})`)
+  return userNamePromise.data
+}
 
 export const getSystemUserID = async (user) => {
+  //azureactivedirectoryobjectid
   const axiosInstance = await initializeAxiosInstance()
   let userID
   try {
-    // console.log('getting user id', user)
+    console.log('getting user id', user)
     const response = await axiosInstance.get(
       `systemusers?$filter=azureactivedirectoryobjectid eq '${user.id}'`,
     )

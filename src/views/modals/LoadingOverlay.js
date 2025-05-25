@@ -32,7 +32,7 @@ const LoadingOverlay = ({ loading }) => {
       inert={loading ? 'true' : undefined} // Use inert instead of aria-hidden to prevent interaction while visible
     >
       <CModalBody className="text-center">
-        <CSpinner color="primary" style={{ width: '3rem', height: '3rem' }} />
+        <CSpinner color="primary" style={{ width: '3rem', height: '3rem' }} className="m-5" />
         <p className="mt-3">Saving...</p>
       </CModalBody>
     </CModal>

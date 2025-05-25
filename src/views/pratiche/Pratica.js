@@ -485,14 +485,14 @@ const Pratica = ({ pratica, praticheList, visible, onClose, labelColor, refresh 
         onContinue={onExitConfirmClose}
       />
       <CModal backdrop="static" visible={visible} onClose={() => checkForLogs()} size="xl">
-        <CModalHeader>
+        <CModalHeader className="d-flex justify-content-center">
           <CCol md={3}>
             <CModalTitle id="Pratica">
               Prat. No. {pratNo} / Prot. {protNo}
             </CModalTitle>
           </CCol>
 
-          <CCol md={8} className="m-3">
+          <CCol md={8}>
             <CProgress
               value={Number(status)}
               height={10}
@@ -535,7 +535,7 @@ const Pratica = ({ pratica, praticheList, visible, onClose, labelColor, refresh 
               {/* NAV LINKS */}
 
               <CCol xs={6} className="mt-2 overflow-auto scrollable-container">
-                <CNav variant="underline" className="mb-3">
+                <CNav variant="underline" className="mb-3 d-flex justify-content-center">
                   <CNavItem>
                     <CNavLink
                       active={visibleLinks}
@@ -614,6 +614,7 @@ const Pratica = ({ pratica, praticheList, visible, onClose, labelColor, refresh 
                       <ManageAccess
                         responsabile={responsabiliAssegnati}
                         officialiIncaricati={officialiIncaricati}
+                        pratica={pratica}
                       />
                     </CCardBody>
                   </CCard>

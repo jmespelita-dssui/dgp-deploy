@@ -194,8 +194,12 @@ const Fields = ({
             <CBadge color={labelColor} className="mb-2">
               {label}
             </CBadge>
-            <h3>{formData.cr9b3_titolo}</h3>
-            <p>Istruzioni superiori: {formData.cr9b3_istruzionesuperiori}</p>
+            <h3 className="mt-3">{formData.cr9b3_titolo}</h3>
+            <CRow className="m-3">
+              <p>
+                <strong>Istruzioni superiori:</strong> {formData.cr9b3_istruzionesuperiori}
+              </p>
+            </CRow>
           </>
         ) : (
           <>
@@ -939,6 +943,73 @@ const Fields = ({
             disabled={isView}
             readOnly={isView}
           ></CFormTextarea>
+          <div className="d-grid gap-2 d-md-flex justify-content-md-end">
+            {formData.cr9b3_status > 0 && (
+              <CButton
+                color={isView ? 'primary' : 'light'}
+                className="mt-3"
+                onClick={() => {
+                  if (!isView) {
+                    setConfirmCloseBody({
+                      ...confirmCloseBody,
+                      text: 'Your changes may not have been saved. Continue?',
+                    })
+                    setConfirmAction('close')
+                    showConfirmClose()
+                  } else {
+                    setIsView(false)
+                  }
+                }}
+              >
+                <CIcon icon={isView ? cilPencil : cilX} className="me-md-2" />
+                {isView ? 'Edit' : 'Cancel'}
+              </CButton>
+            )}
+            {!isView && (
+              <CButton className="mt-3" disabled={!isModified} type="submit">
+                Save changes
+              </CButton>
+            )}
+            {isView && formData.cr9b3_status > 0 ? (
+              <CPopover content={'Archive'} placement="top" trigger={['hover', 'focus']}>
+                <CButton
+                  className="mt-3"
+                  variant="ghost"
+                  color="primary"
+                  onClick={() => {
+                    setConfirmAction('archive')
+                    setConfirmCloseBody({
+                      ...confirmCloseBody,
+                      text: 'Are you sure you want to archive this pratica?',
+                    })
+                    showConfirmClose()
+                  }}
+                >
+                  <CIcon icon={cilTrash} />
+                </CButton>
+              </CPopover>
+            ) : isView && formData.cr9b3_status === 0 ? (
+              <CPopover content={'Unarchive'} placement="top" trigger={['hover', 'focus']}>
+                <CButton
+                  className="mt-3"
+                  variant="ghost"
+                  color="primary"
+                  onClick={() => {
+                    setConfirmAction('unarchive')
+                    setConfirmCloseBody({
+                      ...confirmCloseBody,
+                      text: 'Are you sure you want to unarchive this pratica?',
+                    })
+                    showConfirmClose()
+                  }}
+                >
+                  <CIcon icon={cilInbox} />
+                </CButton>
+              </CPopover>
+            ) : (
+              ''
+            )}
+          </div>
         </CContainer>
       </CForm>
     </>
