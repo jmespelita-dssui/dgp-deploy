@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React, { useState, useEffect } from 'react'
 
 import {
@@ -26,40 +27,62 @@ import {
 import CIcon from '@coreui/icons-react'
 
 import moment from 'moment'
-import msalConfig from 'src/msalConfig'
-import { getAccessToken, createAxiosInstance } from 'src/util/axiosUtils'
-import { emptyTask } from 'src/util/taskUtils'
+import { initializeAxiosInstance } from 'src/util/axiosUtils'
+import { emptyTask, getLabelColor, getPratica } from 'src/util/taskUtils'
 
 import Summary from './Summary'
 import Pratica from './Pratica'
-import { Person } from '@microsoft/mgt-react'
+import LoadingOverlay from '../modals/LoadingOverlay'
+import _access from 'src/_access'
 
-const MyTasks = () => {
+const MyTasks = ({ isArchive }) => {
   const [praticheList, setPraticheList] = useState([])
   const [details, setDetails] = useState([])
   const [activeKey, setActiveKey] = useState(1)
   const [visible, setVisible] = useState(false)
   const [selectedPratica, setSelectedPratica] = useState([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [loadingOverlay, setLoadingOverlay] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [hasDefaultAccess, setHasDefaultAccess] = useState()
+  const [combinedTasks, setCombinedTasks] = useState()
+  const [label, setLabel] = useState('')
+  const [permittedTasks, setPermittedTasks] = useState([])
 
   useEffect(() => {
-    const fetchTasks = async () => {
+    setHasDefaultAccess(_access.defaultAccess)
+    setCombinedTasks(_access.combinedTasks)
+    const filterTasks = async () => {
       try {
-        setLoading(true)
-        const token = await getAccessToken(msalConfig)
-        const axiosInstance = createAxiosInstance(token)
+        const axiosInstance = await initializeAxiosInstance()
+
         const response = await axiosInstance.get('cr9b3_praticas?$orderby=modifiedon desc')
-        setPraticheList(response.data.value)
-        // console.log(`read ${response.data.value.length} data entries:`, response.data.value)
+        console.log(response.data)
+        let allTasks = response.data.value
+        if (isArchive) {
+          allTasks = allTasks.filter((row) => row.cr9b3_status === 0)
+          console.log(allTasks)
+        }
+
+        if (hasDefaultAccess) {
+          setPraticheList(allTasks)
+        } else {
+          const allowedIDsSet = new Set(combinedTasks)
+          const filteredTasks = allTasks.filter((pratica) =>
+            allowedIDsSet.has(pratica.cr9b3_praticaid),
+          )
+          setPermittedTasks(filteredTasks)
+          setPraticheList(filteredTasks)
+        }
       } catch (error) {
         console.error('Error fetching tasks:', error)
       } finally {
-        setLoading(false)
+        if (combinedTasks) setLoading(false)
       }
     }
-    fetchTasks()
-  }, [refreshKey])
+
+    filterTasks()
+  }, [refreshKey, combinedTasks])
 
   const columns = [
     { key: 'summary', label: '', _style: { width: '1%' }, sorter: false },
@@ -71,8 +94,6 @@ const MyTasks = () => {
       label: 'Titolo',
     },
     { key: 'cr9b3_categoria', label: 'Categoria' },
-    // { key: '_cr9b3_superioriinvitati_value', label: 'Superiori Invitati' },
-    // { key: 'cr9b3_', label: 'Assigned to' },
     { key: 'dssui_primascadenza', label: 'Prima Scadenza' },
     {
       key: 'createdon',
@@ -98,7 +119,7 @@ const MyTasks = () => {
 
   const openPratica = (item) => {
     setVisible(true)
-    // console.log('selectedPratica', item)
+    setLabel(getLabelColor(item.cr9b3_categoria).label)
     setSelectedPratica(item)
   }
 
@@ -108,94 +129,54 @@ const MyTasks = () => {
     setRefreshKey((prevKey) => prevKey + 1)
   }
 
-  const getLabelColor = (index) => {
-    let color
-    let label
-    switch (index) {
-      case 129580000:
-        color = 'dark'
-        label = 'RICHIESTA CONTRIBUTO'
-        break
-      case 129580001:
-        color = 'blue'
-        label = 'PROGETTO ESTERNO'
-        break
-      case 129580002:
-        color = 'indigo'
-        label = 'EVENTO'
-        break
-      case 129580003:
-        color = 'purple'
-        label = 'RICEZIONE RAPPORTI'
-        break
-      case 129580004:
-        color = 'green'
-        label = 'VISITA'
-        break
-      case 129580005:
-        color = 'teal'
-        label = 'SENZA RICHIESTA - EVENTO'
-        break
-      case 129580006:
-        color = 'cyan'
-        label = 'SENZA RICHIESTA - LETTERA'
-        break
-      case 129580007:
-        color = 'gray'
-        label = 'PURTROPPO'
-        break
-      case 129580008:
-        color = 'warning'
-        label = 'GENERICO'
-        break
-      case 129580009:
-        color = 'info'
-        label = 'MESSAGGI PONTIFICI'
-        break
-      default:
-        color = 'black'
+  const setNewPratica = async (pratID) => {
+    setLoadingOverlay(true)
+    const startTime = Date.now()
+    try {
+      const newPratica = await getPratica(pratID)
+      console.log(newPratica)
+
+      setLabel(getLabelColor(newPratica.cr9b3_categoria))
+      setSelectedPratica(newPratica)
+    } catch {
+      console.log('error opening related pratica')
+    } finally {
+      const elapsed = Date.now() - startTime
+      const delay = Math.max(3000 - elapsed, 0)
+      setTimeout(() => {
+        setLoadingOverlay(false)
+      }, delay)
     }
-    return { color: color, label: label }
   }
 
   return (
     <>
-      {/* {person ? (
-        <Person personQuery="j.espelita@dssui.org" showName showEmail showPresence />
-      ) : (
-        <p>Loading...</p>
-      )} */}
-
-      {/* <FileList /> */}
-      {/* <p>{praticheList[0].cr9b3_citta}</p> */}
+      <LoadingOverlay loading={loadingOverlay} />
 
       <Pratica
         visible={visible}
         onClose={onClosePratica}
         pratica={selectedPratica}
-        praticheList={praticheList}
-        labelColor={getLabelColor(selectedPratica.cr9b3_categoria).color}
-        label={getLabelColor(selectedPratica.cr9b3_categoria).label}
+        permittedTasks={permittedTasks}
+        label={label}
         refresh={() => setRefreshKey((prevKey) => prevKey + 1)}
+        setNewPratica={setNewPratica}
       />
       <CCard className="mb-4">
-        <CNav variant="tabs" className="m-3">
-          <CNavItem>
-            <CNavLink onClick={() => setActiveKey(1)} active={activeKey === 1}>
-              Open
-            </CNavLink>
-          </CNavItem>
-          <CNavItem>
-            <CNavLink onClick={() => setActiveKey(2)} active={activeKey === 2}>
-              Completed
-            </CNavLink>
-          </CNavItem>
-          <CNavItem>
-            <CNavLink onClick={() => setActiveKey(3)} active={activeKey === 3}>
-              Archived
-            </CNavLink>
-          </CNavItem>
-        </CNav>
+        {!isArchive && (
+          <CNav variant="tabs" className="m-3">
+            <CNavItem>
+              <CNavLink onClick={() => setActiveKey(1)} active={activeKey === 1}>
+                Open
+              </CNavLink>
+            </CNavItem>
+            <CNavItem>
+              <CNavLink onClick={() => setActiveKey(2)} active={activeKey === 2}>
+                Completed
+              </CNavLink>
+            </CNavItem>
+          </CNav>
+        )}
         <CCardBody>
           <CSmartTable
             key={refreshKey}
@@ -206,21 +187,16 @@ const MyTasks = () => {
             itemsPerPage={10}
             pagination
             items={
-              // activeKey === 1
-              //   ? praticheList.filter((p) => p.cr9b3_status < 100 && p.cr9b3_status > 0)
-              //   : praticheList.filter((p) => p.cr9b3_status === 100 )
-              // praticheList
-              activeKey === 1
+              isArchive
+                ? praticheList
+                : activeKey === 1
                 ? praticheList.filter((p) => p.cr9b3_status < 100 && p.cr9b3_status > 0)
-                : activeKey === 2
-                ? praticheList.filter((p) => p.cr9b3_status === 100)
-                : praticheList.filter((p) => p.cr9b3_status === 0)
+                : praticheList.filter((p) => p.cr9b3_status === 100)
             }
             loading={loading}
             tableProps={{
               className: 'align-middle',
               responsive: true,
-              // striped: true,
             }}
             scopedColumns={{
               summary: (item) => {
@@ -351,28 +327,6 @@ const MyTasks = () => {
                   </CCollapse>
                 )
               },
-              // _cr9b3_superioriinvitati_value: (item) => {
-              //   return (
-              //     <td>
-              //       <div style={{ display: 'flex' }}>
-              //         {/* <Person
-              //           className="m-1"
-              //           // userId={item._cr9b3_superioriinvitati_value}
-              //           userId="m.czerny@dssui.org"
-              //           showPresence
-              //           personCardInteraction="hover"
-              //         /> */}
-              //         <Person
-              //           className="m-1"
-              //           // userId={item._cr9b3_superioriinvitati_value}
-              //           userId="a.smerilli@dssui.org"
-              //           showPresence
-              //           personCardInteraction="hover"
-              //         />
-              //       </div>
-              //     </td>
-              //   )
-              // },
               dssui_primascadenza: (item) => {
                 let testDate = moment(item.dssui_primascadenza, 'DD/MM/YYYY')
                 let today = moment()

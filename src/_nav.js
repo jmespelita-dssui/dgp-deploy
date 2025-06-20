@@ -1,6 +1,6 @@
 import React from 'react'
 import CIcon from '@coreui/icons-react'
-import { cilListRich, cilPlus, cilSearch, cilSpeedometer } from '@coreui/icons'
+import { cilListRich, cilPlus, cilSearch, cilSpeedometer, cilTrash } from '@coreui/icons'
 import { CNavItem } from '@coreui/react-pro'
 
 const _nav = [
@@ -26,16 +26,6 @@ const _nav = [
   },
   {
     component: CNavItem,
-    name: 'Search',
-    to: '/search',
-    icon: <CIcon icon={cilSearch} customClassName="nav-icon" />,
-    // badge: {
-    //   color: 'info-gradient',
-    //   text: 'NEW',
-    // },
-  },
-  {
-    component: CNavItem,
     name: 'Dashboard',
     to: '/dashboard',
     icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
@@ -44,6 +34,26 @@ const _nav = [
     //   text: 'NEW',
     // },
   },
+  {
+    component: CNavItem,
+    name: 'Archive',
+    to: '/archive',
+    icon: <CIcon icon={cilTrash} customClassName="nav-icon" />,
+    // badge: {
+    //   color: 'info-gradient',
+    //   text: 'NEW',
+    // },
+  },
+  // {
+  //   component: CNavItem,
+  //   name: 'Search',
+  //   to: '/search',
+  //   icon: <CIcon icon={cilSearch} customClassName="nav-icon" />,
+  //   // badge: {
+  //   //   color: 'info-gradient',
+  //   //   text: 'NEW',
+  //   // },
+  // },
 ]
 
 export default _nav

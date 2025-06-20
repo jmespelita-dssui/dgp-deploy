@@ -40,8 +40,9 @@ const Fields = ({
   onSaveEdit,
   isView,
   setIsView,
-  labelColor,
-  categoryLabel,
+  // labelColor,
+  // label,
+  // categoryLabel,
 }) => {
   const [fields, setFields] = useState({})
   const [isModified, setIsModified] = useState(false)
@@ -50,7 +51,8 @@ const Fields = ({
   const [superioriInvitatiList, setSuperioriInvitatiList] = useState([])
   const [responsabileList, setResponsabileList] = useState([])
   const [officilaliIncaricatiList, setOfficialiIncaricatiList] = useState([])
-  const [label, setLabel] = useState(categoryLabel)
+  const [label, setLabel] = useState()
+  const [labelColor, setLabelColor] = useState()
   const [protNoArray, setProtNoArray] = useState([])
 
   const [isValid, setIsValid] = useState(true)
@@ -68,11 +70,11 @@ const Fields = ({
   useEffect(() => {
     // console.log('starting data', pratica)
     setFields(getFields(formData.cr9b3_categoria))
+    setLabel(getFields(formData.cr9b3_categoria))
     // setFields(getFields(12958))
     setSuperioriInvitatiList(superioriInvitati)
     setResponsabileList(responsabile)
     setOfficialiIncaricatiList(officialiIncaricati)
-    setFormData(changeNullToEmptyString(pratica))
     setFormData(pratica)
     setIsModified(false)
     GetCountries().then((result) => {
@@ -92,9 +94,7 @@ const Fields = ({
     let stringifiedArr = Array.isArray(protNoArr) ? JSON.stringify(protNoArr) : protNoArr
     setFormData({ ...formData, cr9b3_protno2: stringifiedArr })
     setProtNoArray(stringifiedArr)
-    // setPraticaEdits({ ...praticaEdits, cr9b3_protno2: protNoArray })
     setIsModified(true)
-    // console.log(protNoArr)
   }
 
   const showConfirmClose = () => {
@@ -102,7 +102,7 @@ const Fields = ({
   }
 
   const saveCategory = (cat) => {
-    setLabel(getFields(Number(cat)).label)
+    setLabel(getFields(Number(cat)))
     setFields(getFields(Number(cat)))
     setVisibleChooseCategory(false)
     setFormData({ ...formData, cr9b3_categoria: cat })
@@ -135,12 +135,12 @@ const Fields = ({
 
   const onExit = async () => {
     if (confirmAction === 'close') {
-      let refreshPratica = changeNullToEmptyString(await getPratica(formData.cr9b3_praticaid))
+      let refreshPratica = await getPratica(formData.cr9b3_praticaid)
       // let refreshPratica = await getPratica(formData.cr9b3_praticaid)
-      // console.log(refreshPratica)
+      console.log(refreshPratica)
       setFormData(refreshPratica)
-      setLabel(categoryLabel)
-      setPraticaEdits(refreshPratica)
+      // setLabel(categoryLabel)
+      setPraticaEdits({ cr9b3_praticaid: pratica.cr9b3_praticaid })
     } else if (confirmAction === 'archive') {
       setFormData({ ...formData, cr9b3_status: 0 })
       onSaveEdit(
@@ -189,10 +189,10 @@ const Fields = ({
         onContinue={onExit}
       />
       <CForm onSubmit={onSubmit} className="mt-3">
-        {isView ? (
+        {isView && label ? (
           <>
-            <CBadge color={labelColor} className="mb-2">
-              {label}
+            <CBadge color={label.color} className="mb-2">
+              {label.label}
             </CBadge>
             <h3 className="mt-3">{formData.cr9b3_titolo}</h3>
             <CRow className="m-3">
@@ -211,7 +211,7 @@ const Fields = ({
                 size="sm"
                 onClick={() => setVisibleChooseCategory(true)}
               >
-                {label}
+                {label ? label.label : ''}
               </CButton>
             </CPopover>
             <CFormInput

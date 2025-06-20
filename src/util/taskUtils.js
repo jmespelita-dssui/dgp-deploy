@@ -3,6 +3,56 @@ import { createAxiosInstance, getAccessToken, initializeAxiosInstance } from './
 import React from 'react'
 import { getAccessTokenForGraph } from './axiosUtils'
 
+export const getLabelColor = (index) => {
+  let color
+  let label
+  switch (index) {
+    case 129580000:
+      color = 'dark'
+      label = 'RICHIESTA CONTRIBUTO'
+      break
+    case 129580001:
+      color = 'blue'
+      label = 'PROGETTO ESTERNO'
+      break
+    case 129580002:
+      color = 'indigo'
+      label = 'EVENTO'
+      break
+    case 129580003:
+      color = 'purple'
+      label = 'RICEZIONE RAPPORTI'
+      break
+    case 129580004:
+      color = 'green'
+      label = 'VISITA'
+      break
+    case 129580005:
+      color = 'teal'
+      label = 'SENZA RICHIESTA - EVENTO'
+      break
+    case 129580006:
+      color = 'cyan'
+      label = 'SENZA RICHIESTA - LETTERA'
+      break
+    case 129580007:
+      color = 'gray'
+      label = 'PURTROPPO'
+      break
+    case 129580008:
+      color = 'warning'
+      label = 'GENERICO'
+      break
+    case 129580009:
+      color = 'info'
+      label = 'MESSAGGI PONTIFICI'
+      break
+    default:
+      color = 'black'
+  }
+  return { color: color, label: label }
+}
+
 export const emptyTask = {
   cr9b3_prano: '',
   cr9b3_protno: '',
@@ -103,6 +153,7 @@ export const getFields = (categoria) => {
         data_richiesta_contributo: true,
         ente_richiedente: true,
         tema_contributo: true,
+        color: 'dark',
       }
       break
     case 129580001: //PROGETTO ESTERNO
@@ -114,6 +165,7 @@ export const getFields = (categoria) => {
         paese: true,
         regione: true,
         citta: true,
+        color: 'blue',
       }
       break
     case 129580002: //EVENTO
@@ -127,6 +179,7 @@ export const getFields = (categoria) => {
         data_evento: true,
         titolo_evento: true,
         superiori_invitati: true,
+        color: 'indigo',
       }
       break
     case 129580003: //RICEZIONE RAPPORTI
@@ -136,6 +189,7 @@ export const getFields = (categoria) => {
         label: 'RICEZIONE DI RAPPORTI - partners, perm miss, Ap. N.',
         ente_inviante: true,
         materia_rapporto: true,
+        color: 'purple',
       }
       break
     case 129580004: //VISITA
@@ -149,6 +203,7 @@ export const getFields = (categoria) => {
         titolo_evento: true,
         superiori_invitati: true,
         no_partecipanti: true,
+        color: 'green',
       }
       break
     case 129580005: //SENZA RICHIESTA - EVENTO
@@ -159,6 +214,7 @@ export const getFields = (categoria) => {
         dssui_organizzatore: true,
         titolo_evento: true,
         dssui_partecipanti: true,
+        color: 'teal',
       }
       break
     case 129580006: //SENZA RICHIESTA - LETTERA
@@ -167,6 +223,7 @@ export const getFields = (categoria) => {
         category: 'SENZA RICHIESTA - nostra iniziativa/co-organizzata (invio lettera)',
         label: 'SENZA RICHIESTA - nostra iniziativa/co-organizzata (invio lettera)',
         ente_ricevente: true,
+        color: 'cyan',
       }
       break
     case 129580007: //PURTROPPO
@@ -179,6 +236,7 @@ export const getFields = (categoria) => {
         data_evento: true,
         titolo_evento: true,
         superiori_invitati: true,
+        color: 'gray',
       }
       break
     case 129580008: //GENERICO
@@ -190,6 +248,7 @@ export const getFields = (categoria) => {
         destinatari: true,
         indirizzi_destinatari: true,
         materia_contributo: true,
+        color: 'warning',
       }
       break
     case 129580009: //MESSAGGI PONTIFICI
@@ -197,6 +256,7 @@ export const getFields = (categoria) => {
         ...template,
         category: '129580009 MESSAGGI PONTIFICI',
         label: 'MESSAGGI PONTIFICI',
+        color: 'info',
       }
       break
     case 129580010: //RICHIESTA CONTRIBUTO (NP)
@@ -209,6 +269,7 @@ export const getFields = (categoria) => {
         titolo_evento: true,
         luogo_evento: true,
         superiori_invitati: true,
+        color: 'dark',
       }
       break
     default:
@@ -257,12 +318,26 @@ export const getGroupMembers = async (groupId) => {
   }
 }
 
+export const getDefaultAccess = async () => {
+  const superiors = await getGroupMembers('317aa3d0-a94a-4c7c-bcb9-8870cfececa4')
+  const secretariat = await getGroupMembers('f67d3e5d-02c7-4d4d-8b95-834533623ad6')
+  const test = await getGroupMembers('79002d73-f310-4369-93e1-cb76ef304ff7')
+  // const defaultAccess = {
+  //   superiors: superiors,
+  //   secretariat: secretariat,
+  // }
+
+  // return defaultAccess
+  return secretariat
+}
+
 export const getUserGraphDetails = async (userID) => {
   try {
     const token = await getAccessTokenForGraph()
     const axiosInstance = createAxiosInstance(token)
 
     // Fetch user details using systemuserid
+
     const response = await axiosInstance.get(`https://graph.microsoft.com/v1.0/users/${userID}`)
     return response.data
   } catch (error) {
@@ -296,7 +371,6 @@ export const getSystemUserID = async (user) => {
   const axiosInstance = await initializeAxiosInstance()
   let userID
   try {
-    console.log('getting user id', user)
     const response = await axiosInstance.get(
       `systemusers?$filter=azureactivedirectoryobjectid eq '${user.id}'`,
     )
@@ -400,6 +474,28 @@ export const assignRelatedTask = async (praticaID, relatedPraticaID) => {
   } catch (error) {
     console.error(
       'Error creating pratica <-> pratica record:',
+      error.response ? error.response.data : error.message,
+    )
+    return false
+  }
+}
+
+export const giveAccess = async (userID, praticaID) => {
+  const axiosInstance = await initializeAxiosInstance()
+  const data = {
+    '@odata.id': `https://orgac85713a.crm4.dynamics.com/api/data/v9.2/cr9b3_praticas(${praticaID})`,
+  }
+  try {
+    // POST request to create a relationship in cr9b3_pratica_superiore
+    const response = await axiosInstance.post(
+      `systemusers(${userID})/cr9b3_access/$ref`, //cr9b3_pratica_superiore
+      data,
+    )
+    console.log('Successfully added access:', userID, response.data)
+    return true
+  } catch (error) {
+    console.error(
+      'Error creating user <-> pratica record:',
       error.response ? error.response.data : error.message,
     )
     return false

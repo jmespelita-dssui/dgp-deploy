@@ -60,25 +60,27 @@ const Summary = ({ pratica }) => {
                 {fields.data_invio_materiale && (
                   <CListGroupItem>
                     <span className="fw-bold">Data invio materiale:</span>{' '}
-                    {moment(item.cr9b3_datainviomateriale).format('DD/MM/YYYY')}
+                    {item.cr9b3_datainviomateriale &&
+                      moment(item.cr9b3_datainviomateriale).format('DD/MM/YYYY')}
                   </CListGroupItem>
                 )}
                 {fields.data_prima_scadenza && (
                   <CListGroupItem>
                     <span className="fw-bold">Prima scadenza:</span>{' '}
-                    {moment(item.dssui_primascadenza).format('DD/MM/YYYY')}
+                    {item.dssui_primascadenza &&
+                      moment(item.dssui_primascadenza).format('DD/MM/YYYY')}
                   </CListGroupItem>
                 )}
                 {fields.cr9b3_datarichiestacontributo && (
                   <CListGroupItem>
                     <span className="fw-bold">Data richiesta contributo:</span>{' '}
-                    {moment(item.cr9b3_datarichiestacontributo).format('DD/MM/YYYY')}
+                    {item.cr9b3_datarichiestacontributo &&
+                      moment(item.cr9b3_datarichiestacontributo).format('DD/MM/YYYY')}
                   </CListGroupItem>
                 )}
                 {fields.ente_inviante && (
                   <CListGroupItem>
-                    <span className="fw-bold">Ente inviante:</span>{' '}
-                    {item.cr9b3_datainoltrataresponsabile}
+                    <span className="fw-bold">Ente inviante:</span> {item.cr9b3_enteinviante}
                   </CListGroupItem>
                 )}
                 {fields.ente_richiedente && (
@@ -117,7 +119,7 @@ const Summary = ({ pratica }) => {
                 {fields.data_evento && (
                   <CListGroupItem>
                     <span className="fw-bold">Data evento:</span>{' '}
-                    {moment(item.cr9b3_dataevento).format('DD/MM/YYYY')}
+                    {item.cr9b3_dataevento && moment(item.cr9b3_dataevento).format('DD/MM/YYYY')}
                   </CListGroupItem>
                 )}
                 {fields.titolo_evento && (

@@ -1,5 +1,5 @@
 import React, { Component, Suspense } from 'react'
-import { HashRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, HashRouter, Route, Routes } from 'react-router-dom'
 import { CSpinner } from '@coreui/react-pro'
 import { ToastProvider } from './context/ToastContext'
 
@@ -13,11 +13,27 @@ const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 
 class App extends Component {
   componentDidMount() {
+    // Clean MSAL fragments after redirect
+    if (window.location.search.includes('code=')) {
+      window.history.replaceState({}, document.title, '/')
+    }
+
     const account = msalInstance.getActiveAccount() // Get the logged-in user's account
 
     if (account) {
       const request = {
-        scopes: ['User.Read'], // Replace with your app's required scopes
+        scopes: [
+          'calendars.read',
+          'user.read',
+          'openid',
+          'profile',
+          'people.read',
+          'user.readbasic.all',
+          'presence.read',
+          'user.readwrite',
+          'group.read.all',
+          'directory.read.all',
+        ], // Replace with your app's required scopes
         account: account,
       }
 
@@ -31,20 +47,21 @@ class App extends Component {
         }
       })
     } else {
-      console.warn('No active account found. User may not be logged in.')
+      msalInstance.loginRedirect({ scopes: ['User.Read'] })
+      // console.warn('No active account found. User may not be logged in.')
     }
   }
 
   render() {
     return (
       <ToastProvider>
-        <HashRouter>
+        <BrowserRouter>
           <Suspense fallback={<CSpinner color="primary" />}>
             <Routes>
               <Route path="*" name="Home" element={<DefaultLayout />} />
             </Routes>
           </Suspense>
-        </HashRouter>
+        </BrowserRouter>
       </ToastProvider>
     )
   }

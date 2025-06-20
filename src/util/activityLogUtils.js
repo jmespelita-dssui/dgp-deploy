@@ -216,7 +216,7 @@ export const generateActivityLogEntry = (
     responsabili: responsabili,
     officiali: officiali,
   }
-  console.log(consolidatedPratica)
+  // console.log(consolidatedPratica)
   const activityLogEntry = Object.entries(consolidatedPratica)
     .filter(
       ([field, action]) =>
@@ -237,15 +237,15 @@ export const generateActivityLogEntry = (
 }
 
 export const logActivity = async (praticaID, finalLogEntry) => {
-  console.log('and finally:', praticaID, finalLogEntry)
+  // console.log('and finally:', praticaID, finalLogEntry)
   if (finalLogEntry.length <= 10000) {
     try {
       const axiosInstance = await initializeAxiosInstance()
       let response = await axiosInstance.patch(`cr9b3_praticas(${praticaID})`, {
         cr9b3_activitylog: JSON.stringify(finalLogEntry),
       })
-      console.log(finalLogEntry)
-      console.log(response)
+      // console.log(finalLogEntry)
+      // console.log(response)
     } catch (error) {
       if (error.isAxiosError) {
         console.error('Axios error details adding log entry:', error.response)

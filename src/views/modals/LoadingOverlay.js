@@ -33,7 +33,7 @@ const LoadingOverlay = ({ loading }) => {
     >
       <CModalBody className="text-center">
         <CSpinner color="primary" style={{ width: '3rem', height: '3rem' }} className="m-5" />
-        <p className="mt-3">Saving...</p>
+        {/* <p className="mt-3">Saving...</p> */}
       </CModalBody>
     </CModal>
   )

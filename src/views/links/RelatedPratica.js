@@ -25,7 +25,13 @@ import LoadingOverlay from '../modals/LoadingOverlay'
 import RelatedPraticaRow from './RelatedPraticaRow'
 import { initializeAxiosInstance } from 'src/util/axiosUtils'
 
-const RelatedPratica = ({ relatedPratiche, praticheList, pratica, refreshRelatedPratiche }) => {
+const RelatedPratica = ({
+  relatedPratiche,
+  praticheList,
+  pratica,
+  refreshRelatedPratiche,
+  setNewPratica,
+}) => {
   const [options, setOptions] = useState([])
   const [visibleList, setVisibleList] = useState(false)
   const [filteredPraticheList, setFilteredPraticheList] = useState([])
@@ -39,6 +45,7 @@ const RelatedPratica = ({ relatedPratiche, praticheList, pratica, refreshRelated
     if (filter.length > 0) {
       filter = filter.map((p) => p.cr9b3_praticaid)
     }
+
     setFilteredPraticheList(praticheList.filter((p) => !filter.includes(p.cr9b3_praticaid)))
     getOptions()
     setChosenPratica()
@@ -168,10 +175,12 @@ const RelatedPratica = ({ relatedPratiche, praticheList, pratica, refreshRelated
           ? relatedPratiche.map((item, index) => (
               <RelatedPraticaRow
                 pratica={pratica}
+                praticheList={praticheList}
                 relatedPratica={item}
                 isDeleteMode={isDeleteMode}
                 removeRelatedPratica={removeRelatedPratica}
                 key={index}
+                setNewPratica={setNewPratica}
               />
             ))
           : ''}

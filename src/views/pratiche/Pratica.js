@@ -32,7 +32,6 @@ import {
   getSystemUserID,
   getUserGraphDetails,
   assignUserToPratica,
-  getFields,
   checkIfExistingProt,
   getUserName,
 } from 'src/util/taskUtils'
@@ -51,7 +50,17 @@ import {
 import Subtasks from '../subtasks/Subtasks'
 import ManageAccess from '../access/ManageAccess'
 
-const Pratica = ({ pratica, praticheList, visible, onClose, labelColor, refresh }) => {
+const Pratica = ({
+  pratica,
+  praticheList,
+  permittedTasks,
+  visible,
+  onClose,
+  // labelColor,
+  label,
+  refresh,
+  setNewPratica,
+}) => {
   const [visibleLinks, setVisibleLinks] = useState(true)
   const [visibleTasks, setVisibleTasks] = useState(false)
   const [visibleCorr, setVisibleCorr] = useState(false)
@@ -74,7 +83,7 @@ const Pratica = ({ pratica, praticheList, visible, onClose, labelColor, refresh 
   const [responsabiliSystemUserIDs, setResponsabiliSystemUserIDs] = useState([])
   const [officialiIncaricati, setOfficialiIncaricati] = useState([])
   const [officialiIncaricatiSystemUserIDs, setOfficialiIncaricatiUserIDs] = useState([])
-  const [categoryLabel, setCategoryLabel] = useState('')
+  // const [categoryLabel, setCategoryLabel] = useState('')
   const [createdBy, setCreatedBy] = useState('')
   const [modifiedBy, setModifiedBy] = useState('')
   const [isView, setIsView] = useState(true)
@@ -89,21 +98,25 @@ const Pratica = ({ pratica, praticheList, visible, onClose, labelColor, refresh 
 
   useEffect(() => {
     // console.log('starting pratica', pratica)
-    // setVisibleLinks(true)
-    // setVisibleTasks(false)
-    // setVisibleCorr(false)
-    // setVisibleLogs(false)
-    setPratNo(pratica.cr9b3_prano)
-    setProtNo(pratica.cr9b3_protno)
-    setSharePointLink(pratica.cr9b3_sharepointlink)
-    setActivityLogs(pratica.cr9b3_activitylog ? JSON.parse(pratica.cr9b3_activitylog) : [])
-    getAssignedUsers()
-    getRelatedPratiche()
-    setStatus(pratica.cr9b3_status)
-    setLoading(false)
-    setCategoryLabel(getFields(pratica.cr9b3_categoria).label)
-    setIsView(true)
-    setIsSaved(false)
+    if (pratica) {
+      setVisibleLinks(true)
+      setVisibleTasks(false)
+      setVisibleCorr(false)
+      setVisibleLogs(false)
+      setVisibleAccess(false)
+      setPratNo(pratica.cr9b3_prano)
+      setProtNo(pratica.cr9b3_protno)
+      setSharePointLink(pratica.cr9b3_sharepointlink)
+      setActivityLogs(pratica.cr9b3_activitylog ? JSON.parse(pratica.cr9b3_activitylog) : [])
+      getAssignedUsers()
+      getRelatedPratiche()
+      setStatus(pratica.cr9b3_status)
+      setLoading(false)
+      // setCategoryLabel(getFields(pratica.cr9b3_categoria).label)
+      // console.log(getFields(pratica.cr9b3_categoria).label)
+      setIsView(true)
+      setIsSaved(false)
+    }
   }, [pratica])
 
   const getRelatedPratiche = async () => {
@@ -264,6 +277,7 @@ const Pratica = ({ pratica, praticheList, visible, onClose, labelColor, refresh 
     action,
   ) => {
     setLoading(true)
+    console.log(prat)
     const axiosInstance = await initializeAxiosInstance()
     let newSuperioriList = []
     let superioriToAssign = []
@@ -484,195 +498,200 @@ const Pratica = ({ pratica, praticheList, visible, onClose, labelColor, refresh 
         onCancel={() => setVisibleConfirmClose(false)}
         onContinue={onExitConfirmClose}
       />
-      <CModal backdrop="static" visible={visible} onClose={() => checkForLogs()} size="xl">
-        <CModalHeader className="d-flex justify-content-center">
-          <CCol md={3}>
-            <CModalTitle id="Pratica">
-              Prat. No. {pratNo} / Prot. {protNo}
-            </CModalTitle>
-          </CCol>
+      {pratica && (
+        <CModal backdrop="static" visible={visible} onClose={() => checkForLogs()} size="xl">
+          <CModalHeader className="d-flex justify-content-center">
+            <CCol md={3}>
+              <CModalTitle id="Pratica">
+                Prat. No. {pratNo} / Prot. {protNo}
+              </CModalTitle>
+            </CCol>
 
-          <CCol md={8}>
-            <CProgress
-              value={Number(status)}
-              height={10}
-              color={status === 40 ? 'gray' : status > 10 && status < 100 ? 'warning' : 'success'}
-              variant="striped"
-              animated
-            />
-          </CCol>
+            <CCol md={8}>
+              <CProgress
+                value={Number(status)}
+                height={10}
+                color={status === 40 ? 'gray' : status > 10 && status < 100 ? 'warning' : 'success'}
+                variant="striped"
+                animated
+              />
+            </CCol>
 
-          {/* </CPopover> */}
-        </CModalHeader>
-        <CModalBody>
-          <CCardBody className="p-3">
-            <CRow>
-              <CCol className="mb-3 scrollable-container">
-                <Fields
-                  pratica={pratica}
-                  categoryLabel={categoryLabel}
-                  superioriInvitati={superioriInvitati}
-                  responsabile={responsabiliAssegnati}
-                  officialiIncaricati={officialiIncaricati}
-                  onSaveEdit={onSaveEdit}
-                  isView={isView}
-                  loading={loading}
-                  setIsView={changeMode}
-                  forceRerender={refresh}
-                  labelColor={labelColor}
-                />
-                <CCardBody className="text-body-secondary font-size-sm lh-2 m-4">
-                  <CRow>
-                    Created by {createdBy} on {moment(pratica.createdon).format('DD/MM/YYYY HH:mm')}
-                  </CRow>
-                  <CRow>
-                    {pratica.cr9b3_status === 0 ? 'Archived by' : 'Last modified'} by {modifiedBy}{' '}
-                    on {moment(pratica.modifiedon).format('DD/MM/YYYY HH:mm')}
-                  </CRow>
-                </CCardBody>
-              </CCol>
+            {/* </CPopover> */}
+          </CModalHeader>
+          <CModalBody>
+            <CCardBody className="p-3">
+              <CRow>
+                <CCol className="mb-3 scrollable-container">
+                  <Fields
+                    pratica={pratica}
+                    // categoryLabel={categoryLabel}
+                    superioriInvitati={superioriInvitati}
+                    responsabile={responsabiliAssegnati}
+                    officialiIncaricati={officialiIncaricati}
+                    onSaveEdit={onSaveEdit}
+                    isView={isView}
+                    loading={loading}
+                    setIsView={changeMode}
+                    // forceRerender={refresh}
+                    // labelColor={labelColor}
+                    label={label}
+                  />
+                  <CCardBody className="text-body-secondary font-size-sm lh-2 m-4">
+                    <CRow>
+                      Created by {createdBy} on{' '}
+                      {moment(pratica.createdon).format('DD/MM/YYYY HH:mm')}
+                    </CRow>
+                    <CRow>
+                      {pratica.cr9b3_status === 0 ? 'Archived' : 'Last modified'} by {modifiedBy} on{' '}
+                      {moment(pratica.modifiedon).format('DD/MM/YYYY HH:mm')}
+                    </CRow>
+                  </CCardBody>
+                </CCol>
 
-              {/* NAV LINKS */}
+                {/* NAV LINKS */}
 
-              <CCol xs={6} className="mt-2 overflow-auto scrollable-container">
-                <CNav variant="underline" className="mb-3 d-flex justify-content-center">
-                  <CNavItem>
-                    <CNavLink
-                      active={visibleLinks}
-                      onClick={() => {
-                        setVisibleCorr(false)
-                        setVisibleTasks(false)
-                        setVisibleLinks(true)
-                        setVisibleAccess(false)
-                        setVisibleLogs(false)
-                      }}
-                    >
-                      Links
-                    </CNavLink>
-                  </CNavItem>
-                  <CNavItem>
-                    <CNavLink
-                      active={visibleTasks}
-                      onClick={() => {
-                        setVisibleCorr(false)
-                        setVisibleTasks(true)
-                        setVisibleLinks(false)
-                        setVisibleAccess(false)
-                        setVisibleLogs(false)
-                      }}
-                    >
-                      To-do
-                    </CNavLink>
-                  </CNavItem>
-                  <CNavItem>
-                    <CNavLink
-                      active={visibleCorr}
-                      onClick={() => {
-                        setVisibleCorr(true)
-                        setVisibleTasks(false)
-                        setVisibleLinks(false)
-                        setVisibleAccess(false)
-                        setVisibleLogs(false)
-                      }}
-                    >
-                      Correspondence
-                    </CNavLink>
-                  </CNavItem>
-                  <CNavItem>
-                    <CNavLink
-                      active={visibleLogs}
-                      onClick={() => {
-                        setVisibleCorr(false)
-                        setVisibleLinks(false)
-                        setVisibleTasks(false)
-                        setVisibleAccess(false)
-                        setVisibleLogs(true)
-                      }}
-                    >
-                      Activity log
-                    </CNavLink>
-                  </CNavItem>
-                  <CNavItem>
-                    <CNavLink
-                      active={visibleAccess}
-                      onClick={() => {
-                        setVisibleCorr(false)
-                        setVisibleLinks(false)
-                        setVisibleTasks(false)
-                        setVisibleLogs(false)
-                        setVisibleAccess(true)
-                      }}
-                    >
-                      <CIcon icon={cilGroup} />
-                    </CNavLink>
-                  </CNavItem>
-                </CNav>
-                {/* Access */}
-                <CCollapse visible={visibleAccess}>
-                  <CCard className="mb-3">
-                    <CCardBody>
-                      <ManageAccess
-                        responsabile={responsabiliAssegnati}
-                        officialiIncaricati={officialiIncaricati}
-                        pratica={pratica}
-                      />
-                    </CCardBody>
-                  </CCard>
-                </CCollapse>
+                <CCol xs={6} className="mt-2 overflow-auto scrollable-container">
+                  <CNav variant="underline" className="mb-3 d-flex justify-content-center">
+                    <CNavItem>
+                      <CNavLink
+                        active={visibleLinks}
+                        onClick={() => {
+                          setVisibleCorr(false)
+                          setVisibleTasks(false)
+                          setVisibleLinks(true)
+                          setVisibleAccess(false)
+                          setVisibleLogs(false)
+                        }}
+                      >
+                        Links
+                      </CNavLink>
+                    </CNavItem>
+                    <CNavItem>
+                      <CNavLink
+                        active={visibleTasks}
+                        onClick={() => {
+                          setVisibleCorr(false)
+                          setVisibleTasks(true)
+                          setVisibleLinks(false)
+                          setVisibleAccess(false)
+                          setVisibleLogs(false)
+                        }}
+                      >
+                        To-do
+                      </CNavLink>
+                    </CNavItem>
+                    <CNavItem>
+                      <CNavLink
+                        active={visibleCorr}
+                        onClick={() => {
+                          setVisibleCorr(true)
+                          setVisibleTasks(false)
+                          setVisibleLinks(false)
+                          setVisibleAccess(false)
+                          setVisibleLogs(false)
+                        }}
+                      >
+                        Correspondence
+                      </CNavLink>
+                    </CNavItem>
+                    <CNavItem>
+                      <CNavLink
+                        active={visibleLogs}
+                        onClick={() => {
+                          setVisibleCorr(false)
+                          setVisibleLinks(false)
+                          setVisibleTasks(false)
+                          setVisibleAccess(false)
+                          setVisibleLogs(true)
+                        }}
+                      >
+                        Activity log
+                      </CNavLink>
+                    </CNavItem>
+                    <CNavItem>
+                      <CNavLink
+                        active={visibleAccess}
+                        onClick={() => {
+                          setVisibleCorr(false)
+                          setVisibleLinks(false)
+                          setVisibleTasks(false)
+                          setVisibleLogs(false)
+                          setVisibleAccess(true)
+                        }}
+                      >
+                        <CIcon icon={cilGroup} />
+                      </CNavLink>
+                    </CNavItem>
+                  </CNav>
+                  {/* Access */}
+                  <CCollapse visible={visibleAccess}>
+                    <CCard className="mb-3">
+                      <CCardBody>
+                        <ManageAccess
+                          responsabile={responsabiliAssegnati}
+                          officialiIncaricati={officialiIncaricati}
+                          pratica={pratica}
+                        />
+                      </CCardBody>
+                    </CCard>
+                  </CCollapse>
 
-                {/* CORRESPONDENCE */}
-                <CCollapse visible={visibleCorr}>
-                  <Correspondences pratica={pratica} />
-                </CCollapse>
+                  {/* CORRESPONDENCE */}
+                  <CCollapse visible={visibleCorr}>
+                    <Correspondences pratica={pratica} />
+                  </CCollapse>
 
-                {/* Subtasks */}
-                <CCollapse visible={visibleTasks}>
-                  <Subtasks pratica={pratica} />
-                </CCollapse>
+                  {/* Subtasks */}
+                  <CCollapse visible={visibleTasks}>
+                    <Subtasks pratica={pratica} />
+                  </CCollapse>
 
-                {/* LINKS */}
-                <CCollapse visible={visibleLinks}>
-                  {isView && (
-                    <CCallout color="primary">
-                      <CLink href={sharepointLink} target="_blank">
-                        <CIcon icon={cilFolderOpen} />
-                        <span style={{ paddingLeft: '10px' }}>Home folder</span>
-                      </CLink>
-                    </CCallout>
-                  )}
+                  {/* LINKS */}
+                  <CCollapse visible={visibleLinks}>
+                    {isView && (
+                      <CCallout color="primary">
+                        <CLink href={sharepointLink} target="_blank">
+                          <CIcon icon={cilFolderOpen} />
+                          <span style={{ paddingLeft: '10px' }}>Home folder</span>
+                        </CLink>
+                      </CCallout>
+                    )}
 
-                  <CCard className="mb-3">
-                    <CCardBody>
-                      <h6>RELATED PRATICA</h6>
-                      <RelatedPratica
-                        relatedPratiche={relatedPratiche}
-                        praticheList={praticheList}
-                        pratica={pratica}
-                        refreshRelatedPratiche={getRelatedPratiche}
-                      />
-                    </CCardBody>
-                  </CCard>
-                  <Links links={pratica.cr9b3_links} praticaID={pratica.cr9b3_praticaid} />
-                </CCollapse>
+                    <CCard className="mb-3">
+                      <CCardBody>
+                        <h6>RELATED PRATICA</h6>
+                        <RelatedPratica
+                          relatedPratiche={relatedPratiche}
+                          praticheList={permittedTasks}
+                          pratica={pratica}
+                          refreshRelatedPratiche={getRelatedPratiche}
+                          setNewPratica={setNewPratica}
+                        />
+                      </CCardBody>
+                    </CCard>
+                    <Links links={pratica.cr9b3_links} praticaID={pratica.cr9b3_praticaid} />
+                  </CCollapse>
 
-                {/* ACTIVITY LOG */}
-                <CCollapse visible={visibleLogs}>
-                  <CCard className="mb-3">
-                    <CCardBody>
-                      <ActivityLogs activityLogs={activityLogs} />
-                    </CCardBody>
-                  </CCard>
-                </CCollapse>
-              </CCol>
-            </CRow>
-          </CCardBody>
-        </CModalBody>
-        <CModalFooter>
-          <CButton color="secondary" onClick={showConfirmClose}>
-            Close
-          </CButton>
-        </CModalFooter>
-      </CModal>
+                  {/* ACTIVITY LOG */}
+                  <CCollapse visible={visibleLogs}>
+                    <CCard className="mb-3">
+                      <CCardBody>
+                        <ActivityLogs activityLogs={activityLogs} />
+                      </CCardBody>
+                    </CCard>
+                  </CCollapse>
+                </CCol>
+              </CRow>
+            </CCardBody>
+          </CModalBody>
+          <CModalFooter>
+            <CButton color="secondary" onClick={showConfirmClose}>
+              Close
+            </CButton>
+          </CModalFooter>
+        </CModal>
+      )}
     </>
   )
 }

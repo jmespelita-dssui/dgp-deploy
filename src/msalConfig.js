@@ -1,6 +1,7 @@
 import { LogLevel, PublicClientApplication } from '@azure/msal-browser'
 import { Msal2Provider } from '@microsoft/mgt-msal2-provider'
 import { Providers } from '@microsoft/mgt-element'
+import { CustomGraph } from './util/customGraph'
 /**
  * Configuration object to be passed to MSAL instance on creation.
  * For a full list of MSAL.js configuration parameters, visit:
@@ -14,7 +15,7 @@ const msalConfig = {
     authority: 'https://login.microsoftonline.com/organizations',
     // redirectUri: 'https://10.7.12.4/dssui/gestione-pratiche',
     redirectUri: 'http://localhost:3000',
-    scopes: 'https://orgac85713a.crm4.dynamics.com/.default',
+    // scopes: 'https://orgac85713a.crm4.dynamics.com/.default',
   },
   cache: {
     cacheLocation: 'localStorage', // This configures where your cache will be stored
@@ -61,5 +62,7 @@ Providers.globalProvider = new Msal2Provider({
   ],
   publicClientApplication: msalInstance,
 })
+
+Providers.globalProvider.graph = new CustomGraph(Providers.globalProvider)
 
 export default msalInstance

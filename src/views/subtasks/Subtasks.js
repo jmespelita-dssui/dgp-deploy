@@ -39,7 +39,7 @@ const Subtasks = ({ pratica }) => {
   }
 
   const onSave = async (task, assignedUsers) => {
-    console.log(assignedUsers)
+    console.log(task, assignedUsers)
     let systemUserIDs
     let assignUsers
     setLoading(true)

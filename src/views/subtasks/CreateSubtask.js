@@ -33,7 +33,7 @@ const CreateSubtask = ({ onSave, onCancel }) => {
     onSave(
       {
         label: label,
-        status: status,
+        status: parseInt(status),
         deadline: deadline,
         description: description,
         subtasks: '',
@@ -80,12 +80,12 @@ const CreateSubtask = ({ onSave, onCancel }) => {
                   aria-label="Status"
                   label="Status"
                   options={[
-                    { label: 'New', value: '0' },
-                    { label: 'In progress', value: '1' },
-                    { label: 'Pending response from recipient', value: '2' },
-                    { label: 'Pending approval from superior', value: '3' },
-                    { label: 'On hold', value: '4' },
-                    { label: 'Completed', value: '5' },
+                    { label: 'New', value: 0 },
+                    { label: 'In progress', value: 1 },
+                    { label: 'Pending response from recipient', value: 2 },
+                    { label: 'Pending approval from superior', value: 3 },
+                    { label: 'On hold', value: 4 },
+                    { label: 'Completed', value: 5 },
                   ]}
                   onChange={(e) => {
                     setStatus(e.target.value)
