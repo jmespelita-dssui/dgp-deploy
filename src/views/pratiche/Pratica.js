@@ -227,7 +227,7 @@ const Pratica = ({
     // console.log(isSaved)
     if (isSaved) {
       setLoading(true)
-      console.log('checking for logs')
+      // console.log('checking for logs')
       let logs = await getUpdatedActivityLog(pratica.cr9b3_praticaid)
       if (actionType === 'archived pratica.' || actionType === 'unarchived pratica.') {
         finalLogEntry = [
@@ -249,7 +249,7 @@ const Pratica = ({
             timestamp: moment().tz('Europe/Rome').format('YYYY-MM-DD HH:mm:ss'),
           },
         ]
-        console.log('check for logs:', finalLogEntry)
+        // console.log('check for logs:', finalLogEntry)
         logActivity(pratica.cr9b3_praticaid, finalLogEntry)
       }
     }
@@ -277,7 +277,7 @@ const Pratica = ({
     action,
   ) => {
     setLoading(true)
-    console.log(prat)
+    // console.log(prat)
     const axiosInstance = await initializeAxiosInstance()
     let newSuperioriList = []
     let superioriToAssign = []
@@ -335,7 +335,7 @@ const Pratica = ({
       }
     } catch (error) {
       addToast('Error unassigning/assigning superior', 'Edit Pratica', 'warning', 3000)
-      console.log('Error unassigning superior', error)
+      console.error('Error unassigning superior', error)
     }
 
     try {
@@ -373,7 +373,7 @@ const Pratica = ({
       }
     } catch (error) {
       addToast('Error assigning superior', 'Edit Pratica', 'warning', 3000)
-      console.log('Error assigning superior', error)
+      console.error('Error assigning superior', error)
     }
 
     try {
@@ -411,7 +411,7 @@ const Pratica = ({
       }
     } catch (error) {
       addToast('Error assigning superior', 'Edit Pratica', 'warning', 3000)
-      console.log('Error assigning superior', error)
+      console.error('Error assigning superior', error)
     }
 
     try {

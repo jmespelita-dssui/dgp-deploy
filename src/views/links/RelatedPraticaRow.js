@@ -27,6 +27,7 @@ const RelatedPraticaRow = ({
   }
 
   const verifyAccess = () => {
+    // console.log('RELATED PRATICA', praticheList, relatedPratica.cr9b3_praticaid)
     if (praticheList.find((prat) => prat.cr9b3_praticaid === relatedPratica.cr9b3_praticaid)) {
       setNewPratica(relatedPratica.cr9b3_praticaid)
     } else {

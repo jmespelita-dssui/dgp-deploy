@@ -16,7 +16,7 @@ const root = createRoot(container)
 async function initializeMsal() {
   try {
     await msalInstance.initialize()
-    console.log('MSAL initialized successfully!')
+    // console.log('MSAL initialized successfully!')
   } catch (error) {
     console.error('Error initializing MSAL:', error)
   }

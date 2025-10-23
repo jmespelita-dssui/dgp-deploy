@@ -16,7 +16,7 @@ const Correspondence = ({ corr }) => {
         const createdByPromise = await axiosInstance.get(`systemusers(${corr._createdby_value})`)
         setCreatedBy(createdByPromise.data.fullname)
       } catch (e) {
-        console.log(e)
+        console.error(e)
       }
     }
     getCreatedByUsername()

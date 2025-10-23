@@ -53,11 +53,11 @@ const CreateTask = () => {
       // console.log(pratica.cr9b3_protno, checkIfExisting(pratica.cr9b3_protno))
       if (!exists) {
         const praticaDetailsResponse = await addNewPratica(pratica)
-        console.log('output pratica id', praticaDetailsResponse)
+        // console.log('output pratica id', praticaDetailsResponse)
         if (praticaDetailsResponse) {
           // assign user to task
           superioriInvitati.map(async (id) => {
-            console.log('adding superior:', id)
+            // console.log('adding superior:', id)
             const superiorID = await getSystemUserID(id)
             assignUserToPratica(
               superiorID,
@@ -116,7 +116,7 @@ const CreateTask = () => {
           'warning',
           3000,
         )
-        console.log('pratica already exists')
+        // console.log('pratica already exists')
       }
     } catch (error) {
       if (error.isAxiosError) {
@@ -135,13 +135,13 @@ const CreateTask = () => {
     let praticaDetailsResponse
     let entityUrl
     try {
-      console.log('adding new pratica', pratica)
+      // console.log('adding new pratica', pratica)
       response = await axiosInstance.post('cr9b3_praticas', pratica)
       // Get the OData-EntityId from the response headers
       entityUrl = response.headers['odata-entityid']
 
       if (entityUrl) {
-        console.log(`Pratica created! Entity URL: ${entityUrl}`)
+        // console.log(`Pratica created! Entity URL: ${entityUrl}`)
 
         // Retrieve the details of the created record
         praticaDetailsResponse = await axiosInstance.get(entityUrl)

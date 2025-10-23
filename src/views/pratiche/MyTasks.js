@@ -37,6 +37,7 @@ import _access from 'src/_access'
 
 const MyTasks = ({ isArchive }) => {
   const [praticheList, setPraticheList] = useState([])
+  const [archiveList, setArchiveList] = useState([])
   const [details, setDetails] = useState([])
   const [activeKey, setActiveKey] = useState(1)
   const [visible, setVisible] = useState(false)
@@ -44,7 +45,7 @@ const MyTasks = ({ isArchive }) => {
   const [loading, setLoading] = useState(true)
   const [loadingOverlay, setLoadingOverlay] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
-  const [hasDefaultAccess, setHasDefaultAccess] = useState()
+  const [hasDefaultAccess, setHasDefaultAccess] = useState(false)
   const [combinedTasks, setCombinedTasks] = useState()
   const [label, setLabel] = useState('')
   const [permittedTasks, setPermittedTasks] = useState([])
@@ -56,16 +57,21 @@ const MyTasks = ({ isArchive }) => {
       try {
         const axiosInstance = await initializeAxiosInstance()
 
+        // Fetch all tasks
         const response = await axiosInstance.get('cr9b3_praticas?$orderby=modifiedon desc')
-        console.log(response.data)
+        // console.log('all tasks', response.data)
         let allTasks = response.data.value
+
         if (isArchive) {
-          allTasks = allTasks.filter((row) => row.cr9b3_status === 0)
-          console.log(allTasks)
+          const archivedTasks = allTasks.filter((row) => row.cr9b3_status === 0)
+          // console.log('archived tasks', archivedTasks)
+
+          setArchiveList(archivedTasks)
         }
 
         if (hasDefaultAccess) {
           setPraticheList(allTasks)
+          setPermittedTasks(allTasks)
         } else {
           const allowedIDsSet = new Set(combinedTasks)
           const filteredTasks = allTasks.filter((pratica) =>
@@ -134,7 +140,7 @@ const MyTasks = ({ isArchive }) => {
     const startTime = Date.now()
     try {
       const newPratica = await getPratica(pratID)
-      console.log(newPratica)
+      // console.log(newPratica)
 
       setLabel(getLabelColor(newPratica.cr9b3_categoria))
       setSelectedPratica(newPratica)
@@ -157,6 +163,7 @@ const MyTasks = ({ isArchive }) => {
         visible={visible}
         onClose={onClosePratica}
         pratica={selectedPratica}
+        praticheList={!isArchive ? praticheList : archiveList}
         permittedTasks={permittedTasks}
         label={label}
         refresh={() => setRefreshKey((prevKey) => prevKey + 1)}
@@ -188,10 +195,10 @@ const MyTasks = ({ isArchive }) => {
             pagination
             items={
               isArchive
-                ? praticheList
+                ? archiveList
                 : activeKey === 1
-                ? praticheList.filter((p) => p.cr9b3_status < 100 && p.cr9b3_status > 0)
-                : praticheList.filter((p) => p.cr9b3_status === 100)
+                ? permittedTasks.filter((p) => p.cr9b3_status < 100 && p.cr9b3_status > 0)
+                : permittedTasks.filter((p) => p.cr9b3_status === 100)
             }
             loading={loading}
             tableProps={{

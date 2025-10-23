@@ -24,16 +24,16 @@ const _nav = [
     //   text: 'NEW',
     // },
   },
-  {
-    component: CNavItem,
-    name: 'Dashboard',
-    to: '/dashboard',
-    icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
-    // badge: {
-    //   color: 'info-gradient',
-    //   text: 'NEW',
-    // },
-  },
+  // {
+  //   component: CNavItem,
+  //   name: 'Dashboard',
+  //   to: '/dashboard',
+  //   icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
+  //   // badge: {
+  //   //   color: 'info-gradient',
+  //   //   text: 'NEW',
+  //   // },
+  // },
   {
     component: CNavItem,
     name: 'Archive',

@@ -171,7 +171,7 @@ const cleanInputString = (action) => {
     }` // Example
     return slicedAction
   } else {
-    console.log('action is not a string or array')
+    // console.log('action is not a string or array')
     return action
   }
 }
@@ -229,7 +229,7 @@ export const generateActivityLogEntry = (
       input: field === 'cr9b3_links' ? action : cleanInputString(getRow(field, action).input),
     }))
 
-  console.log(activityLogEntry)
+  // console.log(activityLogEntry)
 
   return activityLogEntry // Final object
 

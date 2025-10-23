@@ -27,9 +27,17 @@ const CreateSubtask = ({ onSave, onCancel }) => {
   const [dateKey, setDateKey] = useState(0)
   const [pickerKey, setPickerKey] = useState(0)
 
+  const options = [
+    { label: 'New', value: '0', color: 'cyan' },
+    { label: 'In progress', value: '1', color: 'warning' },
+    { label: 'On hold', value: '2', color: 'gray' },
+    { label: 'Waiting for approval', value: '3', color: 'purple' },
+    { label: 'Completed', value: '4' },
+  ]
+
   const onSubmit = async (e) => {
     e.preventDefault()
-    console.log(label, status, deadline, description)
+    // console.log(label, status, deadline, description)
     onSave(
       {
         label: label,
@@ -79,14 +87,15 @@ const CreateSubtask = ({ onSave, onCancel }) => {
                   value={status}
                   aria-label="Status"
                   label="Status"
-                  options={[
-                    { label: 'New', value: 0 },
-                    { label: 'In progress', value: 1 },
-                    { label: 'Pending response from recipient', value: 2 },
-                    { label: 'Pending approval from superior', value: 3 },
-                    { label: 'On hold', value: 4 },
-                    { label: 'Completed', value: 5 },
-                  ]}
+                  // options={[
+                  //   { label: 'New', value: 0 },
+                  //   { label: 'In progress', value: 1 },
+                  //   { label: 'Pending response from recipient', value: 2 },
+                  //   { label: 'Pending approval from superior', value: 3 },
+                  //   { label: 'On hold', value: 4 },
+                  //   { label: 'Completed', value: 5 },
+                  // ]}
+                  options={options}
                   onChange={(e) => {
                     setStatus(e.target.value)
                   }}

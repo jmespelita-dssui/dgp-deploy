@@ -39,7 +39,6 @@ const Subtasks = ({ pratica }) => {
   }
 
   const onSave = async (task, assignedUsers) => {
-    console.log(task, assignedUsers)
     let systemUserIDs
     let assignUsers
     setLoading(true)
@@ -68,8 +67,6 @@ const Subtasks = ({ pratica }) => {
             return getSystemUserID(id)
           }),
         )
-
-        console.log('system user IDs', systemUserIDs)
 
         if (systemUserIDs.length > 0) {
           assignUsers = await Promise.all(

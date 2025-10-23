@@ -45,6 +45,7 @@ const RelatedPratica = ({
     if (filter.length > 0) {
       filter = filter.map((p) => p.cr9b3_praticaid)
     }
+    // console.log(praticheList)
 
     setFilteredPraticheList(praticheList.filter((p) => !filter.includes(p.cr9b3_praticaid)))
     getOptions()
@@ -100,7 +101,7 @@ const RelatedPratica = ({
     }
     setLoading(false)
     addToast('Related pratica successfully removed.', 'Edit Pratica', 'success', 3000)
-    console.log(pratica.cr9b3_titolo, relatedPratica.cr9b3_titolo)
+    // console.log(pratica.cr9b3_titolo, relatedPratica.cr9b3_titolo)
     refreshRelatedPratiche()
   }
 

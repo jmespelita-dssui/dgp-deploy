@@ -22,6 +22,7 @@ import {
 } from 'src/util/taskUtils'
 import { useToast } from 'src/context/ToastContext'
 import { initializeAxiosInstance } from 'src/util/axiosUtils'
+import _access from 'src/_access'
 import LoadingOverlay from '../modals/LoadingOverlay'
 
 const ManageAccess = ({ responsabile, officialiIncaricati, pratica }) => {
@@ -41,47 +42,58 @@ const ManageAccess = ({ responsabile, officialiIncaricati, pratica }) => {
       getDefaultAccess()
       getNormalAccess()
     }
-  }, [responsabile, officialiIncaricati])
+  }, [pratica])
 
   const getDefaultAccess = async () => {
-    if (pratica) {
-      setDefaultLoading(true)
-      const superiors = await getGroupMembers('317aa3d0-a94a-4c7c-bcb9-8870cfececa4')
-      const secretariat = await getGroupMembers('f67d3e5d-02c7-4d4d-8b95-834533623ad6')
-      const creatorUserDetails = await getUser(pratica._createdby_value)
-      const creatorGraphDetails = await getUserGraphDetails(
-        creatorUserDetails.azureactivedirectoryobjectid,
-      )
-      setCreator(creatorGraphDetails)
-      const defaultAccessList = [
-        ...(superiors || []),
-        ...(secretariat || []),
-        ...(responsabile || []),
-        ...(officialiIncaricati || []),
-        creatorGraphDetails,
-      ]
+    try {
+      if (pratica.cr9b3_prano !== '') {
+        setDefaultLoading(true)
+        const superiors = _access.superiors
+        const secretariat = _access.secretariat
+        const creatorUserDetails = await getUser(pratica._createdby_value)
+        const creatorGraphDetails = await getUserGraphDetails(
+          creatorUserDetails.azureactivedirectoryobjectid,
+        )
+        // console.log('creator graph details', creatorGraphDetails)
+        setCreator(creatorGraphDetails)
+        const defaultAccessList = [
+          ...(superiors || []),
+          ...(secretariat || []),
+          ...(responsabile || []),
+          ...(officialiIncaricati || []),
+          creatorGraphDetails,
+        ]
 
-      setDefaultAccess(defaultAccessList)
-      setCount(uniqueById(defaultAccessList).length)
+        setDefaultAccess(defaultAccessList)
+        setCount(uniqueById(defaultAccessList).length)
+        setDefaultLoading(false)
+      }
+    } catch (error) {
+      console.error('Error fetching default access:', error)
       setDefaultLoading(false)
     }
   }
 
   const getNormalAccess = async () => {
-    if (pratica) {
-      setOthersLoading(true)
-      const axiosInstance = await initializeAxiosInstance()
-      const response = await axiosInstance.get(
-        `cr9b3_praticas?$filter=cr9b3_praticaid eq '${pratica.cr9b3_praticaid}'&$expand=cr9b3_access`,
-      )
-      let usersWithAccess = response.data.value[0].cr9b3_access
+    try {
+      if (pratica.cr9b3_prano !== '') {
+        setOthersLoading(true)
+        const axiosInstance = await initializeAxiosInstance()
+        const response = await axiosInstance.get(
+          `cr9b3_praticas?$filter=cr9b3_praticaid eq '${pratica.cr9b3_praticaid}'&$expand=cr9b3_access`,
+        )
+        let usersWithAccess = response.data.value[0].cr9b3_access
 
-      const userDetailsPromises = usersWithAccess.map(async (user) => {
-        return await getUserGraphDetails(user.azureactivedirectoryobjectid)
-      })
+        const userDetailsPromises = usersWithAccess.map(async (user) => {
+          return await getUserGraphDetails(user.azureactivedirectoryobjectid)
+        })
 
-      const usersWithAccessDetails = await Promise.all(userDetailsPromises)
-      setOthers(usersWithAccessDetails)
+        const usersWithAccessDetails = await Promise.all(userDetailsPromises)
+        setOthers(usersWithAccessDetails)
+        setOthersLoading(false)
+      }
+    } catch (error) {
+      console.error('Error fetching normal access:', error)
       setOthersLoading(false)
     }
   }
@@ -100,9 +112,8 @@ const ManageAccess = ({ responsabile, officialiIncaricati, pratica }) => {
         giveAccess(id, pratica.cr9b3_praticaid)
       })
       setOthers(uniqueById(newList))
-      console.log('OK!!')
     } catch (error) {
-      console.log(error)
+      console.error(error)
       addToast(`Error adding access`, 'Edit Pratica', 'warning', 3000)
     }
     setNewOthers([])
@@ -130,9 +141,6 @@ const ManageAccess = ({ responsabile, officialiIncaricati, pratica }) => {
     arr.forEach((item2) => {
       const exists = defaultAccess.some((item1) => {
         const match = item1.id === item2.id
-        if (match) {
-          console.log('hello') // Element exists in defaultAccess
-        }
         return match
       })
 
@@ -154,7 +162,7 @@ const ManageAccess = ({ responsabile, officialiIncaricati, pratica }) => {
   const removeItem = async (user) => {
     const axiosInstance = await initializeAxiosInstance()
     const systemuserid = await getSystemUserID(user)
-    console.log(systemuserid)
+    // console.log(systemuserid)
     setLoading(true)
     try {
       const response = await axiosInstance.delete(

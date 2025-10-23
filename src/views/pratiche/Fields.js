@@ -137,7 +137,7 @@ const Fields = ({
     if (confirmAction === 'close') {
       let refreshPratica = await getPratica(formData.cr9b3_praticaid)
       // let refreshPratica = await getPratica(formData.cr9b3_praticaid)
-      console.log(refreshPratica)
+      // console.log(refreshPratica)
       setFormData(refreshPratica)
       // setLabel(categoryLabel)
       setPraticaEdits({ cr9b3_praticaid: pratica.cr9b3_praticaid })

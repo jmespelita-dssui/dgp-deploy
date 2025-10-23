@@ -58,7 +58,7 @@ const LinkCard = ({ header, links, type, praticaID, refreshLinks }) => {
       const whoami = await axiosInstance.get('WhoAmI')
       let logModifier = await getUserName(whoami.data.UserId)
       let latestLogs = await getUpdatedActivityLog(praticaID)
-      console.log(latestLogs)
+      // console.log(latestLogs)
       // latestLogs = JSON.parse(latestLogs)
       let finalLogEntry
 
@@ -80,7 +80,7 @@ const LinkCard = ({ header, links, type, praticaID, refreshLinks }) => {
           },
         ]
       }
-      console.log('check for logs:', finalLogEntry)
+      // console.log('check for logs:', finalLogEntry)
       logActivity(praticaID, finalLogEntry)
 
       refreshLinks(newLinks)

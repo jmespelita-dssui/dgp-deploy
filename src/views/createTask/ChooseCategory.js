@@ -30,7 +30,7 @@ const ChooseCategory = ({ cat, visible, onCancel, onSave }) => {
 
   const onChangeCategoria = (choice) => {
     choice > 0 ? setIsSelected(true) : setIsSelected(false)
-    console.log('category:', choice)
+    // console.log('category:', choice)
     setCategoria(choice)
   }
 

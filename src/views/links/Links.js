@@ -8,7 +8,7 @@ const Links = ({ links, praticaID }) => {
     if (links) {
       setParsedLinks(JSON.parse(links))
     }
-  }, [praticaID])
+  }, [links])
 
   const refreshLinks = (newLinks) => {
     setParsedLinks(newLinks)

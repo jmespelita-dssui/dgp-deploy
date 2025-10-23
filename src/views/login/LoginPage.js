@@ -24,9 +24,6 @@ const LoginPage = () => {
                 <CCardBody className="m-4">
                   <CForm>
                     <h1>DSSUI Gestione Pratiche</h1>
-                    <p className="text-medium-emphasis">
-                      Insert application description here. Welcome and give instructions.
-                    </p>
                     <CRow>
                       <CCol xs={6}>
                         <Login className="login" />

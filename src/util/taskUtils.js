@@ -322,13 +322,10 @@ export const getDefaultAccess = async () => {
   const superiors = await getGroupMembers('317aa3d0-a94a-4c7c-bcb9-8870cfececa4')
   const secretariat = await getGroupMembers('f67d3e5d-02c7-4d4d-8b95-834533623ad6')
   const test = await getGroupMembers('79002d73-f310-4369-93e1-cb76ef304ff7')
-  // const defaultAccess = {
-  //   superiors: superiors,
-  //   secretariat: secretariat,
-  // }
+  const defaultAccess = [...superiors, ...secretariat, ...test]
 
-  // return defaultAccess
-  return secretariat
+  return defaultAccess
+  // return test
 }
 
 export const getUserGraphDetails = async (userID) => {
@@ -469,7 +466,7 @@ export const assignRelatedTask = async (praticaID, relatedPraticaID) => {
       `cr9b3_praticas(${relatedPraticaID})/cr9b3_related_pratica/$ref`,
       data2,
     )
-    console.log('Successfully linked related pratica', response1.data, response2.data)
+    // console.log('Successfully linked related pratica', response1.data, response2.data)
     return true
   } catch (error) {
     console.error(
@@ -491,7 +488,7 @@ export const giveAccess = async (userID, praticaID) => {
       `systemusers(${userID})/cr9b3_access/$ref`, //cr9b3_pratica_superiore
       data,
     )
-    console.log('Successfully added access:', userID, response.data)
+    // console.log('Successfully added access:', userID, response.data)
     return true
   } catch (error) {
     console.error(
@@ -514,7 +511,7 @@ export const assignUserToPratica = async (userID, praticaID, table) => {
       `systemusers(${userID})/${table}/$ref`, //cr9b3_pratica_superiore
       data,
     )
-    console.log('Successfully created the user <-> pratica record:', response.data)
+    // console.log('Successfully created the user <-> pratica record:', response.data)
     return true
   } catch (error) {
     console.error(
@@ -534,7 +531,7 @@ export const assignUserToTask = async (userID, taskID) => {
   try {
     // POST request to create a relationship in cr9b3_task_utente
     const response = await axiosInstance.post(`systemusers(${userID})/cr9b3_task_utente/$ref`, data)
-    console.log('Successfully assigned user to task:', response.data)
+    // console.log('Successfully assigned user to task:', response.data)
     return true
   } catch (error) {
     console.error(

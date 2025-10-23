@@ -8,7 +8,7 @@ import CIcon from '@coreui/icons-react'
 import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 import Correspondence from './Correspondence'
-import { createAxiosInstance, getAccessToken, initializeAxiosInstance } from 'src/util/axiosUtils'
+import { createAxiosInstance, getAccessToken } from 'src/util/axiosUtils'
 import moment from 'moment-timezone'
 
 import { useToast } from 'src/context/ToastContext'
@@ -29,14 +29,17 @@ const Correspondences = ({ pratica }) => {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    const update = async () => {
-      let response = await getCorrs(pratica.cr9b3_praticaid)
-      setCorrespondences(response)
+    if (pratica.cr9b3_prano !== '') {
+      const update = async () => {
+        let response = await getCorrs(pratica.cr9b3_praticaid)
+        setCorrespondences(response)
+      }
+      update()
     }
-    update()
-  }, [])
+  }, [pratica])
 
-  const saveCorr = async () => {
+  const saveCorr = async (e) => {
+    e.preventDefault()
     setLoading(true)
     let logEntry = generateActivityLogEntry({ cr9b3_corrispondenza: title })
     const token = await getAccessToken()
@@ -52,10 +55,12 @@ const Correspondences = ({ pratica }) => {
         `cr9b3_praticas(${pratica.cr9b3_praticaid})/cr9b3_Pratica_Correspondence?$return=representation`,
         requestBody,
       )
+      // console.log('response:', response)
+
       const whoami = await axiosInstance.get('WhoAmI')
       let logModifier = await getUserName(whoami.data.UserId)
       let latestLogs = await getUpdatedActivityLog(pratica.cr9b3_praticaid)
-      console.log(latestLogs)
+      // console.log(latestLogs)
       // latestLogs = JSON.parse(latestLogs)
       let finalLogEntry
 
@@ -77,7 +82,7 @@ const Correspondences = ({ pratica }) => {
           },
         ]
       }
-      console.log('check for logs:', finalLogEntry)
+      // console.log('check for logs:', finalLogEntry)
       logActivity(pratica.cr9b3_praticaid, finalLogEntry)
       addToast('Successfully added correspondence.', 'Add update', 'success', 3000)
       // console.log('Successfully added correspondence:', response)

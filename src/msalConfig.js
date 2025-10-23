@@ -14,7 +14,8 @@ const msalConfig = {
     clientId: 'b781906d-dabc-418d-b1e6-cca04e3ad35f',
     authority: 'https://login.microsoftonline.com/organizations',
     // redirectUri: 'https://10.7.12.4/dssui/gestione-pratiche',
-    redirectUri: 'http://localhost:3000',
+    // redirectUri: 'http://localhost:3000',
+    redirectUri: 'https://dssui-gestione-pratiche.web.app',
     // scopes: 'https://orgac85713a.crm4.dynamics.com/.default',
   },
   cache: {

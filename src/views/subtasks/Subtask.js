@@ -75,10 +75,8 @@ const Subtask = ({ task, refreshTask }) => {
     setVisibleConfirmClose(false)
     try {
       const axiosInstance = await initializeAxiosInstance()
-      console.log('delete', task.cr9b3_tasksid)
       const response = await axiosInstance.delete(`cr9b3_taskses(${task.cr9b3_tasksid})`)
       addToast('Subtask deleted!', 'Delete subtask', 'success', 3000)
-      console.log(response)
     } catch (error) {
       addToast('Error deleting subtask', 'Delete subtask', 'warning', 3000)
       if (error.isAxiosError) {
@@ -100,15 +98,12 @@ const Subtask = ({ task, refreshTask }) => {
     const now = new Date().toISOString()
     let email = await getEmailAddress(whoami)
     const commentEntry = { timestamp: now, email: email, comment: comment }
-    console.log('comments:', comments)
-    console.log('new comment:', [commentEntry, ...comments])
 
     try {
       let response = await axiosInstance.patch(`cr9b3_taskses(${task.cr9b3_tasksid})`, {
         cr9b3_comments: JSON.stringify([commentEntry, ...comments]),
       })
       if (response.status === 204) {
-        console.log('yay!')
         setComments([commentEntry, ...comments])
         setComment('')
       }
@@ -165,7 +160,6 @@ const Subtask = ({ task, refreshTask }) => {
   }
 
   const saveTask = async () => {
-    console.log('saving attempt!')
     const axiosInstance = await initializeAxiosInstance()
 
     let usersToAssign = []
@@ -191,8 +185,6 @@ const Subtask = ({ task, refreshTask }) => {
         usersToAssign = newAssignedUsersList.filter(
           (value) => !assignedUsersSystemUserIDs.includes(value),
         )
-
-        console.log(usersToAssign, usersToUnassign)
 
         //axios delete superiors
         if (usersToUnassign.length > 0) {
@@ -222,12 +214,7 @@ const Subtask = ({ task, refreshTask }) => {
 
     if (taskEdits) {
       try {
-        console.log(task, taskEdits)
         response = await axiosInstance.patch(`cr9b3_taskses(${task.cr9b3_tasksid})`, taskEdits)
-
-        if (response) {
-          console.log('task saved!')
-        }
         setTaskEdits(null)
       } catch (error) {
         if (error.isAxiosError) {
@@ -307,7 +294,6 @@ const Subtask = ({ task, refreshTask }) => {
                         value={taskDetails.cr9b3_status ? taskDetails.cr9b3_status : 0}
                         options={options}
                         onChange={(e) => {
-                          console.log(e.target.value)
                           setStatus(e.target.value)
                           setTaskDetails({ ...taskDetails, cr9b3_status: e.target.value })
                           setTaskEdits({ ...taskEdits, cr9b3_status: e.target.value })
@@ -335,7 +321,6 @@ const Subtask = ({ task, refreshTask }) => {
                     selectionChanged={(e) => {
                       setAssignedUsers(e.target.selectedPeople)
                       setIsReassigned(true)
-                      console.log('people picker set officiale list', e.target.selectedPeople)
                       // setIsModified(true)
                     }}
                   />

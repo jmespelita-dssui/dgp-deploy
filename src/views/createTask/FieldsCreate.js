@@ -39,7 +39,7 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
 
   const triggerUpdateProtNos = (e) => {
     setProtNoValues(e)
-    console.log(e)
+    // console.log(e)
   }
 
   const onSubmit = async (e) => {
