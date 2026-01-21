@@ -1,13 +1,20 @@
 import React from 'react'
 import CIcon from '@coreui/icons-react'
-import { cilListRich, cilPlus, cilSearch, cilSpeedometer, cilTrash } from '@coreui/icons'
+import {
+  cilListRich,
+  cilPlus,
+  cilSearch,
+  cilSettings,
+  cilSpeedometer,
+  cilTrash,
+} from '@coreui/icons'
 import { CNavItem } from '@coreui/react-pro'
 
 const _nav = [
   {
     component: CNavItem,
-    name: 'My tasks',
-    to: '/tasks',
+    name: 'Le mie pratiche',
+    to: '/le-mie-pratiche',
     icon: <CIcon icon={cilListRich} customClassName="nav-icon" />,
     badge: {
       color: 'info-gradient',
@@ -16,8 +23,8 @@ const _nav = [
   },
   {
     component: CNavItem,
-    name: 'Create task',
-    to: '/create',
+    name: 'Creare pratica',
+    to: '/creare-pratica',
     icon: <CIcon icon={cilPlus} customClassName="nav-icon" />,
     // badge: {
     //   color: 'info-gradient',
@@ -36,8 +43,8 @@ const _nav = [
   // },
   {
     component: CNavItem,
-    name: 'Archive',
-    to: '/archive',
+    name: 'Cestino',
+    to: '/cestino',
     icon: <CIcon icon={cilTrash} customClassName="nav-icon" />,
     // badge: {
     //   color: 'info-gradient',
@@ -54,6 +61,16 @@ const _nav = [
   //   //   text: 'NEW',
   //   // },
   // },
+  {
+    component: CNavItem,
+    name: 'Admin Console',
+    to: '/admin-console',
+    icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
+    // badge: {
+    //   color: 'info-gradient',
+    //   text: 'NEW',
+    // },
+  },
 ]
 
 export default _nav

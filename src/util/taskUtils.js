@@ -1,6 +1,4 @@
-import { CToast, CToastBody, CToastHeader } from '@coreui/react-pro'
 import { createAxiosInstance, getAccessToken, initializeAxiosInstance } from './axiosUtils'
-import React from 'react'
 import { getAccessTokenForGraph } from './axiosUtils'
 
 export const getLabelColor = (index) => {

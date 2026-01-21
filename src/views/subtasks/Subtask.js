@@ -49,11 +49,11 @@ const Subtask = ({ task, refreshTask }) => {
   const { addToast } = useToast()
 
   const options = [
-    { label: 'New', value: '0', color: 'cyan' },
-    { label: 'In progress', value: '1', color: 'warning' },
-    { label: 'On hold', value: '2', color: 'gray' },
-    { label: 'Waiting for approval', value: '3', color: 'purple' },
-    { label: 'Completed', value: '4' },
+    { label: 'Nuovo', value: '0', color: 'cyan' },
+    { label: 'In corso', value: '1', color: 'warning' },
+    { label: 'In sospeso', value: '2', color: 'gray' },
+    { label: 'In attesa di approvazione', value: '3', color: 'purple' },
+    { label: 'Completato', value: '4' },
   ]
 
   useEffect(() => {

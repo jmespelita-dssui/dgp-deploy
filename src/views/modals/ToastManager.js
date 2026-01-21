@@ -7,7 +7,7 @@ const ToastManager = ({ toasts, removeToast }) => {
     <CToaster placement="top-end">
       {toasts.map((toast, index) => (
         <CToast
-          key={index}
+          key={toast.id || index}
           visible
           autohide={true}
           onClose={() => removeToast(toast.id)} // Pass `toast.id` to identify which toast to remove

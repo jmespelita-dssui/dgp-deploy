@@ -71,9 +71,10 @@ const Pratica = ({
   const [status, setStatus] = useState()
   const [sharepointLink, setSharePointLink] = useState()
   const [confirmCloseBody, setConfirmCloseBody] = useState({
-    title: 'Confirm',
-    text: 'Your changes may not have been saved. Continue?',
+    title: 'Conferma',
+    text: 'Le modifiche potrebbero non essere state salvate. Continuare?',
   })
+
   const [pratNo, setPratNo] = useState('')
   const [protNo, setProtNo] = useState('')
   const [superioriInvitati, setSuperioriInvitati] = useState([])
@@ -131,11 +132,11 @@ const Pratica = ({
         setRelatedPratiche(response.data.value[0].cr9b3_related_pratica)
       } catch (error) {
         if (error.isAxiosError) {
-          console.error('Axios error getting related pratica:', error.response)
-          console.error('Error message:', error.message)
-          console.error('Error response:', error.response.data)
+          console.error('Errore Axios nel recupero della pratica correlata:', error.response)
+          console.error('Messaggio di errore:', error.message)
+          console.error('Risposta di errore:', error.response.data)
         } else {
-          console.error('Non-Axios error:', error)
+          console.error('Errore non Axios:', error)
         }
       }
     }
@@ -295,7 +296,12 @@ const Pratica = ({
 
     //check for duplicates if protno was changed
     if (exists && prat.cr9b3_protno !== pratica.cr9b3_protno) {
-      addToast('Pratica with same protocol number already exists!', 'Edit Pratica', 'warning', 3000)
+      addToast(
+        'Esiste già una pratica con lo stesso numero di protocollo!',
+        'Modifica pratica',
+        'warning',
+        3000,
+      )
       setLoading(false)
       return
     }
@@ -334,8 +340,13 @@ const Pratica = ({
         })
       }
     } catch (error) {
-      addToast('Error unassigning/assigning superior', 'Edit Pratica', 'warning', 3000)
-      console.error('Error unassigning superior', error)
+      addToast(
+        'Errore durante la rimozione/assegnazione del superiore',
+        'Modifica pratica',
+        'warning',
+        3000,
+      )
+      console.error('Errore durante la rimozione del superiore', error)
     }
 
     try {
@@ -372,8 +383,8 @@ const Pratica = ({
         })
       }
     } catch (error) {
-      addToast('Error assigning superior', 'Edit Pratica', 'warning', 3000)
-      console.error('Error assigning superior', error)
+      addToast('Errore durante l’assegnazione del superiore', 'Modifica pratica', 'warning', 3000)
+      console.error('Errore durante l’assegnazione del superiore', error)
     }
 
     try {
@@ -410,8 +421,8 @@ const Pratica = ({
         })
       }
     } catch (error) {
-      addToast('Error assigning superior', 'Edit Pratica', 'warning', 3000)
-      console.error('Error assigning superior', error)
+      addToast('Errore durante l’assegnazione del superiore', 'Modifica pratica', 'warning', 3000)
+      console.error('Errore durante l’assegnazione del superiore', error)
     }
 
     try {
@@ -441,22 +452,21 @@ const Pratica = ({
       if (entityUrl) {
         if (action === 'archive') {
           setIsSaved(true)
-          addToast('Pratica has been archived.', 'Edit Pratica', 'warning', 3000)
-          setActionType('archived pratica.')
+          addToast('La pratica è stata archiviata.', 'Modifica pratica', 'warning', 3000)
+          setActionType('pratica archiviata.')
           checkForLogs()
-          // setTimeout(() => {
-          //   window.location.reload() // Refresh the page after 3 seconds
-          // }, 2000)
         } else if (action === 'unarchive') {
           setIsSaved(true)
-          setActionType('unarchived pratica.')
+          setActionType('pratica de-archiviata.')
           checkForLogs()
-          addToast('Pratica has been unarchived.', 'Edit Pratica', 'success', 3000)
-          // setTimeout(() => {
-          //   window.location.reload() // Refresh the page after 3 seconds
-          // }, 2000)
+          addToast('La pratica è stata de-archiviata.', 'Modifica pratica', 'success', 3000)
         } else {
-          addToast('Success! Your changes have been saved.', 'Edit Pratica', 'success', 3000)
+          addToast(
+            'Successo! Le modifiche sono state salvate.',
+            'Modifica pratica',
+            'success',
+            3000,
+          )
           setSharePointLink(prat.cr9b3_sharepointlink)
           setLoading(false)
           setIsView(true)
@@ -466,22 +476,37 @@ const Pratica = ({
         setResponsabiliAssegnati(responsabileList)
         setOfficialiIncaricati(officialiIncaricatiList)
       } else {
-        addToast('Error occurred while saving changes.', 'Edit Pratica', 'warning', 3000)
+        addToast(
+          'Si è verificato un errore durante il salvataggio delle modifiche.',
+          'Modifica pratica',
+          'warning',
+          3000,
+        )
         setLoading(false)
-        console.error('Entity URL not returned in the response headers.')
+        console.error('L’URL dell’entità non è stato restituito negli header della risposta.')
       }
+
       return praticaDetailsResponse
     } catch (error) {
-      addToast('Error occurred while saving changes.', 'Edit Pratica', 'warning', 3000)
+      addToast(
+        'Si è verificato un errore durante il salvataggio delle modifiche.',
+        'Modifica pratica',
+        'warning',
+        3000,
+      )
       setLoading(false)
       if (error.isAxiosError) {
-        console.error('Axios error details adding new pratica:', error.response)
-        console.error('Error message:', error.message)
-        console.error('Error response:', error.response.data)
+        console.error(
+          'Dettagli errore Axios durante l’aggiunta di una nuova pratica:',
+          error.response,
+        )
+        console.error('Messaggio di errore:', error.message)
+        console.error('Risposta di errore:', error.response.data)
       } else {
-        console.error('Non-Axios error:', error)
+        console.error('Errore non Axios:', error)
       }
     }
+
     getAssignedUsers()
   }
 
@@ -539,12 +564,12 @@ const Pratica = ({
                   />
                   <CCardBody className="text-body-secondary font-size-sm lh-2 m-4">
                     <CRow>
-                      Created by {createdBy} on{' '}
+                      Creato da {createdBy} on{' '}
                       {moment(pratica.createdon).format('DD/MM/YYYY HH:mm')}
                     </CRow>
                     <CRow>
-                      {pratica.cr9b3_status === 0 ? 'Archived' : 'Last modified'} by {modifiedBy} on{' '}
-                      {moment(pratica.modifiedon).format('DD/MM/YYYY HH:mm')}
+                      {pratica.cr9b3_status === 0 ? 'Archiviato da' : 'Ultima modifica'} da{' '}
+                      {modifiedBy} il {moment(pratica.modifiedon).format('DD/MM/YYYY HH:mm')}
                     </CRow>
                   </CCardBody>
                 </CCol>
@@ -592,7 +617,7 @@ const Pratica = ({
                           setVisibleLogs(false)
                         }}
                       >
-                        Correspondence
+                        Corrispondenza
                       </CNavLink>
                     </CNavItem>
                     <CNavItem>
@@ -606,7 +631,7 @@ const Pratica = ({
                           setVisibleLogs(true)
                         }}
                       >
-                        Activity log
+                        Cronologia attività
                       </CNavLink>
                     </CNavItem>
                     <CNavItem>
@@ -660,7 +685,7 @@ const Pratica = ({
 
                     <CCard className="mb-3">
                       <CCardBody>
-                        <h6>RELATED PRATICA</h6>
+                        <h6>PRATICHE CORRELATE</h6>
                         <RelatedPratica
                           relatedPratiche={relatedPratiche}
                           praticheList={permittedTasks}
@@ -687,7 +712,7 @@ const Pratica = ({
           </CModalBody>
           <CModalFooter>
             <CButton color="secondary" onClick={showConfirmClose}>
-              Close
+              Chiudi
             </CButton>
           </CModalFooter>
         </CModal>

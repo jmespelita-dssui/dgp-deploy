@@ -17,7 +17,7 @@ const Links = ({ links, praticaID }) => {
   return (
     <>
       <LinkCard
-        header="REQUEST"
+        header="RICHIESTA"
         links={parsedLinks}
         type="request"
         praticaID={praticaID}

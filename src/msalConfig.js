@@ -11,11 +11,10 @@ import { CustomGraph } from './util/customGraph'
 
 const msalConfig = {
   auth: {
-    clientId: 'b781906d-dabc-418d-b1e6-cca04e3ad35f',
-    authority: 'https://login.microsoftonline.com/organizations',
-    // redirectUri: 'https://10.7.12.4/dssui/gestione-pratiche',
-    // redirectUri: 'http://localhost:3000',
-    redirectUri: 'https://dssui-gestione-pratiche.web.app',
+    clientId: process.env.REACT_APP_MSAL_CLIENT_ID,
+    authority: process.env.REACT_APP_MSAL_AUTHORITY,
+    redirectUri: 'http://localhost:3000',
+    // redirectUri: process.env.REACT_APP_MSAL_REDIRECT_URI,
     // scopes: 'https://orgac85713a.crm4.dynamics.com/.default',
   },
   cache: {

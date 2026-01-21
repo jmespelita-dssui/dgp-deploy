@@ -73,6 +73,7 @@ const Fields = ({
     setLabel(getFields(formData.cr9b3_categoria))
     // setFields(getFields(12958))
     setSuperioriInvitatiList(superioriInvitati)
+    console.log(responsabile)
     setResponsabileList(responsabile)
     setOfficialiIncaricatiList(officialiIncaricati)
     setFormData(pratica)
@@ -290,7 +291,7 @@ const Fields = ({
           )}
           {!isView && (
             <CButton className="mt-3" disabled={!isModified} type="submit">
-              Save changes
+              Salva modifiche
             </CButton>
           )}
           {isView && formData.cr9b3_status > 0 ? (
@@ -369,7 +370,7 @@ const Fields = ({
             ''
           )}
           <CCol>
-            <p>Additional protocol numbers:</p>
+            <p>Ulteriori numeri di protocollo:</p>
             <ProtNos
               triggerUpdateProtNos={triggerUpdateProtNos}
               isView={isView}
@@ -905,8 +906,8 @@ const Fields = ({
               <CFormInput
                 id="cartella-principale"
                 value={formData.cr9b3_sharepointlink ? formData.cr9b3_sharepointlink : ''}
-                label="Home SharePoint link:"
-                aria-label="Sharepoint linke"
+                label="Link Sharepoint cartella principale:"
+                aria-label="Sharepoint link"
                 aria-describedby="sharepoint-link"
                 onChange={(e) => {
                   const value = e.target.value
@@ -915,7 +916,7 @@ const Fields = ({
                   setFormData({ ...formData, cr9b3_sharepointlink: e.target.value })
                   setPraticaEdits({ ...praticaEdits, cr9b3_sharepointlink: e.target.value.trim() })
                 }}
-                feedbackInvalid="Please insert a valid SharePoint link."
+                feedbackInvalid="Inserisci un link SharePoint valido."
                 disabled={isView}
                 readOnly={isView}
                 valid={isValid && !isView}
@@ -928,7 +929,7 @@ const Fields = ({
 
           <CFormTextarea
             id="notes"
-            label="Notes:"
+            label="Note:"
             rows={3}
             text="Ulteriori dettagli"
             value={formData.cr9b3_notes ? formData.cr9b3_notes : ''}
@@ -952,7 +953,7 @@ const Fields = ({
                   if (!isView) {
                     setConfirmCloseBody({
                       ...confirmCloseBody,
-                      text: 'Your changes may not have been saved. Continue?',
+                      text: 'Le modifiche potrebbero non essere state salvate. Continuare?',
                     })
                     setConfirmAction('close')
                     showConfirmClose()
@@ -962,12 +963,12 @@ const Fields = ({
                 }}
               >
                 <CIcon icon={isView ? cilPencil : cilX} className="me-md-2" />
-                {isView ? 'Edit' : 'Cancel'}
+                {isView ? 'Modifica' : 'Chiudi'}
               </CButton>
             )}
             {!isView && (
               <CButton className="mt-3" disabled={!isModified} type="submit">
-                Save changes
+                Salva modifiche
               </CButton>
             )}
             {isView && formData.cr9b3_status > 0 ? (
@@ -980,7 +981,7 @@ const Fields = ({
                     setConfirmAction('archive')
                     setConfirmCloseBody({
                       ...confirmCloseBody,
-                      text: 'Are you sure you want to archive this pratica?',
+                      text: 'Sei sicuro di voler archiviare questa pratica?',
                     })
                     showConfirmClose()
                   }}
@@ -998,7 +999,7 @@ const Fields = ({
                     setConfirmAction('unarchive')
                     setConfirmCloseBody({
                       ...confirmCloseBody,
-                      text: 'Are you sure you want to unarchive this pratica?',
+                      text: "Sei sicuro di voler annullare l'archiviazione di questa pratica?",
                     })
                     showConfirmClose()
                   }}

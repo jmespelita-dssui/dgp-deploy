@@ -51,6 +51,7 @@ const MyTasks = ({ isArchive }) => {
   const [permittedTasks, setPermittedTasks] = useState([])
 
   useEffect(() => {
+    // console.log('_access', _access)
     setHasDefaultAccess(_access.defaultAccess)
     setCombinedTasks(_access.combinedTasks)
     const filterTasks = async () => {
@@ -58,7 +59,7 @@ const MyTasks = ({ isArchive }) => {
         const axiosInstance = await initializeAxiosInstance()
 
         // Fetch all tasks
-        const response = await axiosInstance.get('cr9b3_praticas?$orderby=modifiedon desc')
+        const response = await axiosInstance.get('cr9b3_praticas?$orderby=createdon desc')
         // console.log('all tasks', response.data)
         let allTasks = response.data.value
 
@@ -174,12 +175,12 @@ const MyTasks = ({ isArchive }) => {
           <CNav variant="tabs" className="m-3">
             <CNavItem>
               <CNavLink onClick={() => setActiveKey(1)} active={activeKey === 1}>
-                Open
+                Aperto
               </CNavLink>
             </CNavItem>
             <CNavItem>
               <CNavLink onClick={() => setActiveKey(2)} active={activeKey === 2}>
-                Completed
+                Archiviato
               </CNavLink>
             </CNavItem>
           </CNav>
