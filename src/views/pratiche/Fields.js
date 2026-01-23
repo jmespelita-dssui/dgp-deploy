@@ -31,6 +31,7 @@ import { CountrySelect } from 'react-country-state-city'
 import 'react-country-state-city/dist/react-country-state-city.css'
 import ChooseCategory from '../createTask/ChooseCategory'
 import ProtNos from '../createTask/ProtNos'
+import { initializeAxiosInstance } from 'src/util/axiosUtils'
 
 const Fields = ({
   pratica,
@@ -40,6 +41,7 @@ const Fields = ({
   onSaveEdit,
   isView,
   setIsView,
+  onDeletePratica,
   // labelColor,
   // label,
   // categoryLabel,
@@ -62,8 +64,8 @@ const Fields = ({
   const [visibleConfirmClose, setVisibleConfirmClose] = useState(false)
   const [visibleChooseCategory, setVisibleChooseCategory] = useState(false)
   const [confirmCloseBody, setConfirmCloseBody] = useState({
-    title: 'Confirm',
-    text: 'Your changes may not have been saved. Continue?',
+    title: 'Conferma azione',
+    text: 'Le tue modifiche potrebbero non essere salvate. Continuare?',
   })
   const [country, setCountry] = useState({ id: null })
 
@@ -73,7 +75,6 @@ const Fields = ({
     setLabel(getFields(formData.cr9b3_categoria))
     // setFields(getFields(12958))
     setSuperioriInvitatiList(superioriInvitati)
-    console.log(responsabile)
     setResponsabileList(responsabile)
     setOfficialiIncaricatiList(officialiIncaricati)
     setFormData(pratica)
@@ -125,7 +126,7 @@ const Fields = ({
       )
       // setIsView(true)
     } else {
-      addToast('Please insert valid SharePoint link', 'Create Pratica', 'warning')
+      addToast('Inserire un link valido.', 'Creare Pratica', 'warning')
     }
   }
 
@@ -135,6 +136,9 @@ const Fields = ({
   }
 
   const onExit = async () => {
+    const axiosInstance = await initializeAxiosInstance()
+    let response
+
     if (confirmAction === 'close') {
       let refreshPratica = await getPratica(formData.cr9b3_praticaid)
       // let refreshPratica = await getPratica(formData.cr9b3_praticaid)
@@ -151,6 +155,8 @@ const Fields = ({
         officilaliIncaricatiList,
         'archive',
       )
+    } else if (confirmAction === 'delete') {
+      onDeletePratica()
     } else {
       setFormData({ ...formData, cr9b3_status: 10 })
       onSaveEdit(
@@ -276,7 +282,7 @@ const Fields = ({
                 if (!isView) {
                   setConfirmCloseBody({
                     ...confirmCloseBody,
-                    text: 'Your changes may not have been saved. Continue?',
+                    text: 'Le tue modifiche potrebbero non essere salvate. Continuare?',
                   })
                   setConfirmAction('close')
                   showConfirmClose()
@@ -286,7 +292,7 @@ const Fields = ({
               }}
             >
               <CIcon icon={isView ? cilPencil : cilX} className="me-md-2" />
-              {isView ? 'Edit' : 'Cancel'}
+              {isView ? 'Modifica' : 'Annulla'}
             </CButton>
           )}
           {!isView && (
@@ -304,25 +310,7 @@ const Fields = ({
                   setConfirmAction('archive')
                   setConfirmCloseBody({
                     ...confirmCloseBody,
-                    text: 'Are you sure you want to archive this pratica?',
-                  })
-                  showConfirmClose()
-                }}
-              >
-                <CIcon icon={cilTrash} />
-              </CButton>
-            </CPopover>
-          ) : isView && formData.cr9b3_status === 0 ? (
-            <CPopover content={'Unarchive'} placement="top" trigger={['hover', 'focus']}>
-              <CButton
-                className="mt-3"
-                variant="ghost"
-                color="primary"
-                onClick={() => {
-                  setConfirmAction('unarchive')
-                  setConfirmCloseBody({
-                    ...confirmCloseBody,
-                    text: 'Are you sure you want to unarchive this pratica?',
+                    text: 'Sei sicuro di voler eliminare questa pratica?',
                   })
                   showConfirmClose()
                 }}
@@ -330,6 +318,42 @@ const Fields = ({
                 <CIcon icon={cilInbox} />
               </CButton>
             </CPopover>
+          ) : isView && formData.cr9b3_status === 0 ? (
+            <>
+              <CPopover content={'Unarchive'} placement="top" trigger={['hover', 'focus']}>
+                <CButton
+                  className="mt-3"
+                  variant="ghost"
+                  color="primary"
+                  onClick={() => {
+                    setConfirmAction('unarchive')
+                    setConfirmCloseBody({
+                      ...confirmCloseBody,
+                      text: 'Sei sicuro di voler ripristinare questa pratica?',
+                    })
+                    showConfirmClose()
+                  }}
+                >
+                  <CIcon icon={cilInbox} />
+                </CButton>
+              </CPopover>
+              <CPopover content={'Delete'} placement="top" trigger={['hover', 'focus']}>
+                <CButton
+                  className="mt-3"
+                  color="primary"
+                  onClick={() => {
+                    setConfirmAction('delete')
+                    setConfirmCloseBody({
+                      ...confirmCloseBody,
+                      text: 'Sei sicuro di voler eliminare definitivamente questa pratica? Questa operazione non può essere annullata.',
+                    })
+                    showConfirmClose()
+                  }}
+                >
+                  <CIcon icon={cilTrash} />
+                </CButton>
+              </CPopover>
+            </>
           ) : (
             ''
           )}
@@ -384,13 +408,13 @@ const Fields = ({
               label="Status:"
               value={formData.cr9b3_status ? formData.cr9b3_status : ''}
               options={[
-                { label: 'New', value: '10' },
-                { label: 'In progress', value: '30' },
-                { label: 'Pending response from recipient', value: '50' },
-                { label: 'Pending approval from superior', value: '70' },
-                { label: 'On hold', value: '40' },
-                { label: 'Archived', value: '0', disabled: true },
-                { label: 'Completed', value: '100' },
+                { label: 'Nuovo', value: '10' },
+                { label: 'In corso', value: '30' },
+                { label: 'In attesa di risposta dal destinatario', value: '50' },
+                { label: 'In attesa di approvazione dal superiore', value: '70' },
+                { label: 'In sospeso', value: '40' },
+                { label: 'Archiviato', value: '0', disabled: true },
+                { label: 'Completato', value: '100' },
               ]}
               onChange={(e) => {
                 setFormData({ ...formData, cr9b3_status: e.target.value })

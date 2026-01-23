@@ -24,13 +24,14 @@ import CIcon from '@coreui/icons-react'
 import { cilCalendar, cilChevronCircleDownAlt, cilChevronCircleUpAlt } from '@coreui/icons'
 import moment from 'moment'
 import { initializeAxiosInstance } from 'src/util/axiosUtils'
+import { assignUserToTask } from 'src/util/taskUtils'
+import LoadingOverlay from '../modals/LoadingOverlay'
 import {
-  assignUserToTask,
   getEmailAddress,
   getSystemUserID,
   getUserGraphDetails,
-} from 'src/util/taskUtils'
-import LoadingOverlay from '../modals/LoadingOverlay'
+  getUserName,
+} from 'src/util/accessUtils'
 
 const Subtask = ({ task, refreshTask }) => {
   const [isExpand, setIsExpand] = useState(false)
@@ -43,6 +44,8 @@ const Subtask = ({ task, refreshTask }) => {
   const [comment, setComment] = useState('')
   const [comments, setComments] = useState()
   const [assignedUsersSystemUserIDs, setAssignedUsersSystemUserIDs] = useState([])
+  const [createdBy, setCreatedBy] = useState('')
+  const [modifiedBy, setModifiedBy] = useState('')
 
   const [loading, setLoading] = useState(false)
   const [visibleConfirmClose, setVisibleConfirmClose] = useState(false)
@@ -58,10 +61,17 @@ const Subtask = ({ task, refreshTask }) => {
 
   useEffect(() => {
     // setIsExpand(false)
+    console.log('task in subtask', task)
     // setIsHidden(true)
     setStatus(task.cr9b3_status)
     getAssignedUsers()
     setTaskDetails(task)
+    getCreatedBy().then((creator) => {
+      setCreatedBy(creator)
+    })
+    getModifiedBy().then((modifier) => {
+      setModifiedBy(modifier)
+    })
     if (!task.cr9b3_comments) {
       setComments([])
     } else {
@@ -76,9 +86,9 @@ const Subtask = ({ task, refreshTask }) => {
     try {
       const axiosInstance = await initializeAxiosInstance()
       const response = await axiosInstance.delete(`cr9b3_taskses(${task.cr9b3_tasksid})`)
-      addToast('Subtask deleted!', 'Delete subtask', 'success', 3000)
+      addToast('Task eliminato con successo.', 'Elimina subtask', 'success', 3000)
     } catch (error) {
-      addToast('Error deleting subtask', 'Delete subtask', 'warning', 3000)
+      addToast("Errore durante l'eliminazione del task.", 'Elimina subtask', 'warning', 3000)
       if (error.isAxiosError) {
         console.error('Axios error deleting subtask:', error.response)
         console.error('Error message:', error.message)
@@ -176,17 +186,17 @@ const Subtask = ({ task, refreshTask }) => {
           }),
         )
 
-        //determine which superiors were removed
+        //determine which users were removed
         usersToUnassign = assignedUsersSystemUserIDs.filter(
           (value) => !newAssignedUsersList.includes(value),
         )
 
-        //determine which superiors were added
+        //determine which users were added
         usersToAssign = newAssignedUsersList.filter(
           (value) => !assignedUsersSystemUserIDs.includes(value),
         )
 
-        //axios delete superiors
+        //axios delete users
         if (usersToUnassign.length > 0) {
           usersToUnassign.map(async (id) => {
             response = await axiosInstance.delete(
@@ -195,7 +205,7 @@ const Subtask = ({ task, refreshTask }) => {
           })
         }
 
-        //axios add superiors
+        //axios add users
         if (usersToAssign.length > 0) {
           usersToAssign.map(async (id) => {
             assignUserToTask(id, task.cr9b3_tasksid)
@@ -228,6 +238,25 @@ const Subtask = ({ task, refreshTask }) => {
     }
   }
 
+  const getCreatedBy = async () => {
+    try {
+      const createdBy = await getUserName(task._createdby_value)
+      return createdBy
+    } catch (error) {
+      console.error('Error getting created by user name:', error)
+      return 'Unknown User'
+    }
+  }
+  const getModifiedBy = async () => {
+    try {
+      const modifiedBy = await getUserName(task._modifiedby_value)
+      return modifiedBy
+    } catch (error) {
+      console.error('Error getting modified by user name:', error)
+      return 'Unknown User'
+    }
+  }
+
   return (
     <>
       <LoadingOverlay loading={loading} />
@@ -256,8 +285,8 @@ const Subtask = ({ task, refreshTask }) => {
               />{' '}
               <span>{taskDetails.cr9b3_label}</span>
               {statusLabel.value === '4' ? (
-                <CBadge shape="rounded-pill" color="success" className="m-2">
-                  Completed
+                <CBadge shape="rounded-pill" color="success" className="mt-2">
+                  Completato
                 </CBadge>
               ) : (
                 ''
@@ -289,7 +318,7 @@ const Subtask = ({ task, refreshTask }) => {
                     <CCol>
                       <CFormSelect
                         aria-label="Status"
-                        label="Status"
+                        label="Stato"
                         //   value={formData.cr9b3_status ? formData.cr9b3_status : ''}
                         value={taskDetails.cr9b3_status ? taskDetails.cr9b3_status : 0}
                         options={options}
@@ -313,7 +342,7 @@ const Subtask = ({ task, refreshTask }) => {
                       />
                     </CCol>
                   </CRow>
-                  <p>Assigned to</p>
+                  <p>Assegnato a</p>
                   <PeoplePicker
                     className="mb-4"
                     groupId="7430b06a-2d45-4576-b6d9-dd969da4d43b"
@@ -359,7 +388,7 @@ const Subtask = ({ task, refreshTask }) => {
                       }}
                       disabled={comment.trim() === ''}
                     >
-                      Send
+                      Invia
                     </CButton>
                   </div>
                   <CContainer className="pb-5">
@@ -387,13 +416,13 @@ const Subtask = ({ task, refreshTask }) => {
               ) : (
                 <CContainer>
                   {statusLabel.value < 4 ? (
-                    <CBadge shape="rounded-pill" color={statusLabel.color} className="m-1 mb-3">
+                    <CBadge shape="rounded-pill" color={statusLabel.color} className="mb-3">
                       {statusLabel.label}
                     </CBadge>
                   ) : (
                     ''
                   )}
-                  <p>Description: {taskDetails.cr9b3_description}</p>
+                  <p>Descrizione: {taskDetails.cr9b3_description}</p>
                 </CContainer>
               )}
 
@@ -406,7 +435,7 @@ const Subtask = ({ task, refreshTask }) => {
                         setVisibleConfirmClose(true)
                       }}
                     >
-                      Delete task
+                      Eliminare task
                     </small>
                   )}
                 </CCol>
@@ -424,6 +453,24 @@ const Subtask = ({ task, refreshTask }) => {
                   </small>
                 </CCol>
               </CRow>
+              <CCardBody className="text-body-secondary font-size-sm lh-2 mt-3">
+                <CRow>
+                  <CCol md={9}>
+                    <small>
+                      Creato da {createdBy} on{' '}
+                      {moment(taskDetails.createdon).format('DD/MM/YYYY HH:mm')}
+                    </small>
+                  </CCol>
+                </CRow>
+                <CRow>
+                  <CCol md={9}>
+                    <small>
+                      Ultima modifica da {modifiedBy} on{' '}
+                      {moment(taskDetails.modifiedon).format('DD/MM/YYYY HH:mm')}
+                    </small>
+                  </CCol>
+                </CRow>
+              </CCardBody>
             </CCardBody>
           </CCollapse>
 

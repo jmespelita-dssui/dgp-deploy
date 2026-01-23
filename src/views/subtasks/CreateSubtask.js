@@ -28,11 +28,11 @@ const CreateSubtask = ({ onSave, onCancel }) => {
   const [pickerKey, setPickerKey] = useState(0)
 
   const options = [
-    { label: 'New', value: '0', color: 'cyan' },
-    { label: 'In progress', value: '1', color: 'warning' },
-    { label: 'On hold', value: '2', color: 'gray' },
-    { label: 'Waiting for approval', value: '3', color: 'purple' },
-    { label: 'Completed', value: '4' },
+    { label: 'Nuovo', value: '0', color: 'cyan' },
+    { label: 'In corso', value: '1', color: 'warning' },
+    { label: 'In attesa', value: '2', color: 'gray' },
+    { label: 'In attesa di approvazione', value: '3', color: 'purple' },
+    { label: 'Completato', value: '4' },
   ]
 
   const onSubmit = async (e) => {
@@ -85,8 +85,8 @@ const CreateSubtask = ({ onSave, onCancel }) => {
               <CCol>
                 <CFormSelect
                   value={status}
-                  aria-label="Status"
-                  label="Status"
+                  aria-label="Stato task"
+                  label="Stato task"
                   // options={[
                   //   { label: 'New', value: 0 },
                   //   { label: 'In progress', value: 1 },
@@ -113,7 +113,7 @@ const CreateSubtask = ({ onSave, onCancel }) => {
                 />
               </CCol>
             </CRow>
-            <p>Assigned to</p>
+            <p>Assegnato a</p>
             <PeoplePicker
               key={pickerKey}
               className="mb-4"
@@ -143,7 +143,7 @@ const CreateSubtask = ({ onSave, onCancel }) => {
                 onCancel()
               }}
             >
-              Cancel
+              Annulla
             </CButton>
             <CButton color="primary" type="submit">
               <CIcon icon={cilPlus} />

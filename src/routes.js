@@ -1,19 +1,21 @@
 import React from 'react'
-import AdminConsole from './views/admin/AdminConsole'
 
 // examples
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 const MyTasks = React.lazy(() => import('./views/pratiche/MyTasks'))
 const CreateTask = React.lazy(() => import('./views/createTask/CreatePratica'))
 const Archive = React.lazy(() => import('./views/pratiche/Archive'))
+const AdminConsole = React.lazy(() => import('./views/admin/AdminConsole'))
+const Page403 = React.lazy(() => import('./views/pages/Page403'))
 
 const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
   { path: '/le-mie-pratiche', name: 'Le mie pratiche', element: MyTasks },
-  { path: '/creare-pratica', name: 'Creare pratica', element: CreateTask },
-  { path: '/cestino', name: 'Cestino', element: Archive },
-  { path: '/admin-console', name: 'Admin Console', element: AdminConsole },
+  { path: '/creare-pratica', name: 'Creare pratica', element: CreateTask, specialAccessOnly: true },
+  { path: '/cestino', name: 'Cestino', element: Archive, specialAccessOnly: true },
+  { path: '/admin-console', name: 'Admin Console', element: AdminConsole, adminOnly: true },
+  { path: '/403', name: 'Page 403', element: Page403 },
 ]
 
 export default routes

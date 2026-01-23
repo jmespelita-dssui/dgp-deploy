@@ -17,8 +17,8 @@ const RelatedPraticaRow = ({
   const { addToast } = useToast()
 
   const [confirmCloseBody, setConfirmCloseBody] = useState({
-    title: 'Confirm',
-    text: `Are you sure you want to remove related pratica ${relatedPratica.cr9b3_protno}?`,
+    title: 'Conferma rimozione',
+    text: `Sei sicuro di voler rimuovere la pratica correlata ${relatedPratica.cr9b3_protno}?`,
   })
 
   const onContinue = () => {
@@ -31,7 +31,7 @@ const RelatedPraticaRow = ({
     if (praticheList.find((prat) => prat.cr9b3_praticaid === relatedPratica.cr9b3_praticaid)) {
       setNewPratica(relatedPratica.cr9b3_praticaid)
     } else {
-      addToast('You do not have access to view this pratica.', 'Open Pratica', 'warning', 3000)
+      addToast('Non hai accesso a questa pratica.', 'Visualizza pratica', 'warning', 3000)
     }
   }
 

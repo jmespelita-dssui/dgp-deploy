@@ -13,8 +13,8 @@ import {
   getUpdatedActivityLog,
   logActivity,
 } from 'src/util/activityLogUtils'
-import { getUserName } from 'src/util/taskUtils'
 import moment from 'moment-timezone'
+import { getUserName } from 'src/util/accessUtils'
 
 const LinkCard = ({ header, links, type, praticaID, refreshLinks }) => {
   const [visible, setVisible] = useState(false)
@@ -32,15 +32,15 @@ const LinkCard = ({ header, links, type, praticaID, refreshLinks }) => {
     let toastMessage
     if (action === 'add') {
       newLinks = [...links, link]
-      toastMessage = 'Link successfully added.'
+      toastMessage = 'Link aggiunto.'
     } else if (action === 'edit') {
       newLinks = links.map((item) =>
         item.id === link.id ? { ...item, label: link.label, url: link.url } : item,
       )
-      toastMessage = 'Link successfully edited.'
+      toastMessage = 'Link modificato con successo.'
     } else {
       newLinks = links.filter((item) => item.id !== link.id)
-      toastMessage = 'Link successfully deleted.'
+      toastMessage = 'Link eliminato con successo.'
     }
     // { cr9b3_links: newLinks.map(({ label, url }) => ({ label, url })) }
     let logEntry = generateActivityLogEntry({
@@ -84,13 +84,13 @@ const LinkCard = ({ header, links, type, praticaID, refreshLinks }) => {
       logActivity(praticaID, finalLogEntry)
 
       refreshLinks(newLinks)
-      addToast(toastMessage, 'Edit Pratica', 'success', 3000)
+      addToast(toastMessage, 'Modifica link', 'success', 3000)
 
       // console.log(response)
       setVisible(false)
       setLoading(false)
     } catch (error) {
-      addToast('Link was not saved.', 'Edit Pratica', 'warning', 3000)
+      addToast('Il link non è stato salvato.', 'Modifica link', 'warning', 3000)
       setLoading(false)
       //   addToast('Error occurred while saving changes.', 'Edit Pratica', 'warning', 3000)
       //   setLoading(false)

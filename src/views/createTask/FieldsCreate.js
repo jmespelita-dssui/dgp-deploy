@@ -51,7 +51,7 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
         responsabili,
       )
     } else {
-      addToast('Please insert valid SharePoint link', 'Create Pratica', 'warning')
+      addToast('Inserire un link SharePoint valido', 'Create Pratica', 'warning')
     }
   }
 

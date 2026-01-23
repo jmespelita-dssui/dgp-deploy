@@ -93,10 +93,10 @@ const ChooseCategory = ({ cat, visible, onCancel, onSave }) => {
             </CRow>
             <CModalFooter>
               <CButton color="secondary" onClick={resetForm}>
-                Back
+                Annulla
               </CButton>
               <CButton color="primary" type="submit" disabled={!isSelected}>
-                Save
+                Salva
               </CButton>
             </CModalFooter>
           </CForm>

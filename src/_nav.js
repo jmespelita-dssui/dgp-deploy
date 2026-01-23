@@ -1,13 +1,6 @@
 import React from 'react'
 import CIcon from '@coreui/icons-react'
-import {
-  cilListRich,
-  cilPlus,
-  cilSearch,
-  cilSettings,
-  cilSpeedometer,
-  cilTrash,
-} from '@coreui/icons'
+import { cilListRich, cilPlus, cilSettings, cilTrash } from '@coreui/icons'
 import { CNavItem } from '@coreui/react-pro'
 
 const _nav = [
@@ -26,10 +19,6 @@ const _nav = [
     name: 'Creare pratica',
     to: '/creare-pratica',
     icon: <CIcon icon={cilPlus} customClassName="nav-icon" />,
-    // badge: {
-    //   color: 'info-gradient',
-    //   text: 'NEW',
-    // },
   },
   // {
   //   component: CNavItem,
@@ -46,10 +35,6 @@ const _nav = [
     name: 'Cestino',
     to: '/cestino',
     icon: <CIcon icon={cilTrash} customClassName="nav-icon" />,
-    // badge: {
-    //   color: 'info-gradient',
-    //   text: 'NEW',
-    // },
   },
   // {
   //   component: CNavItem,

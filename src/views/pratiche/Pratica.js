@@ -28,13 +28,7 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilFolderOpen, cilGroup } from '@coreui/icons'
 import Fields from './Fields'
-import {
-  getSystemUserID,
-  getUserGraphDetails,
-  assignUserToPratica,
-  checkIfExistingProt,
-  getUserName,
-} from 'src/util/taskUtils'
+import { assignUserToPratica, checkIfExistingProt } from 'src/util/taskUtils'
 import { useToast } from 'src/context/ToastContext'
 import LoadingOverlay from '../modals/LoadingOverlay'
 import ConfirmClose from '../modals/ConfirmClose'
@@ -49,6 +43,7 @@ import {
 } from 'src/util/activityLogUtils'
 import Subtasks from '../subtasks/Subtasks'
 import ManageAccess from '../access/ManageAccess'
+import { getSystemUserID, getUserGraphDetails, getUserName } from 'src/util/accessUtils'
 
 const Pratica = ({
   pratica,
@@ -514,6 +509,42 @@ const Pratica = ({
     setIsView(view)
   }
 
+  const deletePratica = async () => {
+    try {
+      const axiosInstance = await initializeAxiosInstance()
+      setLoading(true)
+      axiosInstance
+        .delete(`cr9b3_praticas(${pratica.cr9b3_praticaid})`)
+        .then(() => {
+          addToast('Pratica cancellato con successo.', 'Modifica pratica', 'success', 3000)
+          // fetchData()
+          setVisibleConfirmClose(false)
+          // setvisible
+        })
+        .catch((error) => {
+          addToast(
+            "C'è stato un errore durante la cancellazione della pratica.",
+            'Modifica pratica',
+            'danger',
+            3000,
+          )
+          console.error('Error deleting permission:', error)
+        })
+        .finally(() => {
+          onClose()
+          setLoading(false)
+        })
+    } catch (error) {
+      addToast(
+        'Errore durante la rimozione/assegnazione della pratica',
+        'Modifica pratica',
+        'warning',
+        3000,
+      )
+      console.error('Errore durante la rimozione della pratica', error)
+    }
+  }
+
   return (
     <>
       <LoadingOverlay loading={loading} />
@@ -558,6 +589,7 @@ const Pratica = ({
                     isView={isView}
                     loading={loading}
                     setIsView={changeMode}
+                    onDeletePratica={deletePratica}
                     // forceRerender={refresh}
                     // labelColor={labelColor}
                     label={label}
@@ -678,7 +710,7 @@ const Pratica = ({
                       <CCallout color="primary">
                         <CLink href={sharepointLink} target="_blank">
                           <CIcon icon={cilFolderOpen} />
-                          <span style={{ paddingLeft: '10px' }}>Home folder</span>
+                          <span style={{ paddingLeft: '10px' }}>Cartella principale</span>
                         </CLink>
                       </CCallout>
                     )}

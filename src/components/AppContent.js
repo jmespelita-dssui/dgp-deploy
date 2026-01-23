@@ -1,11 +1,23 @@
-import React, { Suspense } from 'react'
+import React, { Suspense, useEffect } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { CContainer, CSpinner } from '@coreui/react-pro'
 
 // routes config
 import routes from '../routes'
+import { checkAdminAccess, checkSpecialAccess } from 'src/util/accessUtils'
 
 const AppContent = () => {
+  const [isAdmin, setIsAdmin] = React.useState(false)
+  const [hasSpecialAccess, setHasSpecialAccess] = React.useState(false)
+
+  useEffect(() => {
+    checkAdminAccess().then((isAdmin) => {
+      setIsAdmin(isAdmin)
+    })
+    checkSpecialAccess().then((hasAccess) => {
+      setHasSpecialAccess(hasAccess)
+    })
+  }, [])
   return (
     <CContainer lg>
       <Suspense
@@ -19,18 +31,27 @@ const AppContent = () => {
       >
         <Routes>
           {routes.map((route, idx) => {
+            if (!route.element) return null
+
+            const Element = route.element
+
             return (
-              route.element && (
-                <Route
-                  key={idx}
-                  path={route.path}
-                  exact={route.exact}
-                  name={route.name}
-                  element={<route.element />}
-                />
-              )
+              <Route
+                key={idx}
+                path={route.path}
+                element={
+                  route.adminOnly && !isAdmin ? (
+                    <Navigate to="/403" replace />
+                  ) : route.specialAccessOnly && !hasSpecialAccess ? (
+                    <Navigate to="/403" replace />
+                  ) : (
+                    <Element />
+                  )
+                }
+              />
             )
           })}
+
           <Route path="/" element={<Navigate to="le-mie-pratiche" replace />} />
         </Routes>
       </Suspense>

@@ -17,13 +17,12 @@ import {
   CTableHeaderCell,
   CTableRow,
 } from '@coreui/react-pro'
-import { PeoplePicker, Person } from '@microsoft/mgt-react'
+import { Person } from '@microsoft/mgt-react'
 import { useToast } from 'src/context/ToastContext'
 import React, { useEffect, useState } from 'react'
 import { initializeAxiosInstance } from 'src/util/axiosUtils'
 import AddNewAccess from './AddNewAccess'
 import EditAccess from './EditAccess'
-import ConfirmationModal from '../modals/ConfirmationModal'
 import ConfirmClose from '../modals/ConfirmClose'
 import LoadingOverlay from '../modals/LoadingOverlay'
 
@@ -212,10 +211,10 @@ const AdminConsole = () => {
                               caret
                             >
                               {accessItem.cr9b3_role === 129580000
-                                ? 'ADMIN '
+                                ? 'AMMINISTRATORE '
                                 : accessItem.cr9b3_role === 129580001
                                 ? 'MANAGER '
-                                : 'RESPONSABILE '}
+                                : 'RESPONSABILE'}
                             </CDropdownToggle>
                             <CDropdownMenu>
                               <CDropdownItem

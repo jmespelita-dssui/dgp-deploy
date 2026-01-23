@@ -13,17 +13,11 @@ import {
 } from '@coreui/react-pro'
 import { People, PeoplePicker, Person, Get } from '@microsoft/mgt-react'
 import React, { useEffect, useState } from 'react'
-import {
-  getGroupMembers,
-  getSystemUserID,
-  getUser,
-  getUserGraphDetails,
-  giveAccess,
-} from 'src/util/taskUtils'
 import { useToast } from 'src/context/ToastContext'
 import { initializeAxiosInstance } from 'src/util/axiosUtils'
 import _access from 'src/_access'
 import LoadingOverlay from '../modals/LoadingOverlay'
+import { getSystemUserID, getUser, getUserGraphDetails, giveAccess } from 'src/util/accessUtils'
 
 const ManageAccess = ({ responsabile, officialiIncaricati, pratica }) => {
   const [visibleDefault, setVisibleDefault] = useState(false)
@@ -114,7 +108,7 @@ const ManageAccess = ({ responsabile, officialiIncaricati, pratica }) => {
       setOthers(uniqueById(newList))
     } catch (error) {
       console.error(error)
-      addToast(`Error adding access`, 'Edit Pratica', 'warning', 3000)
+      addToast(`Errore durante l'aggiunta dell'accesso`, 'Modifica accesso', 'warning', 3000)
     }
     setNewOthers([])
   }
@@ -153,7 +147,7 @@ const ManageAccess = ({ responsabile, officialiIncaricati, pratica }) => {
 
     const inDefaultNames = inDefault.map((item) => item.displayName).join(', ')
     if (inDefault.length > 0) {
-      addToast(`Existing access: ${inDefaultNames}`, 'Edit Pratica', 'success', 3000)
+      addToast(`Accesso già esistente: ${inDefaultNames}`, 'Modifica pratica', 'success', 3000)
     }
 
     return notInDefault
@@ -171,7 +165,7 @@ const ManageAccess = ({ responsabile, officialiIncaricati, pratica }) => {
       setOthers(others.filter((item) => item.id !== user.id))
       setLoading(false)
     } catch (error) {
-      addToast('Error occurred while removing access.', 'Edit Pratica', 'warning', 3000)
+      addToast("Errore durante la rimozione dell'accesso.", 'Modifica accesso', 'warning', 3000)
       setLoading(false)
       if (error.isAxiosError) {
         console.error('Axios error details adding new pratica:', error.response)

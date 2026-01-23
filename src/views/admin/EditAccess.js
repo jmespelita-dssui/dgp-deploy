@@ -42,13 +42,13 @@ const EditAccess = ({ visible, onCancel, onContinue, user }) => {
       </CModalBody>
       <CModalFooter>
         <CButton color="secondary" onClick={onCancel}>
-          Back
+          Annulla
         </CButton>
         <CButton
           color="primary"
           onClick={() => onContinue([{ permissionid: user.cr9b3_permissionid, role }])}
         >
-          Continue
+          Continua
         </CButton>
       </CModalFooter>
     </CModal>

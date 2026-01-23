@@ -1,5 +1,5 @@
 import React from 'react'
-import { getDefaultAccess, getUser, getGroupMembers } from './util/taskUtils'
+import { getDefaultAccess, getUser, getGroupMembers } from './util/accessUtils'
 import { initializeAxiosInstance } from './util/axiosUtils'
 
 const setAccessRights = async () => {

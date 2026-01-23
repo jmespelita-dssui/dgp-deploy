@@ -52,10 +52,10 @@ const AddNewAccess = ({ visible, onCancel, onContinue }) => {
       </CModalBody>
       <CModalFooter>
         <CButton color="secondary" onClick={onCancel}>
-          Back
+          Annulla
         </CButton>
         <CButton color="primary" onClick={() => prepUser()}>
-          Continue
+          Continua
         </CButton>
       </CModalFooter>
     </CModal>

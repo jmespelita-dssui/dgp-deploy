@@ -59,10 +59,10 @@ const RelatedPratica = ({
     // console.log(pratica, chosenPratica)
     let isSuccess = await assignRelatedTask(pratica.cr9b3_praticaid, chosenPratica.cr9b3_praticaid)
     if (isSuccess) {
-      addToast('Successfully added related pratica.', 'Edit Pratica', 'success', 3000)
+      addToast('Pratica correlata aggiunta con successo.', 'Modifica pratica', 'success', 3000)
       setVisibleList(false)
     } else {
-      addToast('Related pratica was not saved.', 'Edit Pratica', 'warning', 3000)
+      addToast('La pratica correlata non è stata salvata.', 'Modifica pratica', 'warning', 3000)
     }
     setLoading(false)
     refreshRelatedPratiche()
@@ -81,7 +81,7 @@ const RelatedPratica = ({
       }),
     )
 
-    filteredData = [{ value: '0', label: 'Choose pratica' }, ...filteredData]
+    filteredData = [{ value: '0', label: 'Scegli pratica' }, ...filteredData]
     setOptions(filteredData)
   }
 
@@ -96,11 +96,11 @@ const RelatedPratica = ({
         `cr9b3_praticas(${relatedPratica.cr9b3_praticaid})/cr9b3_related_pratica(${pratica.cr9b3_praticaid})/$ref`,
       )
     } catch (error) {
-      addToast('Related pratica was not removed.', 'Edit Pratica', 'warning', 3000)
+      addToast('La pratica correlata non è stata rimossa.', 'Modifica pratica', 'warning', 3000)
       setLoading(false)
     }
     setLoading(false)
-    addToast('Related pratica successfully removed.', 'Edit Pratica', 'success', 3000)
+    addToast('Pratica correlata rimossa con successo.', 'Modifica pratica', 'success', 3000)
     // console.log(pratica.cr9b3_titolo, relatedPratica.cr9b3_titolo)
     refreshRelatedPratiche()
   }
@@ -112,7 +112,7 @@ const RelatedPratica = ({
       <CModal backdrop="static" alignment="center" visible={visibleList}>
         <CForm onSubmit={onSubmit}>
           <CModalHeader closeButton={false}>
-            <CModalTitle>Add related pratica</CModalTitle>
+            <CModalTitle>Aggiungi pratica correlata</CModalTitle>
           </CModalHeader>
           <CModalBody>
             <CContainer className="mt-3">
@@ -208,7 +208,7 @@ const RelatedPratica = ({
 
         <CButton color="light" className="mt-3" onClick={() => setVisibleList(!visibleList)}>
           <CIcon icon={cilPlus} className="me-md-2" />
-          Add pratica
+          Aggiungi
         </CButton>
       </div>
     </>

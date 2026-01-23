@@ -3,13 +3,14 @@ import React, { useEffect, useState } from 'react'
 import { CButton, CCollapse, CContainer } from '@coreui/react-pro'
 import ConfirmationModal from '../modals/ConfirmationModal'
 import Subtask from './Subtask'
-import { assignUserToTask, getSystemUserID, getTasks } from 'src/util/taskUtils'
+import { assignUserToTask, getTasks } from 'src/util/taskUtils'
 import CreateSubtask from './CreateSubtask'
 import CIcon from '@coreui/icons-react'
 import { cilPlus } from '@coreui/icons'
 import { initializeAxiosInstance } from 'src/util/axiosUtils'
 import LoadingOverlay from '../modals/LoadingOverlay'
 import { useToast } from 'src/context/ToastContext'
+import { getSystemUserID } from 'src/util/accessUtils'
 
 const Subtasks = ({ pratica }) => {
   const [visibleConfirmation, setVisibleConfirmation] = useState(false)
@@ -76,7 +77,12 @@ const Subtasks = ({ pratica }) => {
           )
         }
       } catch (error) {
-        addToast('Error while assigning user to task', 'Edit Pratica', 'warning', 3000)
+        addToast(
+          "Errore durante l'assegnazione dell'utente al task",
+          'Modifica Pratica',
+          'warning',
+          3000,
+        )
         console.error(
           'Error assigning user to task:',
           error.response ? error.response.data : error.message,
@@ -85,11 +91,11 @@ const Subtasks = ({ pratica }) => {
 
       setLoading(false)
       setVisibleCreateSubtask(false)
-      addToast('Subtask successfully created!', 'Edit Pratica', 'success', 3000)
+      addToast('Subtask creato con successo.', 'Modifica Pratica', 'success', 3000)
       updateTasks()
     } catch (error) {
       // addToast('Error adding task', 'Add task', 'warning', 3000)
-      addToast('Error while creating subtask', 'Edit Pratica', 'warning', 3000)
+      addToast('Errore durante la creazione del subtask', 'Modifica Pratica', 'warning', 3000)
       console.error('Error adding task:', error.response ? error.response.data : error.message)
     }
   }

@@ -20,38 +20,39 @@ const getRow = (title, input) => {
       return { title: 'Prot. no.', input: input }
     case 'cr9b3_protno2':
       let protno2 = input ? JSON.parse(input).join(', ') : input
-      return { title: 'Additional prot. no.', input: protno2 }
+      return { title: 'Ulteriore prot. no.', input: protno2 }
     case 'cr9b3_titolo':
       return { title: 'Title', input: input }
     case 'cr9b3_status':
       let label = null
       switch (input) {
         case '10':
-          label = 'New'
+          label = 'Nuovo'
           break
         case '30':
-          label = 'In progress'
+          label = 'In corso'
           break
         case '50':
-          label = 'Pending response from recipient'
+          label = 'In attesa di risposta dal destinatario'
           break
         case '70':
-          label = 'Pending approval from superior'
+          label = 'In attesa di approvazione dal superiore'
           break
         case '40':
-          label = 'On hold'
+          label = 'In sospeso'
           break
         case '0':
-          label = 'Archived'
+          label = 'Archiviato'
           break
         case '100':
-          label = 'Completed'
+          label = 'Completato'
           break
         default:
           label = null
           break
       }
-      return { title: 'Status', input: label }
+
+      return { title: 'Stato', input: label }
     case 'cr9b3_categoria':
       let category = null
       switch (input) {
@@ -241,10 +242,14 @@ export const logActivity = async (praticaID, finalLogEntry) => {
   if (finalLogEntry.length <= 10000) {
     try {
       const axiosInstance = await initializeAxiosInstance()
-      let response = await axiosInstance.patch(`cr9b3_praticas(${praticaID})`, {
+      const displayLog = [...finalLogEntry].sort(
+        (a, b) => new Date(b.timestamp.replace(' ', 'T')) - new Date(a.timestamp.replace(' ', 'T')),
+      )
+
+      await axiosInstance.patch(`cr9b3_praticas(${praticaID})`, {
         cr9b3_activitylog: JSON.stringify(finalLogEntry),
       })
-      // console.log(finalLogEntry)
+      console.log(displayLog)
       // console.log(response)
     } catch (error) {
       if (error.isAxiosError) {

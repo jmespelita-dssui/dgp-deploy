@@ -13,7 +13,7 @@ const msalConfig = {
   auth: {
     clientId: process.env.REACT_APP_MSAL_CLIENT_ID,
     authority: process.env.REACT_APP_MSAL_AUTHORITY,
-    redirectUri: 'http://localhost:3000',
+    redirectUri: process.env.REACT_APP_MSAL_REDIRECT_URI,
     // redirectUri: process.env.REACT_APP_MSAL_REDIRECT_URI,
     // scopes: 'https://orgac85713a.crm4.dynamics.com/.default',
   },

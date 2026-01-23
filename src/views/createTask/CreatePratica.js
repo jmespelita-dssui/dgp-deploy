@@ -18,105 +18,42 @@ import { useToast } from 'src/context/ToastContext'
 
 import React, { useState } from 'react'
 import { initializeAxiosInstance } from 'src/util/axiosUtils'
-import {
-  getSystemUserID,
-  assignUserToPratica,
-  getFields,
-  checkIfExistingProt,
-} from 'src/util/taskUtils'
+import { assignUserToPratica, getFields, checkIfExistingProt } from 'src/util/taskUtils'
 import { useNavigate } from 'react-router-dom'
 
 import FieldsCreate from './FieldsCreate'
 import ProtocolledSelect from './ProtocolledSelect'
 import NonProtocolledSelect from './NonProtocolledSelect'
 import { logActivity } from 'src/util/activityLogUtils'
+import { getSystemUserID } from 'src/util/accessUtils'
+import ConfirmClose from '../modals/ConfirmClose'
 
 const CreateTask = () => {
   const { addToast } = useToast()
   const [isProtocolled, setIsProtocolled] = useState('')
+  const [visibleConfirmation, setVisibleConfirmation] = useState(false)
   const [categoria, setCategoria] = useState('0')
   const [fields, setFields] = useState({})
   const [loading, setLoading] = useState(false)
+  const [pratica, setPratica] = useState({})
+  const [superioriInvitati, setSuperioriInvitati] = useState([])
+  const [responsabili, setResponsabili] = useState([])
 
   const navigate = useNavigate()
 
   const createTask = async (pratica, superioriInvitati, responsabili) => {
-    setLoading(true)
-    window.scrollTo({
-      top: 0, // Scroll to the top
-      behavior: 'smooth', // Smooth scrolling animation
-    })
+    setPratica(pratica)
+    setSuperioriInvitati(superioriInvitati)
+    setResponsabili(responsabili)
+
     let exists = await checkIfExistingProt(pratica.cr9b3_protno)
 
     // console.log('input', pratica)
     try {
       // console.log(pratica.cr9b3_protno, checkIfExisting(pratica.cr9b3_protno))
-      if (!exists) {
-        const praticaDetailsResponse = await addNewPratica(pratica)
-        // console.log('output pratica id', praticaDetailsResponse)
-        if (praticaDetailsResponse) {
-          // assign user to task
-          superioriInvitati.map(async (id) => {
-            // console.log('adding superior:', id)
-            const superiorID = await getSystemUserID(id)
-            assignUserToPratica(
-              superiorID,
-              praticaDetailsResponse.data.cr9b3_praticaid,
-              'cr9b3_pratica_superiore',
-            )
-          })
-
-          responsabili.map(async (id) => {
-            const respID = await getSystemUserID(id)
-            if (
-              !assignUserToPratica(
-                respID,
-                praticaDetailsResponse.data.cr9b3_praticaid,
-                'cr9b3_pratica_responsabile',
-              )
-            ) {
-              addToast(
-                'An error occured while creating the pratica.',
-                'Create Pratica',
-                'danger',
-                3000,
-              )
-              return
-            }
-          })
-          const axiosInstance = await initializeAxiosInstance()
-          const modifiedByPromise = await axiosInstance.get(
-            `systemusers(${praticaDetailsResponse.data._modifiedby_value})`,
-          )
-
-          let finalLogEntry = [
-            {
-              user: modifiedByPromise.data.fullname,
-              actionType: 'created pratica.',
-              actions: null,
-              timestamp: moment().tz('Europe/Rome').format('YYYY-MM-DD HH:mm:ss'),
-            },
-          ]
-          logActivity(praticaDetailsResponse.data.cr9b3_praticaid, finalLogEntry)
-
-          addToast('Success! The pratica has been added.', 'Create Pratica', 'success', 3000)
-          setTimeout(() => {
-            navigate('/tasks')
-          }, 2000) // 1000 = 1 second
-        } else {
-          addToast('An error occured while creating the pratica.', 'Create Pratica', 'danger', 3000)
-        }
-
-        setLoading(false)
-      } else {
-        setLoading(false)
-        addToast(
-          'Pratica with same protocol number already exists',
-          'Create Pratica',
-          'warning',
-          3000,
-        )
-        // console.log('pratica already exists')
+      if (exists) {
+        setVisibleConfirmation(true)
+        console.log('pratica already exists')
       }
     } catch (error) {
       if (error.isAxiosError) {
@@ -127,6 +64,71 @@ const CreateTask = () => {
         console.error('Non-Axios error:', error)
       }
     }
+  }
+
+  const confirmCreatePratica = async () => {
+    setLoading(true)
+    window.scrollTo({
+      top: 0, // Scroll to the top
+      behavior: 'smooth', // Smooth scrolling animation
+    })
+    setVisibleConfirmation(false)
+    const praticaDetailsResponse = await addNewPratica(pratica)
+    // console.log('output pratica id', praticaDetailsResponse)
+    if (praticaDetailsResponse) {
+      // assign user to task
+      superioriInvitati.map(async (id) => {
+        // console.log('adding superior:', id)
+        const superiorID = await getSystemUserID(id)
+        assignUserToPratica(
+          superiorID,
+          praticaDetailsResponse.data.cr9b3_praticaid,
+          'cr9b3_pratica_superiore',
+        )
+      })
+
+      responsabili.map(async (id) => {
+        const respID = await getSystemUserID(id)
+        if (
+          !assignUserToPratica(
+            respID,
+            praticaDetailsResponse.data.cr9b3_praticaid,
+            'cr9b3_pratica_responsabile',
+          )
+        ) {
+          addToast('La pratica è stata creata con successo.', 'Creare Pratica', 'danger', 3000)
+          return
+        }
+      })
+      const axiosInstance = await initializeAxiosInstance()
+      const modifiedByPromise = await axiosInstance.get(
+        `systemusers(${praticaDetailsResponse.data._modifiedby_value})`,
+      )
+
+      let finalLogEntry = [
+        {
+          user: modifiedByPromise.data.fullname,
+          actionType: 'ha creato la pratica.',
+          actions: null,
+          timestamp: moment().tz('Europe/Rome').format('YYYY-MM-DD HH:mm:ss'),
+        },
+      ]
+      logActivity(praticaDetailsResponse.data.cr9b3_praticaid, finalLogEntry)
+
+      addToast('La pratica è stata creata con successo.', 'Creare Pratica', 'success', 3000)
+      setTimeout(() => {
+        navigate('/le-mie-pratiche')
+      }, 2000) // 1000 = 1 second
+    } else {
+      addToast(
+        'Un errore si è verificato durante la creazione della pratica.',
+        'Creare Pratica',
+        'danger',
+        3000,
+      )
+    }
+
+    setLoading(false)
   }
 
   const addNewPratica = async (pratica) => {
@@ -146,12 +148,22 @@ const CreateTask = () => {
         // Retrieve the details of the created record
         praticaDetailsResponse = await axiosInstance.get(entityUrl)
       } else {
-        addToast('An error occurred while creating the Pratica.', 'Create Pratica', 'danger', 3000)
+        addToast(
+          'Un errore si è verificato durante la creazione della pratica.',
+          'Create Pratica',
+          'danger',
+          3000,
+        )
         console.error('Entity URL not returned in the response headers.')
       }
       return praticaDetailsResponse
     } catch (error) {
-      addToast('An error occurred while creating the Pratica.', 'Create Pratica', 'danger', 3000)
+      addToast(
+        'Un errore si è verificato durante la creazione della pratica.',
+        'Create Pratica',
+        'danger',
+        3000,
+      )
       if (error.isAxiosError) {
         console.error('Axios error details adding new pratica:', error.response)
         console.error('Error message:', error.message)
@@ -169,9 +181,19 @@ const CreateTask = () => {
 
   return (
     <>
+      <ConfirmClose
+        visible={visibleConfirmation}
+        body={{
+          title: 'Conferma',
+          text: `Pratica con questo numero di protocollo già esistente. Sei sicuro di voler procedere con la creazione della pratica?`,
+        }}
+        onCancel={() => setVisibleConfirmation(false)}
+        onContinue={confirmCreatePratica}
+        // popupMsg={popupMsg}
+      />
       <CCard className="p-4 mb-3">
         <CHeader>
-          <h4>Create new pratica</h4>
+          <h4>Creare nuova pratica</h4>
         </CHeader>
         <CCardBody>
           <CContainer>

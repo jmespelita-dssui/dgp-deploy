@@ -19,7 +19,7 @@ const LinkRow = ({ isEdit, link, saveLink, type, onDelete }) => {
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(link.url)
-      addToast('Link copied!', 'Links', 'success')
+      addToast('Link copiato!', 'Link', 'success')
     } catch (err) {
       console.error('Failed to copy: ', err)
     }

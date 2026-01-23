@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 
 import { CSidebar, CSidebarBrand, CSidebarNav, CSidebarToggler } from '@coreui/react-pro'
@@ -13,11 +13,20 @@ import 'simplebar/dist/simplebar.min.css'
 
 // sidebar nav config
 import navigation from '../_nav'
+import { use } from 'react'
+import { checkAdminAccess } from 'src/util/accessUtils'
 
 const AppSidebar = () => {
   const dispatch = useDispatch()
   const unfoldable = useSelector((state) => state.sidebarUnfoldable)
   const sidebarShow = useSelector((state) => state.sidebarShow)
+  const [hasAdminAccess, setHasAdminAccess] = React.useState(false)
+
+  useEffect(() => {
+    checkAdminAccess().then((isAdmin) => {
+      setHasAdminAccess(isAdmin)
+    })
+  }, [])
 
   return (
     <CSidebar
@@ -36,7 +45,13 @@ const AppSidebar = () => {
       </CSidebarBrand>
       <CSidebarNav>
         <SimpleBar>
-          <AppSidebarNav items={navigation} />
+          <AppSidebarNav
+            items={
+              hasAdminAccess
+                ? navigation
+                : navigation.filter((item) => item.name !== 'Admin Console')
+            }
+          />
         </SimpleBar>
       </CSidebarNav>
       <CSidebarToggler

@@ -12,13 +12,14 @@ import { createAxiosInstance, getAccessToken } from 'src/util/axiosUtils'
 import moment from 'moment-timezone'
 
 import { useToast } from 'src/context/ToastContext'
-import { getCorrs, getUserName } from 'src/util/taskUtils'
+import { getCorrs } from 'src/util/taskUtils'
 import LoadingOverlay from '../modals/LoadingOverlay'
 import {
   generateActivityLogEntry,
   getUpdatedActivityLog,
   logActivity,
 } from 'src/util/activityLogUtils'
+import { getUserName } from 'src/util/accessUtils'
 
 const Correspondences = ({ pratica }) => {
   const [newCorr, setNewCorr] = useState('')
@@ -84,7 +85,12 @@ const Correspondences = ({ pratica }) => {
       }
       // console.log('check for logs:', finalLogEntry)
       logActivity(pratica.cr9b3_praticaid, finalLogEntry)
-      addToast('Successfully added correspondence.', 'Add update', 'success', 3000)
+      addToast(
+        'Corrispondenza aggiunta con successo.',
+        'Aggiungere corrispondenza',
+        'success',
+        3000,
+      )
       // console.log('Successfully added correspondence:', response)
       setNewCorr('')
       setTitle('')
@@ -94,7 +100,12 @@ const Correspondences = ({ pratica }) => {
       setLoading(false)
       return true
     } catch (error) {
-      addToast('Error adding correspondence', 'Add update', 'warning', 3000)
+      addToast(
+        "Errore durante l'aggiunta della corrispondenza.",
+        'Aggiungere corrispondenza',
+        'warning',
+        3000,
+      )
       console.error(
         'Error adding correspondence:',
         error.response ? error.response.data : error.message,
@@ -123,7 +134,7 @@ const Correspondences = ({ pratica }) => {
           <CCol lg={6}>
             <CDatePicker
               date={date}
-              placeholder="Date of correspondence"
+              placeholder="Data della corrispondenza"
               locale="it-IT"
               onDateChange={(e) => {
                 setDate(e)
@@ -135,7 +146,7 @@ const Correspondences = ({ pratica }) => {
           <ReactQuill value={newCorr} onChange={setNewCorr} />
           <CButton color="light" className="mt-3" type="submit" disabled={newCorr.length === 0}>
             <CIcon icon={cilPlus} className="text-body-secondary icon-link" />
-            Add correspondence
+            Aggiungi corrispondenza
           </CButton>
         </CForm>
         {correspondences
