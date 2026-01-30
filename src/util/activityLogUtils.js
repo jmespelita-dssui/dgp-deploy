@@ -249,7 +249,7 @@ export const logActivity = async (praticaID, finalLogEntry) => {
       await axiosInstance.patch(`cr9b3_praticas(${praticaID})`, {
         cr9b3_activitylog: JSON.stringify(finalLogEntry),
       })
-      console.log(displayLog)
+      // console.log(displayLog)
       // console.log(response)
     } catch (error) {
       if (error.isAxiosError) {

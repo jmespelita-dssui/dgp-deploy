@@ -263,7 +263,7 @@ const Subtask = ({ task, refreshTask }) => {
 
       <ConfirmClose
         visible={visibleConfirmClose}
-        body={{ title: 'Delete subtask', text: 'Are you sure you want to delete subtask?' }}
+        body={{ title: 'Elimina task', text: 'Sei sicuro di voler eliminare il task?' }}
         onCancel={() => setVisibleConfirmClose(false)}
         onContinue={deleteTask}
       />

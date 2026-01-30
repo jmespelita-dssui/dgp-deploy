@@ -20,10 +20,10 @@ const ConfirmClose = ({ visible, body, onCancel, onContinue }) => {
       </CModalBody>
       <CModalFooter>
         <CButton color="secondary" onClick={onCancel}>
-          Back
+          Annulla
         </CButton>
         <CButton color="primary" onClick={onContinue}>
-          Continue
+          Continua
         </CButton>
       </CModalFooter>
     </CModal>

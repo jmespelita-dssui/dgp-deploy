@@ -132,7 +132,7 @@ const Fields = ({
 
   const onCancel = () => {
     setVisibleConfirmClose(false)
-    setIsView(false)
+    setIsView(true)
   }
 
   const onExit = async () => {
@@ -301,7 +301,7 @@ const Fields = ({
             </CButton>
           )}
           {isView && formData.cr9b3_status > 0 ? (
-            <CPopover content={'Archive'} placement="top" trigger={['hover', 'focus']}>
+            <CPopover content={'Elimina'} placement="top" trigger={['hover', 'focus']}>
               <CButton
                 className="mt-3"
                 variant="ghost"
@@ -315,12 +315,12 @@ const Fields = ({
                   showConfirmClose()
                 }}
               >
-                <CIcon icon={cilInbox} />
+                <CIcon icon={cilTrash} />
               </CButton>
             </CPopover>
           ) : isView && formData.cr9b3_status === 0 ? (
             <>
-              <CPopover content={'Unarchive'} placement="top" trigger={['hover', 'focus']}>
+              <CPopover content={'Ripristinare'} placement="top" trigger={['hover', 'focus']}>
                 <CButton
                   className="mt-3"
                   variant="ghost"
@@ -337,7 +337,7 @@ const Fields = ({
                   <CIcon icon={cilInbox} />
                 </CButton>
               </CPopover>
-              <CPopover content={'Delete'} placement="top" trigger={['hover', 'focus']}>
+              <CPopover content={'Elimina'} placement="top" trigger={['hover', 'focus']}>
                 <CButton
                   className="mt-3"
                   color="primary"
@@ -1014,23 +1014,41 @@ const Fields = ({
                 </CButton>
               </CPopover>
             ) : isView && formData.cr9b3_status === 0 ? (
-              <CPopover content={'Unarchive'} placement="top" trigger={['hover', 'focus']}>
-                <CButton
-                  className="mt-3"
-                  variant="ghost"
-                  color="primary"
-                  onClick={() => {
-                    setConfirmAction('unarchive')
-                    setConfirmCloseBody({
-                      ...confirmCloseBody,
-                      text: "Sei sicuro di voler annullare l'archiviazione di questa pratica?",
-                    })
-                    showConfirmClose()
-                  }}
-                >
-                  <CIcon icon={cilInbox} />
-                </CButton>
-              </CPopover>
+              <>
+                <CPopover content={'Ripristinare'} placement="top" trigger={['hover', 'focus']}>
+                  <CButton
+                    className="mt-3"
+                    variant="ghost"
+                    color="primary"
+                    onClick={() => {
+                      setConfirmAction('unarchive')
+                      setConfirmCloseBody({
+                        ...confirmCloseBody,
+                        text: "Sei sicuro di voler annullare l'archiviazione di questa pratica?",
+                      })
+                      showConfirmClose()
+                    }}
+                  >
+                    <CIcon icon={cilInbox} />
+                  </CButton>
+                </CPopover>
+                <CPopover content={'Elimina'} placement="top" trigger={['hover', 'focus']}>
+                  <CButton
+                    className="mt-3"
+                    color="primary"
+                    onClick={() => {
+                      setConfirmAction('delete')
+                      setConfirmCloseBody({
+                        ...confirmCloseBody,
+                        text: 'Sei sicuro di voler eliminare definitivamente questa pratica? Questa operazione non può essere annullata.',
+                      })
+                      showConfirmClose()
+                    }}
+                  >
+                    <CIcon icon={cilTrash} />
+                  </CButton>
+                </CPopover>
+              </>
             ) : (
               ''
             )}

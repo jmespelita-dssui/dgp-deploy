@@ -163,10 +163,10 @@ const RelatedPratica = ({
                 setChosenPratica()
               }}
             >
-              Back
+              Annulla
             </CButton>
             <CButton color="primary" type="submit" disabled={!chosenPratica}>
-              Continue
+              Continua
             </CButton>
           </CModalFooter>
         </CForm>

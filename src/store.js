@@ -4,16 +4,22 @@ const initialState = {
   sidebarShow: true,
   asideShow: false,
   theme: 'default',
+  notifications: [],
+  notifCount: 0,
 }
 
-const changeState = (state = initialState, { type, ...rest }) => {
-  switch (type) {
+const changeState = (state = initialState, action) => {
+  switch (action.type) {
     case 'set':
-      return { ...state, ...rest }
+      return {
+        ...state,
+        ...action.payload,
+      }
     default:
       return state
   }
 }
 
 const store = createStore(changeState)
+
 export default store

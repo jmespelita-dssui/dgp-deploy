@@ -110,10 +110,10 @@ const LinkModal = ({ visible, onClose, action, link, type, saveLink }) => {
                 onClose()
               }}
             >
-              Back
+              Annulla
             </CButton>
             <CButton color="primary" type="submit" disabled={!isModified || !isValid}>
-              Continue
+              Continua
             </CButton>
           </CModalFooter>
         </CForm>
