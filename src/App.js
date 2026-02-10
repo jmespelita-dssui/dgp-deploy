@@ -1,4 +1,4 @@
-import React, { Component, Suspense } from 'react'
+import React, { Component, Suspense, useEffect } from 'react'
 import { BrowserRouter, HashRouter, Route, Routes } from 'react-router-dom'
 import { CSpinner } from '@coreui/react-pro'
 import { ToastProvider } from './context/ToastContext'

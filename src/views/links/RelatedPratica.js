@@ -15,7 +15,7 @@ import {
   CModalHeader,
   CModalTitle,
   CMultiSelect,
-  CPopover,
+  CTooltip,
   CRow,
 } from '@coreui/react-pro'
 import React, { useEffect, useState } from 'react'
@@ -188,8 +188,8 @@ const RelatedPratica = ({
       </CContainer>
       <div className="d-grid gap-2 d-md-flex justify-content-md-end">
         {relatedPratiche && relatedPratiche.length > 0 ? (
-          <CPopover
-            content={isDeleteMode ? 'Done' : 'Edit'}
+          <CTooltip
+            content={isDeleteMode ? 'Ok' : 'Modifica'}
             placement="top"
             trigger={['hover', 'focus']}
           >
@@ -201,7 +201,7 @@ const RelatedPratica = ({
             >
               {isDeleteMode ? <CIcon icon={cilCheck} /> : <CIcon icon={cilPencil} />}
             </CButton>
-          </CPopover>
+          </CTooltip>
         ) : (
           ''
         )}

@@ -15,11 +15,17 @@ import { People, PeoplePicker, Person, Get } from '@microsoft/mgt-react'
 import React, { useEffect, useState } from 'react'
 import { useToast } from 'src/context/ToastContext'
 import { initializeAxiosInstance } from 'src/util/axiosUtils'
-import _access from 'src/_access'
-import LoadingOverlay from '../modals/LoadingOverlay'
-import { getSystemUserID, getUser, getUserGraphDetails, giveAccess } from 'src/util/accessUtils'
+import {
+  getGroupMembers,
+  getSystemUserID,
+  getUser,
+  getUserGraphDetails,
+  giveAccess,
+  removeAccess,
+} from 'src/util/accessUtils'
+import { useSelector } from 'react-redux'
 
-const ManageAccess = ({ responsabile, officialiIncaricati, pratica }) => {
+const ManageAccess = ({ responsabile, officialiIncaricati, pratica, refresh }) => {
   const [visibleDefault, setVisibleDefault] = useState(false)
   const [count, setCount] = useState(0)
   const [defaultAccess, setDefaultAccess] = useState([])
@@ -32,18 +38,19 @@ const ManageAccess = ({ responsabile, officialiIncaricati, pratica }) => {
   const [othersLoading, setOthersLoading] = useState(false)
 
   useEffect(() => {
+    // console.log(usersVersion)
     if (pratica) {
       getDefaultAccess()
       getNormalAccess()
     }
-  }, [pratica])
+  }, [pratica, refresh])
 
   const getDefaultAccess = async () => {
     try {
       if (pratica.cr9b3_prano !== '') {
         setDefaultLoading(true)
-        const superiors = _access.superiors
-        const secretariat = _access.secretariat
+        const superiors = await getGroupMembers('317aa3d0-a94a-4c7c-bcb9-8870cfececa4')
+        const secretariat = await getGroupMembers('f67d3e5d-02c7-4d4d-8b95-834533623ad6')
         const creatorUserDetails = await getUser(pratica._createdby_value)
         const creatorGraphDetails = await getUserGraphDetails(
           creatorUserDetails.azureactivedirectoryobjectid,
@@ -99,6 +106,7 @@ const ManageAccess = ({ responsabile, officialiIncaricati, pratica }) => {
     try {
       let systemUserIDs = await Promise.all(
         filteredNewOthersList.map(async (person) => {
+          console.log('person to add', person)
           return getSystemUserID(person)
         }),
       )
@@ -154,14 +162,12 @@ const ManageAccess = ({ responsabile, officialiIncaricati, pratica }) => {
   }
 
   const removeItem = async (user) => {
-    const axiosInstance = await initializeAxiosInstance()
     const systemuserid = await getSystemUserID(user)
     // console.log(systemuserid)
     setLoading(true)
     try {
-      const response = await axiosInstance.delete(
-        `cr9b3_praticas(${pratica.cr9b3_praticaid})/cr9b3_access(${systemuserid})/$ref`,
-      )
+      removeAccess(pratica.cr9b3_praticaid, systemuserid)
+
       setOthers(others.filter((item) => item.id !== user.id))
       setLoading(false)
     } catch (error) {

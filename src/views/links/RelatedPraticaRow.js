@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { cilTrash } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
-import { CButton, CCol, CPopover, CRow } from '@coreui/react-pro'
+import { CButton, CCol, CTooltip, CRow } from '@coreui/react-pro'
 import React, { useState } from 'react'
 import ConfirmClose from '../modals/ConfirmClose'
 import { useToast } from 'src/context/ToastContext'
@@ -46,7 +46,7 @@ const RelatedPraticaRow = ({
       <CRow>
         {isDeleteMode ? (
           <CCol md={1}>
-            <CPopover content={'Remove'} placement="top" trigger={['hover', 'focus']}>
+            <CTooltip content={'Elimina'} placement="top" trigger={['hover', 'focus']}>
               <CButton
                 className="mt-3"
                 variant="ghost"
@@ -58,7 +58,7 @@ const RelatedPraticaRow = ({
               >
                 <CIcon icon={cilTrash} />
               </CButton>
-            </CPopover>
+            </CTooltip>
           </CCol>
         ) : (
           ''

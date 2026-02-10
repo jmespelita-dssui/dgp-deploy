@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { cilPaw, cilPlus } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
-import { CButton, CCard, CCardBody, CContainer, CPopover } from '@coreui/react-pro'
+import { CButton, CCard, CCardBody, CContainer, CTooltip } from '@coreui/react-pro'
 import React, { useEffect, useState } from 'react'
 import LinkRow from './LinkRow'
 import LinkModal from '../modals/LinkModal'
@@ -14,7 +14,7 @@ import {
   logActivity,
 } from 'src/util/activityLogUtils'
 import moment from 'moment-timezone'
-import { getUserName } from 'src/util/accessUtils'
+import { getCurrentUser, getUserName } from 'src/util/accessUtils'
 
 const LinkCard = ({ header, links, type, praticaID, refreshLinks }) => {
   const [visible, setVisible] = useState(false)
@@ -51,12 +51,12 @@ const LinkCard = ({ header, links, type, praticaID, refreshLinks }) => {
 
     try {
       const axiosInstance = await initializeAxiosInstance()
-      let response = await axiosInstance.patch(`cr9b3_praticas(${praticaID})`, {
+      await axiosInstance.patch(`cr9b3_praticas(${praticaID})`, {
         cr9b3_links: JSON.stringify(newLinks),
       })
 
-      const whoami = await axiosInstance.get('WhoAmI')
-      let logModifier = await getUserName(whoami.data.UserId)
+      const currentUser = await getCurrentUser()
+      let logModifier = await getUserName(currentUser.systemuserid)
       let latestLogs = await getUpdatedActivityLog(praticaID)
       // console.log(latestLogs)
       // latestLogs = JSON.parse(latestLogs)
@@ -133,7 +133,7 @@ const LinkCard = ({ header, links, type, praticaID, refreshLinks }) => {
               : ''}
           </CContainer>
           <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-            <CPopover
+            <CTooltip
               content={isEdit ? 'Done' : 'Show actions'}
               placement="top"
               trigger={['hover', 'focus']}
@@ -147,7 +147,7 @@ const LinkCard = ({ header, links, type, praticaID, refreshLinks }) => {
                 {/* {isDeleteMode ? <CIcon icon={cilCheck} /> : <CIcon icon={cilPencil} />} */}
                 <CIcon icon={cilPaw} />
               </CButton>
-            </CPopover>
+            </CTooltip>
             <CButton
               color="light"
               className="mt-3"

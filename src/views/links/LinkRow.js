@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { cilLink, cilPencil, cilTrash } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
-import { CCol, CLink, CPopover, CRow } from '@coreui/react-pro'
+import { CCol, CLink, CTooltip, CRow } from '@coreui/react-pro'
 import React, { useState } from 'react'
 import { useToast } from 'src/context/ToastContext'
 import LinkModal from '../modals/LinkModal'
@@ -50,29 +50,29 @@ const LinkRow = ({ isEdit, link, saveLink, type, onDelete }) => {
         <CRow>
           {isEdit ? (
             <CCol md={2} className="d-grid gap-1 d-md-flex justify-content-md-end">
-              <CPopover content={'Delete'} placement="top" trigger={['hover', 'focus']}>
+              <CTooltip content={'Elimina'} placement="top" trigger={['hover', 'focus']}>
                 <CIcon
                   icon={cilTrash}
                   className="trash link-controls"
                   onClick={() => setVisibleConfirmClose(true)}
                 />
-              </CPopover>
-              <CPopover content={'Edit'} placement="top" trigger={['hover', 'focus']}>
+              </CTooltip>
+              <CTooltip content={'Modifica'} placement="top" trigger={['hover', 'focus']}>
                 <CIcon
                   icon={cilPencil}
                   className="edit link-controls"
                   onClick={() => setVisible(true)}
                 />
-              </CPopover>
-              <CPopover content={'Copy link'} placement="top" trigger={['hover', 'focus']}>
+              </CTooltip>
+              <CTooltip content={'Copia link'} placement="top" trigger={['hover', 'focus']}>
                 <CIcon icon={cilLink} className="copy link-controls" onClick={copyToClipboard} />
-              </CPopover>
+              </CTooltip>
             </CCol>
           ) : (
             <CCol md={1}>
-              <CPopover content={'Copy'} placement="top" trigger={['hover', 'focus']}>
+              <CTooltip content={'Copia link'} placement="top" trigger={['hover', 'focus']}>
                 <CIcon icon={cilLink} className="copy link-controls" onClick={copyToClipboard} />
-              </CPopover>
+              </CTooltip>
             </CCol>
           )}
 

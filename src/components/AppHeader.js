@@ -10,7 +10,7 @@ import {
   CHeaderNav,
   CHeaderToggler,
   CBadge,
-  CPopover,
+  CTooltip,
 } from '@coreui/react-pro'
 import CIcon from '@coreui/icons-react'
 import { cilApplicationsSettings, cilBell, cilMenu } from '@coreui/icons'
@@ -64,7 +64,14 @@ const AppHeader = () => {
         <CContainer fluid>
           <CHeaderToggler
             className="ps-1"
-            onClick={() => dispatch({ type: 'set', sidebarShow: !sidebarShow })}
+            onClick={() =>
+              dispatch({
+                type: 'set',
+                payload: {
+                  sidebarShow: !sidebarShow,
+                },
+              })
+            }
           >
             <CIcon icon={cilMenu} className="gray-base" />
           </CHeaderToggler>
@@ -78,10 +85,17 @@ const AppHeader = () => {
           {/* Notifications Bell */}
           <CHeaderToggler
             className="ms-3 position-relative"
-            onClick={() => dispatch({ type: 'set', payload: { asideShow: !asideShow } })}
+            onClick={() =>
+              dispatch({
+                type: 'set',
+                payload: {
+                  asideShow: !asideShow,
+                },
+              })
+            }
           >
-            <CPopover content="Attività" placement="bottom" trigger={['hover', 'focus']}>
-              <CBadge className="border border-light p-2" color="dark" shape="rounded-circle">
+            <CTooltip content="Attività" placement="bottom" trigger={['hover', 'focus']}>
+              <CBadge className="border border-light p-2" color="primary" shape="rounded-circle">
                 <CIcon icon={cilBell} size="lg" />
                 {notifCount > 0 && (
                   <CBadge
@@ -94,7 +108,7 @@ const AppHeader = () => {
                   </CBadge>
                 )}
               </CBadge>
-            </CPopover>
+            </CTooltip>
           </CHeaderToggler>
 
           <CHeaderNav>

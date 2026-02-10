@@ -27,13 +27,15 @@ import { initializeAxiosInstance } from 'src/util/axiosUtils'
 import { assignUserToTask } from 'src/util/taskUtils'
 import LoadingOverlay from '../modals/LoadingOverlay'
 import {
-  getEmailAddress,
+  getCurrentUser,
   getSystemUserID,
+  getTaskUserIDs,
   getUserGraphDetails,
   getUserName,
+  giveAccessViaTask,
 } from 'src/util/accessUtils'
 
-const Subtask = ({ task, refreshTask }) => {
+const Subtask = ({ task, refreshTask, pratica, responsabile, officialiIncaricati }) => {
   const [isExpand, setIsExpand] = useState(false)
   const [isReassigned, setIsReassigned] = useState(false)
   const [isHidden, setIsHidden] = useState(true)
@@ -60,11 +62,7 @@ const Subtask = ({ task, refreshTask }) => {
   ]
 
   useEffect(() => {
-    // setIsExpand(false)
-    console.log('task in subtask', task)
-    // setIsHidden(true)
     setStatus(task.cr9b3_status)
-    getAssignedUsers()
     setTaskDetails(task)
     getCreatedBy().then((creator) => {
       setCreatedBy(creator)
@@ -78,15 +76,24 @@ const Subtask = ({ task, refreshTask }) => {
       setComments(JSON.parse(task.cr9b3_comments))
       setComment('')
     }
+    setIsReassigned()
+    getAssignedUsers()
   }, [task])
+
+  const reset = async () => {
+    refreshTask()
+    setIsReassigned(false)
+    await getAssignedUsers()
+  }
 
   const deleteTask = async () => {
     setLoading(true)
     setVisibleConfirmClose(false)
     try {
       const axiosInstance = await initializeAxiosInstance()
-      const response = await axiosInstance.delete(`cr9b3_taskses(${task.cr9b3_tasksid})`)
-      addToast('Task eliminato con successo.', 'Elimina subtask', 'success', 3000)
+      await axiosInstance.delete(`cr9b3_taskses(${task.cr9b3_tasksid})`).then(() => {
+        addToast('Task eliminato con successo.', 'Elimina subtask', 'success', 3000)
+      })
     } catch (error) {
       addToast("Errore durante l'eliminazione del task.", 'Elimina subtask', 'warning', 3000)
       if (error.isAxiosError) {
@@ -97,6 +104,7 @@ const Subtask = ({ task, refreshTask }) => {
         console.error('Non-Axios error:', error)
       }
     } finally {
+      setIsHidden(true)
       setLoading(false)
       refreshTask()
     }
@@ -104,10 +112,13 @@ const Subtask = ({ task, refreshTask }) => {
 
   const saveComment = async () => {
     const axiosInstance = await initializeAxiosInstance()
-    const whoami = (await axiosInstance.get('WhoAmI')).data.UserId
+    const currentUser = await getCurrentUser()
     const now = new Date().toISOString()
-    let email = await getEmailAddress(whoami)
-    const commentEntry = { timestamp: now, email: email, comment: comment }
+    const commentEntry = {
+      timestamp: now,
+      email: currentUser.userDetails.internalemailaddress,
+      comment: comment,
+    }
 
     try {
       let response = await axiosInstance.patch(`cr9b3_taskses(${task.cr9b3_tasksid})`, {
@@ -137,7 +148,7 @@ const Subtask = ({ task, refreshTask }) => {
   const getAssignedUsers = async () => {
     let assignedUserIDs
     if (task.cr9b3_tasksid) {
-      assignedUserIDs = await getUserIDs()
+      assignedUserIDs = await getTaskUserIDs(task)
     }
 
     const detailsPromises = assignedUserIDs.azureactivedirectoryobjectid.map(async (userID) => {
@@ -148,25 +159,6 @@ const Subtask = ({ task, refreshTask }) => {
     setAssignedUsers(assignedUsersDetails)
     setAssignedUsersSystemUserIDs(assignedUserIDs.systemuserid)
     // console.log('assignedusersystemuserids', assignedUserIDs.systemuserid)
-  }
-
-  const getUserIDs = async () => {
-    const axiosInstance = await initializeAxiosInstance()
-    let user
-    let azureactivedirectoryobjectid
-    let systemuserid
-    const response = await axiosInstance.get(
-      `cr9b3_taskses?$filter=cr9b3_tasksid eq '${task.cr9b3_tasksid}'&$expand=cr9b3_task_utente`,
-    )
-    user = response.data.value[0].cr9b3_task_utente
-
-    azureactivedirectoryobjectid = user.map((user) => user.azureactivedirectoryobjectid)
-    systemuserid = user.map((user) => user.systemuserid)
-
-    return {
-      azureactivedirectoryobjectid: azureactivedirectoryobjectid,
-      systemuserid: systemuserid,
-    }
   }
 
   const saveTask = async () => {
@@ -198,6 +190,7 @@ const Subtask = ({ task, refreshTask }) => {
 
         //axios delete users
         if (usersToUnassign.length > 0) {
+          console.log('users to unassign', usersToUnassign)
           usersToUnassign.map(async (id) => {
             response = await axiosInstance.delete(
               `cr9b3_taskses(${task.cr9b3_tasksid})/cr9b3_task_utente(${id})/$ref`,
@@ -207,8 +200,11 @@ const Subtask = ({ task, refreshTask }) => {
 
         //axios add users
         if (usersToAssign.length > 0) {
+          console.log('users to assign', usersToAssign)
           usersToAssign.map(async (id) => {
-            assignUserToTask(id, task.cr9b3_tasksid)
+            console.log('assigning user', id)
+            giveAccessViaTask(id, pratica, responsabile, officialiIncaricati)
+            assignUserToTask(id, task.cr9b3_tasksid, pratica.cr9b3_praticaid)
           })
         }
       } catch (error) {
@@ -220,6 +216,7 @@ const Subtask = ({ task, refreshTask }) => {
           console.error('Non-Axios error:', error)
         }
       }
+      await reset()
     }
 
     if (taskEdits) {

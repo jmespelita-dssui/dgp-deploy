@@ -12,7 +12,7 @@ import LoadingOverlay from '../modals/LoadingOverlay'
 import { useToast } from 'src/context/ToastContext'
 import { getSystemUserID } from 'src/util/accessUtils'
 
-const Subtasks = ({ pratica }) => {
+const Subtasks = ({ pratica, responsabile, officialiIncaricati }) => {
   const [visibleConfirmation, setVisibleConfirmation] = useState(false)
   const [tasks, setTasks] = useState()
   const [visibleCreateSubtask, setVisibleCreateSubtask] = useState(false)
@@ -20,12 +20,12 @@ const Subtasks = ({ pratica }) => {
   const { addToast } = useToast()
 
   const updateTasks = async () => {
-    // console.log(pratica)
     let response
     if (pratica.cr9b3_praticaid) {
       response = await getTasks(pratica.cr9b3_praticaid)
     }
     setTasks(response)
+    console.log('tasks updated', response)
   }
 
   useEffect(() => {
@@ -72,7 +72,7 @@ const Subtasks = ({ pratica }) => {
         if (systemUserIDs.length > 0) {
           assignUsers = await Promise.all(
             systemUserIDs.map(async (id) => {
-              assignUserToTask(id, taskID)
+              assignUserToTask(id, taskID, pratica.cr9b3_praticaid)
             }),
           )
         }
@@ -128,7 +128,16 @@ const Subtasks = ({ pratica }) => {
         {/* )} */}
 
         {tasks &&
-          tasks.map((task, index) => <Subtask key={index} task={task} refreshTask={updateTasks} />)}
+          tasks.map((task, index) => (
+            <Subtask
+              key={index}
+              task={task}
+              refreshTask={updateTasks}
+              pratica={pratica}
+              responsabile={responsabile}
+              officialiIncaricati={officialiIncaricati}
+            />
+          ))}
       </CContainer>
     </>
   )

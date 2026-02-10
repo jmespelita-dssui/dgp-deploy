@@ -2,9 +2,9 @@ import React from 'react'
 
 // examples
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
-const MyTasks = React.lazy(() => import('./views/pratiche/MyTasks'))
-const CreateTask = React.lazy(() => import('./views/createTask/CreatePratica'))
-const Archive = React.lazy(() => import('./views/pratiche/Archive'))
+const MyTasks = React.lazy(() => import('./views/pratica/MyTasks'))
+const CreateTask = React.lazy(() => import('./views/createPratica/CreatePratica'))
+const Archive = React.lazy(() => import('./views/pratica/Archive'))
 const AdminConsole = React.lazy(() => import('./views/admin/AdminConsole'))
 const Page403 = React.lazy(() => import('./views/pages/Page403'))
 

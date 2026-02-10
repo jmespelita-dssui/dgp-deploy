@@ -1,4 +1,6 @@
 import { createAxiosInstance, getAccessTokenForGraph, initializeAxiosInstance } from './axiosUtils'
+import { _ } from 'core-js'
+import { sendNotificationtoUser } from './notifUtils'
 
 export const getUserAccessList = async () => {
   try {
@@ -15,21 +17,23 @@ export const getUserAccessList = async () => {
 }
 
 export const checkAdminAccess = async () => {
-  const axiosInstance = await initializeAxiosInstance()
   const access = await getUserAccessList()
-  const whoami = await axiosInstance.get('WhoAmI')
-  const userid = await getEmailAddress(whoami.data.UserId)
-  let isAdmin = access.some((item) => item.cr9b3_userid === userid && item.cr9b3_role === 129580000)
+  const currentUser = await getCurrentUser()
+
+  let isAdmin = access.some(
+    (item) =>
+      item.cr9b3_userid === currentUser.userDetails.internalemailaddress &&
+      item.cr9b3_role === 129580000,
+  )
   //   setHasAdminAccess(isAdmin)
   return isAdmin
 }
 
-export const checkSpecialAccess = async () => {
-  const axiosInstance = await initializeAxiosInstance()
+export const checkSpecialPermission = async () => {
   const access = await getUserAccessList()
-  const whoami = await axiosInstance.get('WhoAmI')
-  const userid = await getEmailAddress(whoami.data.UserId)
-  let hasSpecialAccess = access.some((item) => item.cr9b3_userid === userid)
+
+  const currentUser = await getCurrentUser()
+  let hasSpecialAccess = access.some((item) => item.cr9b3_userid === currentUser.systemuserid)
   //   setHasAdminAccess(isAdmin)
   return hasSpecialAccess
 }
@@ -45,12 +49,10 @@ export const giveAccess = async (userID, praticaID) => {
     '@odata.id': `https://orgac85713a.crm4.dynamics.com/api/data/v9.2/cr9b3_praticas(${praticaID})`,
   }
   try {
-    // POST request to create a relationship in cr9b3_pratica_superiore
-    const response = await axiosInstance.post(
-      `systemusers(${userID})/cr9b3_access/$ref`, //cr9b3_pratica_superiore
-      data,
-    )
-    // console.log('Successfully added access:', userID, response.data)
+    await axiosInstance.post(`systemusers(${userID})/cr9b3_access/$ref`, data).then(() => {
+      sendNotificationtoUser(userID, 'ti ha dato accesso a una pratica', 'pratica', praticaID)
+    })
+
     return true
   } catch (error) {
     console.error(
@@ -61,8 +63,97 @@ export const giveAccess = async (userID, praticaID) => {
   }
 }
 
+export const giveAccessViaTask = async (userID, pratica, responsabile, officialiIncaricati) => {
+  try {
+    const user = await getUser(userID)
+    const actorGraphDetails = await getUserGraphDetails(user.azureactivedirectoryobjectid)
+    const fullAccessList = await getFullAccessList(pratica, responsabile, officialiIncaricati)
+    console.log(actorGraphDetails, responsabile)
+    const exists = fullAccessList.some((item1) => {
+      const match = item1.id === actorGraphDetails.id
+      return match
+    })
+
+    if (!exists) {
+      console.log('give me access!', userID, pratica.cr9b3_praticaid)
+      giveAccess(userID, pratica.cr9b3_praticaid)
+    }
+  } catch (error) {
+    console.error('Error fetching default access:', error)
+    // setDefaultLoading(false)
+  }
+}
+
+export const getFullAccessList = async (pratica, responsabile, officialiIncaricati) => {
+  const axiosInstance = await initializeAxiosInstance()
+
+  // setDefaultLoading(true)
+  const superiors = await getGroupMembers('317aa3d0-a94a-4c7c-bcb9-8870cfececa4')
+  const secretariat = await getGroupMembers('f67d3e5d-02c7-4d4d-8b95-834533623ad6')
+  const creatorUserDetails = await getUser(pratica._createdby_value)
+  const creatorGraphDetails = await getUserGraphDetails(
+    creatorUserDetails.azureactivedirectoryobjectid,
+  )
+  const response = await axiosInstance.get(
+    `cr9b3_praticas?$filter=cr9b3_praticaid eq '${pratica.cr9b3_praticaid}'&$expand=cr9b3_access`,
+  )
+  let usersWithAccess = response.data.value[0].cr9b3_access
+
+  const userDetailsPromises = usersWithAccess.map(async (user) => {
+    return await getUserGraphDetails(user.azureactivedirectoryobjectid)
+  })
+
+  const usersWithAccessDetails = await Promise.all(userDetailsPromises)
+
+  const defaultAccessList = [
+    ...(superiors || []),
+    ...(secretariat || []),
+    ...(responsabile || []),
+    ...(officialiIncaricati || []),
+    creatorGraphDetails,
+    ...usersWithAccessDetails,
+  ]
+
+  console.log('defaultAccessList', defaultAccessList)
+
+  return defaultAccessList
+}
+
+export const removeAccess = async (praticaID, systemuserid) => {
+  // const response = await axiosInstance.delete(
+  //   `cr9b3_praticas(${pratica.cr9b3_praticaid})/cr9b3_access(${systemuserid})/$ref`,
+  // )
+  const axiosInstance = await initializeAxiosInstance()
+  await axiosInstance
+    .delete(`cr9b3_praticas(${praticaID})/cr9b3_access(${systemuserid})/$ref`)
+    .then(() => {
+      sendNotificationtoUser(
+        systemuserid,
+        'ti ha tolto accesso a una pratica',
+        'unassign',
+        praticaID,
+      )
+    })
+}
+
+export const getCurrentUser = async () => {
+  const axiosInstance = await initializeAxiosInstance()
+  const whoami = await axiosInstance.get('WhoAmI')
+  const systemuserid = whoami.data.UserId
+  const userDetails = await getUser(systemuserid)
+  const azureactivedirectoryobjectid = userDetails.azureactivedirectoryobjectid
+  const currentUser = {
+    whoami: whoami,
+    systemuserid: systemuserid,
+    userDetails: userDetails,
+    azureactivedirectoryobjectid: azureactivedirectoryobjectid,
+  }
+  return currentUser
+}
+
 export const getSystemUserID = async (user) => {
   //azureactivedirectoryobjectid
+  // console.log('getting system user ID for', user)
   const axiosInstance = await initializeAxiosInstance()
   let userID
   try {
@@ -148,6 +239,25 @@ export const getUserGraphDetails = async (userID) => {
   }
 }
 
+export const getTaskUserIDs = async (task) => {
+  const axiosInstance = await initializeAxiosInstance()
+  let user
+  let azureactivedirectoryobjectid
+  let systemuserid
+  const response = await axiosInstance.get(
+    `cr9b3_taskses?$filter=cr9b3_tasksid eq '${task.cr9b3_tasksid}'&$expand=cr9b3_task_utente`,
+  )
+  user = response.data.value[0].cr9b3_task_utente
+
+  azureactivedirectoryobjectid = user.map((user) => user.azureactivedirectoryobjectid)
+  systemuserid = user.map((user) => user.systemuserid)
+
+  return {
+    azureactivedirectoryobjectid: azureactivedirectoryobjectid,
+    systemuserid: systemuserid,
+  }
+}
+
 export const getUserName = async (userID) => {
   //systemuserid
   const axiosInstance = await initializeAxiosInstance()
@@ -161,9 +271,54 @@ export const getEmailAddress = async (userID) => {
   const userNamePromise = await axiosInstance.get(`systemusers(${userID})`)
   return userNamePromise.data.internalemailaddress
 }
+
 export const getUser = async (userID) => {
   //systemuserid
   const axiosInstance = await initializeAxiosInstance()
   const userNamePromise = await axiosInstance.get(`systemusers(${userID})`)
   return userNamePromise.data
+}
+
+export const filterTasks = async (defaultAccess, combinedTasks, isArchive) => {
+  let archiveList
+  let praticheList
+  let permittedTasks
+  try {
+    const axiosInstance = await initializeAxiosInstance()
+
+    // Fetch all tasks
+    const response = await axiosInstance.get('cr9b3_praticas?$orderby=createdon desc')
+    // console.log('all tasks', response.data)
+    let allTasks = response.data.value
+    // console.log('all tasks', allTasks)
+
+    if (isArchive) {
+      archiveList = allTasks.filter((row) => row.cr9b3_status === 0)
+    }
+
+    if (defaultAccess) {
+      praticheList = allTasks
+      permittedTasks = allTasks
+    } else {
+      const allowedIDsSet = new Set(combinedTasks)
+      // console.log('allowed id set', allowedIDsSet)
+      const filteredTasks = allTasks.filter((pratica) => allowedIDsSet.has(pratica.cr9b3_praticaid))
+      // console.log('not default access', filteredTasks)
+      permittedTasks = filteredTasks
+      praticheList = filteredTasks
+    }
+  } catch (error) {
+    console.error('Error fetching tasks:', error)
+  } finally {
+    // if (combinedTasks) setLoading(false)
+    // console.log(
+    //   'praticheList',
+    //   praticheList,
+    //   'archiveList',
+    //   archiveList,
+    //   'permittedTasks',
+    //   permittedTasks,
+    // )
+    return { praticheList, archiveList, permittedTasks }
+  }
 }

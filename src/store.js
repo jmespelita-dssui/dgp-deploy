@@ -9,6 +9,7 @@ const initialState = {
 }
 
 const changeState = (state = initialState, action) => {
+  // console.log('REDUX ACTION:', action)
   switch (action.type) {
     case 'set':
       return {

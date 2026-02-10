@@ -19,7 +19,7 @@ import {
   getUpdatedActivityLog,
   logActivity,
 } from 'src/util/activityLogUtils'
-import { getUserName } from 'src/util/accessUtils'
+import { getCurrentUser, getUserName } from 'src/util/accessUtils'
 
 const Correspondences = ({ pratica }) => {
   const [newCorr, setNewCorr] = useState('')
@@ -58,8 +58,8 @@ const Correspondences = ({ pratica }) => {
       )
       // console.log('response:', response)
 
-      const whoami = await axiosInstance.get('WhoAmI')
-      let logModifier = await getUserName(whoami.data.UserId)
+      const currentUser = await getCurrentUser()
+      let logModifier = await getUserName(currentUser.systemuserid)
       let latestLogs = await getUpdatedActivityLog(pratica.cr9b3_praticaid)
       // console.log(latestLogs)
       // latestLogs = JSON.parse(latestLogs)

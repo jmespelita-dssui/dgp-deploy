@@ -13,7 +13,6 @@ import 'simplebar/dist/simplebar.min.css'
 
 // sidebar nav config
 import navigation from '../_nav'
-import { use } from 'react'
 import { checkAdminAccess } from 'src/util/accessUtils'
 
 const AppSidebar = () => {
@@ -33,9 +32,12 @@ const AppSidebar = () => {
       position="fixed"
       unfoldable={unfoldable}
       visible={sidebarShow}
-      onVisibleChange={(visible) => {
-        dispatch({ type: 'set', sidebarShow: visible })
-      }}
+      onVisibleChange={(visible) =>
+        dispatch({
+          type: 'set',
+          payload: { sidebarShow: visible },
+        })
+      }
     >
       <CSidebarBrand className="d-none d-md-flex" to="/">
         {/* <CIcon className="sidebar-brand-full" icon={logoNegative} height={35} />
@@ -56,7 +58,12 @@ const AppSidebar = () => {
       </CSidebarNav>
       <CSidebarToggler
         className="d-none d-lg-flex"
-        onClick={() => dispatch({ type: 'set', sidebarUnfoldable: !unfoldable })}
+        onClick={() =>
+          dispatch({
+            type: 'set',
+            payload: { sidebarUnfoldable: !unfoldable },
+          })
+        }
       />
     </CSidebar>
   )

@@ -1,5 +1,5 @@
 import { createAxiosInstance, getAccessToken, initializeAxiosInstance } from './axiosUtils'
-import { getAccessTokenForGraph } from './axiosUtils'
+import { sendNotificationtoUser } from './notifUtils'
 
 export const getLabelColor = (index) => {
   let color
@@ -344,11 +344,8 @@ export const assignRelatedTask = async (praticaID, relatedPraticaID) => {
   }
 
   try {
-    const response1 = await axiosInstance.post(
-      `cr9b3_praticas(${praticaID})/cr9b3_related_pratica/$ref`,
-      data1,
-    )
-    const response2 = await axiosInstance.post(
+    await axiosInstance.post(`cr9b3_praticas(${praticaID})/cr9b3_related_pratica/$ref`, data1)
+    await axiosInstance.post(
       `cr9b3_praticas(${relatedPraticaID})/cr9b3_related_pratica/$ref`,
       data2,
     )
@@ -365,6 +362,7 @@ export const assignRelatedTask = async (praticaID, relatedPraticaID) => {
 
 export const assignUserToPratica = async (userID, praticaID, table) => {
   const axiosInstance = await initializeAxiosInstance()
+
   // console.log('adding superiori invitati', userID)
   const data = {
     '@odata.id': `https://orgac85713a.crm4.dynamics.com/api/data/v9.2/cr9b3_praticas(${praticaID})`,
@@ -376,6 +374,7 @@ export const assignUserToPratica = async (userID, praticaID, table) => {
       data,
     )
     // console.log('Successfully created the user <-> pratica record:', response.data)
+    sendNotificationtoUser(userID, 'ti ha assegnato una pratica', 'pratica', praticaID)
     return true
   } catch (error) {
     console.error(
@@ -386,15 +385,17 @@ export const assignUserToPratica = async (userID, praticaID, table) => {
   }
 }
 
-export const assignUserToTask = async (userID, taskID) => {
+export const assignUserToTask = async (userID, taskID, praticaID) => {
   const axiosInstance = await initializeAxiosInstance()
+
   // console.log('adding superiori invitati', userID)
   const data = {
-    '@odata.id': `https://orgac85713a.crm4.dynamics.com/api/data/v9.2/cr9b3_tasks(${taskID})`,
+    '@odata.id': `https://orgac85713a.crm4.dynamics.com/api/data/v9.2/cr9b3_taskses(${taskID})`,
   }
   try {
+    sendNotificationtoUser(userID, 'ti ha assegnato un task', 'task', praticaID)
     // POST request to create a relationship in cr9b3_task_utente
-    const response = await axiosInstance.post(`systemusers(${userID})/cr9b3_task_utente/$ref`, data)
+    await axiosInstance.post(`systemusers(${userID})/cr9b3_task_utente/$ref`, data)
     // console.log('Successfully assigned user to task:', response.data)
     return true
   } catch (error) {
@@ -411,6 +412,7 @@ export const getPratica = async (praticaID) => {
   const response = await axiosInstance.get(
     `cr9b3_praticas?$filter=cr9b3_praticaid eq '${praticaID}'`,
   )
+  // console.log('getPratica response', praticaID, response.data)
   return response.data.value[0]
   // ?$filter=cr9b3_praticaid eq '${pratica.cr9b3_praticaid}
 }
