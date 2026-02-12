@@ -4,7 +4,7 @@ import { CContainer, CSpinner } from '@coreui/react-pro'
 
 // routes config
 import routes from '../routes'
-import { checkAdminAccess, checkSpecialPermission } from 'src/util/accessUtils'
+import { checkAdminAccess, checkSpecialPermission } from 'src/services/accessService'
 
 const AppContent = () => {
   const [isAdmin, setIsAdmin] = React.useState(false)

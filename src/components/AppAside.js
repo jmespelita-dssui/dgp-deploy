@@ -15,9 +15,9 @@ import moment from 'moment'
 import Notification from 'src/views/notifications/Notification'
 import CIcon from '@coreui/icons-react'
 import { cilCheckCircle } from '@coreui/icons'
-import { markAllAsRead, markAsRead } from 'src/util/notifUtils'
-import { filterTasks } from 'src/util/accessUtils'
-import { getPratica } from 'src/util/taskUtils'
+import { fetchNotifications, markAllAsRead, markAsRead } from 'src/services/notificationService'
+import { filterTasks } from 'src/services/accessService'
+import { getPratica } from 'src/services/praticaService'
 import { useAccessRights } from 'src/hooks/useAccessRights'
 
 const AppAside = () => {
@@ -60,6 +60,30 @@ const AppAside = () => {
 
     loadPratiche()
   }, [accessLoading, defaultAccess, combinedTasks])
+
+  const refreshNotifs = async () => {
+    try {
+      const notifs = await fetchNotifications()
+      const unreadCount = notifs.filter((n) => !n.cr9b3_read).length
+      const enriched = await Promise.all(
+        notifs.map(async (notif) => {
+          const pratica = await getPratica(notif.cr9b3_pratica)
+          return { ...notif, pratica }
+        }),
+      )
+
+      // Update Redux state
+      dispatch({
+        type: 'set',
+        payload: {
+          notifications: enriched,
+          notifCount: unreadCount,
+        },
+      })
+    } catch (err) {
+      console.error('Error loading notifications:', err)
+    }
+  }
 
   const onMarkNotifAsRead = async (notif) => {
     const updatedNotifs = await markAsRead(notif)
@@ -135,6 +159,7 @@ const AppAside = () => {
                 praticheList={praticheList}
                 permittedTasks={permittedTasks}
                 markNotifAsRead={onMarkNotifAsRead}
+                refresh={refreshNotifs}
               />
             ))
           ) : (

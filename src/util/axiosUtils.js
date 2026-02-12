@@ -1,7 +1,7 @@
-import axios from 'axios'
-import { Providers, ProviderState } from '@microsoft/mgt-element'
-import msalInstance from 'src/msalConfig'
 import { InteractionRequiredAuthError } from '@azure/msal-browser'
+import { Providers } from '@microsoft/mgt-element'
+import axios from 'axios'
+import msalInstance from 'src/msalConfig'
 
 let interactionInProgress = false
 
@@ -10,19 +10,19 @@ export async function getAccessToken() {
   if (!account) throw new Error('No active account')
 
   try {
-    const res = await msalInstance.acquireTokenSilent({
+    const response = await msalInstance.acquireTokenSilent({
       scopes: ['https://orgac85713a.crm4.dynamics.com/.default'],
       account,
     })
-    return res.accessToken
-  } catch (e) {
-    if (e.errorCode === 'interaction_required' && !interactionInProgress) {
+    return response.accessToken
+  } catch (error) {
+    if (error.errorCode === 'interaction_required' && !interactionInProgress) {
       interactionInProgress = true
       await msalInstance.acquireTokenRedirect({
         scopes: ['https://orgac85713a.crm4.dynamics.com/.default'],
       })
     }
-    throw e
+    throw error
   }
 }
 
@@ -65,13 +65,4 @@ export const createAxiosInstance = (token) => {
   })
 
   return axiosInstance
-}
-
-export const initializeAxiosInstance = async () => {
-  try {
-    const token = await getAccessToken()
-    return createAxiosInstance(token)
-  } catch (error) {
-    console.error('Cannot get access token.')
-  }
 }

@@ -27,14 +27,13 @@ import {
 import CIcon from '@coreui/icons-react'
 
 import moment from 'moment'
-import { initializeAxiosInstance } from 'src/util/axiosUtils'
-import { emptyTask, getLabelColor, getPratica } from 'src/util/taskUtils'
+import { emptyTask, getLabelColor, getPratica } from 'src/services/praticaService'
 
 import Summary from './Summary'
 import Pratica from './Pratica'
 import LoadingOverlay from '../modals/LoadingOverlay'
 // import _access, { setAccessRights } from 'src/_access'
-import { filterTasks } from 'src/util/accessUtils'
+import { filterTasks } from 'src/services/accessService'
 import { useAccessRights } from 'src/hooks/useAccessRights'
 
 const MyTasks = ({ isArchive }) => {

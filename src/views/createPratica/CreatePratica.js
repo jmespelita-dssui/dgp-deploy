@@ -17,16 +17,16 @@ import moment from 'moment-timezone'
 import { useToast } from 'src/context/ToastContext'
 
 import React, { useState } from 'react'
-import { initializeAxiosInstance } from 'src/util/axiosUtils'
-import { assignUserToPratica, getFields, checkIfExistingProt } from 'src/util/taskUtils'
+import { assignUserToPratica, getFields, checkIfExistingProt } from 'src/services/praticaService'
 import { useNavigate } from 'react-router-dom'
 
 import FieldsCreate from './FieldsCreate'
 import ProtocolledSelect from './ProtocolledSelect'
 import NonProtocolledSelect from './NonProtocolledSelect'
-import { logActivity } from 'src/util/activityLogUtils'
-import { getSystemUserID } from 'src/util/accessUtils'
-import ConfirmClose from '../modals/ConfirmClose'
+import { logActivity } from 'src/services/activityLogService'
+import { getSystemUserID } from 'src/services/accessService'
+import ConfirmClose from '../modals/ConfirmAction'
+import apiClient from 'src/util/apiClient'
 
 const CreateTask = () => {
   const { addToast } = useToast()
@@ -100,8 +100,8 @@ const CreateTask = () => {
           return
         }
       })
-      const axiosInstance = await initializeAxiosInstance()
-      const modifiedByPromise = await axiosInstance.get(
+
+      const modifiedByPromise = await apiClient.get(
         `systemusers(${praticaDetailsResponse.data._modifiedby_value})`,
       )
 
@@ -132,13 +132,12 @@ const CreateTask = () => {
   }
 
   const addNewPratica = async (pratica) => {
-    const axiosInstance = await initializeAxiosInstance()
     let response
     let praticaDetailsResponse
     let entityUrl
     try {
       // console.log('adding new pratica', pratica)
-      response = await axiosInstance.post('cr9b3_praticas', pratica)
+      response = await apiClient.post('cr9b3_praticas', pratica)
       // Get the OData-EntityId from the response headers
       entityUrl = response.headers['odata-entityid']
 
@@ -146,7 +145,7 @@ const CreateTask = () => {
         // console.log(`Pratica created! Entity URL: ${entityUrl}`)
 
         // Retrieve the details of the created record
-        praticaDetailsResponse = await axiosInstance.get(entityUrl)
+        praticaDetailsResponse = await apiClient.get(entityUrl)
       } else {
         addToast(
           'Un errore si è verificato durante la creazione della pratica.',

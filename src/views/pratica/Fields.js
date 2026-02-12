@@ -2,9 +2,9 @@
 import React, { useEffect, useState } from 'react'
 import moment from 'moment'
 
-import { getFields } from 'src/util/taskUtils'
+import { getFields } from 'src/services/praticaService'
 import { GetCountries } from 'react-country-state-city'
-import { getPratica } from 'src/util/taskUtils'
+import { getPratica } from 'src/services/praticaService'
 
 import {
   CBadge,
@@ -25,13 +25,12 @@ import { PeoplePicker, Person } from '@microsoft/mgt-react'
 import CIcon from '@coreui/icons-react'
 import { cilInbox, cilPencil, cilTrash, cilX } from '@coreui/icons'
 import { useToast } from 'src/context/ToastContext'
-import ConfirmClose from '../modals/ConfirmClose'
-import { emptyTask } from 'src/util/taskUtils'
+import ConfirmClose from '../modals/ConfirmAction'
+import { emptyTask } from 'src/services/praticaService'
 import { CountrySelect } from 'react-country-state-city'
 import 'react-country-state-city/dist/react-country-state-city.css'
 import ChooseCategory from '../createPratica/ChooseCategory'
 import ProtNos from '../createPratica/ProtNos'
-import { initializeAxiosInstance } from 'src/util/axiosUtils'
 
 const Fields = ({
   pratica,

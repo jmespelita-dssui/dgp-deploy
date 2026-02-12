@@ -3,7 +3,7 @@ import { cilTrash } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import { CButton, CCol, CTooltip, CRow } from '@coreui/react-pro'
 import React, { useState } from 'react'
-import ConfirmClose from '../modals/ConfirmClose'
+import ConfirmClose from '../modals/ConfirmAction'
 import { useToast } from 'src/context/ToastContext'
 
 const RelatedPraticaRow = ({

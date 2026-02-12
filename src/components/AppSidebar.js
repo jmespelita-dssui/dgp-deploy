@@ -13,7 +13,7 @@ import 'simplebar/dist/simplebar.min.css'
 
 // sidebar nav config
 import navigation from '../_nav'
-import { checkAdminAccess } from 'src/util/accessUtils'
+import { checkAdminAccess } from 'src/services/accessService'
 
 const AppSidebar = () => {
   const dispatch = useDispatch()

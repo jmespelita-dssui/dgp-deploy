@@ -8,7 +8,7 @@ const Page403 = () => {
         <CCol md={6}>
           <div className="clearfix">
             <h1 className="float-start display-3 me-4">403</h1>
-            <h4 className="pt-3">Oups! Tu sei perso.</h4>
+            <h4 className="pt-3">Oups!</h4>
             <p className="text-medium-emphasis float-start">Non hai accesso a questa pagina.</p>
           </div>
         </CCol>

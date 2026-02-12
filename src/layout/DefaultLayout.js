@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { AppAside, AppContent, AppSidebar, AppFooter, AppHeader } from '../components/index'
 
 import { Providers, ProviderState } from '@microsoft/mgt-react'
-import LoginPage from 'src/views/login/LoginPage'
+import LoginPage from 'src/views/pages/LoginPage'
 
 function useIsSignIn() {
   const [isSignIn, setIsSignIn] = useState(false)

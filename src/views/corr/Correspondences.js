@@ -8,18 +8,18 @@ import CIcon from '@coreui/icons-react'
 import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 import Correspondence from './Correspondence'
-import { createAxiosInstance, getAccessToken } from 'src/util/axiosUtils'
 import moment from 'moment-timezone'
 
 import { useToast } from 'src/context/ToastContext'
-import { getCorrs } from 'src/util/taskUtils'
+import { getCorrs } from 'src/services/praticaService'
 import LoadingOverlay from '../modals/LoadingOverlay'
 import {
   generateActivityLogEntry,
   getUpdatedActivityLog,
   logActivity,
-} from 'src/util/activityLogUtils'
-import { getCurrentUser, getUserName } from 'src/util/accessUtils'
+} from 'src/services/activityLogService'
+import { getCurrentUser, getUserName } from 'src/services/accessService'
+import apiClient from 'src/util/apiClient'
 
 const Correspondences = ({ pratica }) => {
   const [newCorr, setNewCorr] = useState('')
@@ -43,8 +43,6 @@ const Correspondences = ({ pratica }) => {
     e.preventDefault()
     setLoading(true)
     let logEntry = generateActivityLogEntry({ cr9b3_corrispondenza: title })
-    const token = await getAccessToken()
-    const axiosInstance = createAxiosInstance(token)
     // console.log('saving correspondence', newCorr)
     const requestBody = {
       cr9b3_type: title,
@@ -52,7 +50,7 @@ const Correspondences = ({ pratica }) => {
       cr9b3_date: date,
     }
     try {
-      const response = await axiosInstance.post(
+      const response = await apiClient.post(
         `cr9b3_praticas(${pratica.cr9b3_praticaid})/cr9b3_Pratica_Correspondence?$return=representation`,
         requestBody,
       )

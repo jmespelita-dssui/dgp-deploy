@@ -5,7 +5,7 @@ import { CCol, CLink, CTooltip, CRow } from '@coreui/react-pro'
 import React, { useState } from 'react'
 import { useToast } from 'src/context/ToastContext'
 import LinkModal from '../modals/LinkModal'
-import ConfirmClose from '../modals/ConfirmClose'
+import ConfirmClose from '../modals/ConfirmAction'
 
 const LinkRow = ({ isEdit, link, saveLink, type, onDelete }) => {
   const { addToast } = useToast()

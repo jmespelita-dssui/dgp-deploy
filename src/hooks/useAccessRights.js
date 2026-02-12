@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import msalInstance from '../msalConfig'
-import { getDefaultAccess, getGroupMembers, getCurrentUser } from '../util/accessUtils'
-import { getAxiosInstance, initializeAxiosInstance } from '../util/axiosUtils'
+import { getDefaultAccess, getGroupMembers, getCurrentUser } from '../services/accessService'
+import apiClient from 'src/util/apiClient'
 
 export function useAccessRights() {
   const [defaultAccess, setDefaultAccess] = useState()
@@ -23,7 +23,6 @@ export function useAccessRights() {
 
     try {
       const user = await getCurrentUser()
-      const axiosUtils = await initializeAxiosInstance()
       const defaultAccessList = await getDefaultAccess()
       const hasDefaultAccess = !!defaultAccessList.find(
         (u) => u.id === user.azureactivedirectoryobjectid,
@@ -31,14 +30,12 @@ export function useAccessRights() {
 
       // Tasks
       const [respTasks, officialeTasks, createdTasks, assignedTasks] = await Promise.all([
-        axiosUtils.get(
-          `cr9b3_pratica_responsabileset?$filter=systemuserid eq ${user.systemuserid}`,
-        ),
-        axiosUtils.get(
+        apiClient.get(`cr9b3_pratica_responsabileset?$filter=systemuserid eq ${user.systemuserid}`),
+        apiClient.get(
           `cr9b3_pratica_officiali_incaricatiset?$filter=systemuserid eq ${user.systemuserid}`,
         ),
-        axiosUtils.get(`cr9b3_praticas?$filter=_createdby_value eq '${user.systemuserid}'`),
-        axiosUtils.get(`cr9b3_accessset?$filter=systemuserid eq ${user.systemuserid}`),
+        apiClient.get(`cr9b3_praticas?$filter=_createdby_value eq '${user.systemuserid}'`),
+        apiClient.get(`cr9b3_accessset?$filter=systemuserid eq ${user.systemuserid}`),
       ])
 
       const combinedTaskList = [

@@ -1,16 +1,16 @@
 /* eslint-disable react/prop-types */
 import React, { useEffect, useState } from 'react'
 import { CButton, CCollapse, CContainer } from '@coreui/react-pro'
-import ConfirmationModal from '../modals/ConfirmationModal'
+import ConfirmationModal from '../modals/ConfirmSubtask'
 import Subtask from './Subtask'
-import { assignUserToTask, getTasks } from 'src/util/taskUtils'
+import { assignUserToTask, getTasks } from 'src/services/praticaService'
 import CreateSubtask from './CreateSubtask'
 import CIcon from '@coreui/icons-react'
 import { cilPlus } from '@coreui/icons'
-import { initializeAxiosInstance } from 'src/util/axiosUtils'
 import LoadingOverlay from '../modals/LoadingOverlay'
 import { useToast } from 'src/context/ToastContext'
-import { getSystemUserID } from 'src/util/accessUtils'
+import { getSystemUserID } from 'src/services/accessService'
+import apiClient from 'src/util/apiClient'
 
 const Subtasks = ({ pratica, responsabile, officialiIncaricati }) => {
   const [visibleConfirmation, setVisibleConfirmation] = useState(false)
@@ -25,7 +25,6 @@ const Subtasks = ({ pratica, responsabile, officialiIncaricati }) => {
       response = await getTasks(pratica.cr9b3_praticaid)
     }
     setTasks(response)
-    console.log('tasks updated', response)
   }
 
   useEffect(() => {
@@ -43,7 +42,7 @@ const Subtasks = ({ pratica, responsabile, officialiIncaricati }) => {
     let systemUserIDs
     let assignUsers
     setLoading(true)
-    const axiosInstance = await initializeAxiosInstance()
+
     const requestBody = {
       cr9b3_id: Math.random().toString(36).substring(2, 10),
       cr9b3_label: task.label,
@@ -53,11 +52,11 @@ const Subtasks = ({ pratica, responsabile, officialiIncaricati }) => {
     }
 
     try {
-      const response = await axiosInstance.post(
+      await apiClient.post(
         `cr9b3_praticas(${pratica.cr9b3_praticaid})/cr9b3_pratica_tasks`,
         requestBody,
       )
-      const getResponse = await axiosInstance.get(
+      const getResponse = await apiClient.get(
         `cr9b3_praticas(${pratica.cr9b3_praticaid})/cr9b3_pratica_tasks?$filter=cr9b3_id eq '${requestBody.cr9b3_id}'`,
       )
       const taskID = getResponse.data.value[0].cr9b3_tasksid

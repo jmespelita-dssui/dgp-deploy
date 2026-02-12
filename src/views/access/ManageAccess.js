@@ -14,7 +14,6 @@ import {
 import { People, PeoplePicker, Person, Get } from '@microsoft/mgt-react'
 import React, { useEffect, useState } from 'react'
 import { useToast } from 'src/context/ToastContext'
-import { initializeAxiosInstance } from 'src/util/axiosUtils'
 import {
   getGroupMembers,
   getSystemUserID,
@@ -22,8 +21,8 @@ import {
   getUserGraphDetails,
   giveAccess,
   removeAccess,
-} from 'src/util/accessUtils'
-import { useSelector } from 'react-redux'
+} from 'src/services/accessService'
+import apiClient from 'src/util/apiClient'
 
 const ManageAccess = ({ responsabile, officialiIncaricati, pratica, refresh }) => {
   const [visibleDefault, setVisibleDefault] = useState(false)
@@ -79,8 +78,8 @@ const ManageAccess = ({ responsabile, officialiIncaricati, pratica, refresh }) =
     try {
       if (pratica.cr9b3_prano !== '') {
         setOthersLoading(true)
-        const axiosInstance = await initializeAxiosInstance()
-        const response = await axiosInstance.get(
+
+        const response = await apiClient.get(
           `cr9b3_praticas?$filter=cr9b3_praticaid eq '${pratica.cr9b3_praticaid}'&$expand=cr9b3_access`,
         )
         let usersWithAccess = response.data.value[0].cr9b3_access

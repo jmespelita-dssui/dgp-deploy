@@ -1,6 +1,5 @@
 /* eslint-disable react/prop-types */
 import React, { useEffect } from 'react'
-import { NavLink } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import {
   CContainer,
@@ -13,13 +12,13 @@ import {
   CTooltip,
 } from '@coreui/react-pro'
 import CIcon from '@coreui/icons-react'
-import { cilApplicationsSettings, cilBell, cilMenu } from '@coreui/icons'
+import { cilBell, cilMenu } from '@coreui/icons'
 
 import { Login } from '@microsoft/mgt-react'
 import { AppBreadcrumb } from './index'
 import logo from 'src/assets/brand/dssui-logo.png'
-import { fetchNotifications } from 'src/util/notifUtils'
-import { getPratica } from 'src/util/taskUtils'
+import { fetchNotifications } from 'src/services/notificationService'
+import { getPratica } from 'src/services/praticaService'
 
 const AppHeader = () => {
   const dispatch = useDispatch()

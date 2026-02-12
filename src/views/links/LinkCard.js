@@ -7,14 +7,14 @@ import LinkRow from './LinkRow'
 import LinkModal from '../modals/LinkModal'
 import LoadingOverlay from '../modals/LoadingOverlay'
 import { useToast } from 'src/context/ToastContext'
-import { initializeAxiosInstance } from 'src/util/axiosUtils'
 import {
   generateActivityLogEntry,
   getUpdatedActivityLog,
   logActivity,
-} from 'src/util/activityLogUtils'
+} from 'src/services/activityLogService'
 import moment from 'moment-timezone'
-import { getCurrentUser, getUserName } from 'src/util/accessUtils'
+import { getCurrentUser, getUserName } from 'src/services/accessService'
+import apiClient from 'src/util/apiClient'
 
 const LinkCard = ({ header, links, type, praticaID, refreshLinks }) => {
   const [visible, setVisible] = useState(false)
@@ -50,8 +50,7 @@ const LinkCard = ({ header, links, type, praticaID, refreshLinks }) => {
     setLoading(true)
 
     try {
-      const axiosInstance = await initializeAxiosInstance()
-      await axiosInstance.patch(`cr9b3_praticas(${praticaID})`, {
+      await apiClient.patch(`cr9b3_praticas(${praticaID})`, {
         cr9b3_links: JSON.stringify(newLinks),
       })
 

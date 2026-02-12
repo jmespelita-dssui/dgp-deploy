@@ -11,7 +11,7 @@ import {
   CModalTitle,
   CRow,
 } from '@coreui/react-pro'
-import { getUser } from 'src/util/accessUtils'
+import { getUser } from 'src/services/accessService'
 
 const RequestAccess = ({ visible, onClose, onSubmit, pratica }) => {
   const [user, setUser] = useState()

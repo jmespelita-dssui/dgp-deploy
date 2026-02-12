@@ -19,12 +19,11 @@ import {
 
 import { useToast } from 'src/context/ToastContext'
 import { PeoplePicker, Person } from '@microsoft/mgt-react'
-import ConfirmClose from '../modals/ConfirmClose'
+import ConfirmClose from '../modals/ConfirmAction'
 import CIcon from '@coreui/icons-react'
 import { cilCalendar, cilChevronCircleDownAlt, cilChevronCircleUpAlt } from '@coreui/icons'
 import moment from 'moment'
-import { initializeAxiosInstance } from 'src/util/axiosUtils'
-import { assignUserToTask } from 'src/util/taskUtils'
+import { assignUserToTask } from 'src/services/praticaService'
 import LoadingOverlay from '../modals/LoadingOverlay'
 import {
   getCurrentUser,
@@ -33,7 +32,8 @@ import {
   getUserGraphDetails,
   getUserName,
   giveAccessViaTask,
-} from 'src/util/accessUtils'
+} from 'src/services/accessService'
+import apiClient from 'src/util/apiClient'
 
 const Subtask = ({ task, refreshTask, pratica, responsabile, officialiIncaricati }) => {
   const [isExpand, setIsExpand] = useState(false)
@@ -90,8 +90,8 @@ const Subtask = ({ task, refreshTask, pratica, responsabile, officialiIncaricati
     setLoading(true)
     setVisibleConfirmClose(false)
     try {
-      const axiosInstance = await initializeAxiosInstance()
-      await axiosInstance.delete(`cr9b3_taskses(${task.cr9b3_tasksid})`).then(() => {
+      //
+      await apiClient.delete(`cr9b3_taskses(${task.cr9b3_tasksid})`).then(() => {
         addToast('Task eliminato con successo.', 'Elimina subtask', 'success', 3000)
       })
     } catch (error) {
@@ -111,7 +111,6 @@ const Subtask = ({ task, refreshTask, pratica, responsabile, officialiIncaricati
   }
 
   const saveComment = async () => {
-    const axiosInstance = await initializeAxiosInstance()
     const currentUser = await getCurrentUser()
     const now = new Date().toISOString()
     const commentEntry = {
@@ -121,7 +120,7 @@ const Subtask = ({ task, refreshTask, pratica, responsabile, officialiIncaricati
     }
 
     try {
-      let response = await axiosInstance.patch(`cr9b3_taskses(${task.cr9b3_tasksid})`, {
+      let response = await apiClient.patch(`cr9b3_taskses(${task.cr9b3_tasksid})`, {
         cr9b3_comments: JSON.stringify([commentEntry, ...comments]),
       })
       if (response.status === 204) {
@@ -162,8 +161,6 @@ const Subtask = ({ task, refreshTask, pratica, responsabile, officialiIncaricati
   }
 
   const saveTask = async () => {
-    const axiosInstance = await initializeAxiosInstance()
-
     let usersToAssign = []
     let usersToUnassign = []
     let newAssignedUsersList = []
@@ -192,7 +189,7 @@ const Subtask = ({ task, refreshTask, pratica, responsabile, officialiIncaricati
         if (usersToUnassign.length > 0) {
           console.log('users to unassign', usersToUnassign)
           usersToUnassign.map(async (id) => {
-            response = await axiosInstance.delete(
+            response = await apiClient.delete(
               `cr9b3_taskses(${task.cr9b3_tasksid})/cr9b3_task_utente(${id})/$ref`,
             )
           })
@@ -221,7 +218,7 @@ const Subtask = ({ task, refreshTask, pratica, responsabile, officialiIncaricati
 
     if (taskEdits) {
       try {
-        response = await axiosInstance.patch(`cr9b3_taskses(${task.cr9b3_tasksid})`, taskEdits)
+        response = await apiClient.patch(`cr9b3_taskses(${task.cr9b3_tasksid})`, taskEdits)
         setTaskEdits(null)
       } catch (error) {
         if (error.isAxiosError) {

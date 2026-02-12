@@ -19,11 +19,11 @@ import {
   CRow,
 } from '@coreui/react-pro'
 import React, { useEffect, useState } from 'react'
-import { assignRelatedTask } from 'src/util/taskUtils'
+import { assignRelatedTask } from 'src/services/praticaService'
 import { useToast } from 'src/context/ToastContext'
 import LoadingOverlay from '../modals/LoadingOverlay'
 import RelatedPraticaRow from './RelatedPraticaRow'
-import { initializeAxiosInstance } from 'src/util/axiosUtils'
+import apiClient from 'src/util/apiClient'
 
 const RelatedPratica = ({
   relatedPratiche,
@@ -86,13 +86,12 @@ const RelatedPratica = ({
   }
 
   const removeRelatedPratica = async (relatedPratica) => {
-    const axiosInstance = await initializeAxiosInstance()
     try {
       setLoading(true)
-      let response = await axiosInstance.delete(
+      let response = await apiClient.delete(
         `cr9b3_praticas(${pratica.cr9b3_praticaid})/cr9b3_related_pratica(${relatedPratica.cr9b3_praticaid})/$ref`,
       )
-      response = await axiosInstance.delete(
+      response = await apiClient.delete(
         `cr9b3_praticas(${relatedPratica.cr9b3_praticaid})/cr9b3_related_pratica(${pratica.cr9b3_praticaid})/$ref`,
       )
     } catch (error) {

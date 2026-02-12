@@ -1,9 +1,6 @@
 /* eslint-disable react/prop-types */
 import React, { useEffect, useState } from 'react'
-// import moment from 'moment'
 import moment from 'moment-timezone'
-
-import { initializeAxiosInstance } from 'src/util/axiosUtils'
 
 import {
   CModal,
@@ -28,10 +25,10 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilFolderOpen, cilGroup } from '@coreui/icons'
 import Fields from './Fields'
-import { assignUserToPratica, checkIfExistingProt } from 'src/util/taskUtils'
+import { assignUserToPratica, checkIfExistingProt } from 'src/services/praticaService'
 import { useToast } from 'src/context/ToastContext'
 import LoadingOverlay from '../modals/LoadingOverlay'
-import ConfirmClose from '../modals/ConfirmClose'
+import ConfirmClose from '../modals/ConfirmAction'
 import Correspondences from '../corr/Correspondences'
 import RelatedPratica from '../links/RelatedPratica'
 import Links from '../links/Links'
@@ -40,7 +37,7 @@ import {
   generateActivityLogEntry,
   getUpdatedActivityLog,
   logActivity,
-} from 'src/util/activityLogUtils'
+} from 'src/services/activityLogService'
 import Subtasks from '../subtasks/Subtasks'
 import ManageAccess from '../access/ManageAccess'
 import {
@@ -48,8 +45,9 @@ import {
   getSystemUserID,
   getUserGraphDetails,
   getUserName,
-} from 'src/util/accessUtils'
-import { sendNotificationtoUser } from 'src/util/notifUtils'
+} from 'src/services/accessService'
+import { sendNotificationtoUser } from 'src/services/notificationService'
+import apiClient from 'src/util/apiClient'
 
 const Pratica = ({
   pratica,
@@ -139,11 +137,9 @@ const Pratica = ({
   }
 
   const getRelatedPratiche = async () => {
-    const axiosInstance = await initializeAxiosInstance()
-
     if (pratica.cr9b3_praticaid) {
       try {
-        const response = await axiosInstance.get(
+        const response = await apiClient.get(
           `cr9b3_praticas?$filter=cr9b3_praticaid eq '${pratica.cr9b3_praticaid}'&$expand=cr9b3_related_pratica`,
         )
         // console.log(response.data.value)
@@ -161,11 +157,10 @@ const Pratica = ({
   }
 
   const getUserIDs = async (tableName) => {
-    const axiosInstance = await initializeAxiosInstance()
     let user
     let azureactivedirectoryobjectid
     let systemuserid
-    const response = await axiosInstance.get(
+    const response = await apiClient.get(
       `cr9b3_praticas?$filter=cr9b3_praticaid eq '${pratica.cr9b3_praticaid}'&$expand=${tableName}`,
     )
     if (tableName === 'cr9b3_pratica_superiore') {
@@ -297,7 +292,7 @@ const Pratica = ({
   ) => {
     setLoading(true)
     // console.log(prat)
-    const axiosInstance = await initializeAxiosInstance()
+
     let newSuperioriList = []
     let superioriToAssign = []
     let superioriToUnassign = []
@@ -345,7 +340,7 @@ const Pratica = ({
       //axios delete superiors
       if (superioriToUnassign.length > 0) {
         superioriToUnassign.map(async (id) => {
-          response = await axiosInstance.delete(
+          response = await apiClient.delete(
             `cr9b3_praticas(${prat.cr9b3_praticaid})/cr9b3_pratica_superiore(${id})/$ref`,
           )
           sendNotificationtoUser(
@@ -394,7 +389,7 @@ const Pratica = ({
       //axios delete responsible
       if (responsabiliToUnassign.length > 0) {
         responsabiliToUnassign.map(async (id) => {
-          response = await axiosInstance.delete(
+          response = await apiClient.delete(
             `cr9b3_praticas(${prat.cr9b3_praticaid})/cr9b3_pratica_responsabile(${id})/$ref`,
           )
           sendNotificationtoUser(
@@ -438,7 +433,7 @@ const Pratica = ({
       //axios delete officiali
       if (officialiIncaricatiToUnassign.length > 0) {
         officialiIncaricatiToUnassign.map(async (id) => {
-          response = await axiosInstance.delete(
+          response = await apiClient.delete(
             `cr9b3_praticas(${prat.cr9b3_praticaid})/cr9b3_pratica_officiali_incaricati(${id})/$ref`,
           )
           sendNotificationtoUser(
@@ -494,7 +489,7 @@ const Pratica = ({
       }
 
       setStatus(prat.cr9b3_status)
-      response = await axiosInstance.patch(`cr9b3_praticas(${prat.cr9b3_praticaid})`, prat)
+      response = await apiClient.patch(`cr9b3_praticas(${prat.cr9b3_praticaid})`, prat)
 
       // Get the OData-EntityId from the response headers
       entityUrl = response.headers['odata-entityid']
@@ -583,9 +578,8 @@ const Pratica = ({
 
   const deletePratica = async () => {
     try {
-      const axiosInstance = await initializeAxiosInstance()
       setLoading(true)
-      axiosInstance
+      apiClient
         .delete(`cr9b3_praticas(${pratica.cr9b3_praticaid})`)
         .then(() => {
           addToast('Pratica cancellato con successo.', 'Modifica pratica', 'success', 3000)

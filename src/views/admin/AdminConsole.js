@@ -20,11 +20,11 @@ import {
 import { Person } from '@microsoft/mgt-react'
 import { useToast } from 'src/context/ToastContext'
 import React, { useEffect, useState } from 'react'
-import { initializeAxiosInstance } from 'src/util/axiosUtils'
 import AddNewAccess from './AddNewAccess'
 import EditAccess from './EditAccess'
-import ConfirmClose from '../modals/ConfirmClose'
+import ConfirmClose from '../modals/ConfirmAction'
 import LoadingOverlay from '../modals/LoadingOverlay'
+import apiClient from 'src/util/apiClient'
 
 const AdminConsole = () => {
   const { addToast } = useToast()
@@ -43,9 +43,8 @@ const AdminConsole = () => {
   const fetchData = async () => {
     try {
       // Fetch any necessary data for the admin console here
-      const axiosInstance = await initializeAxiosInstance()
       // Fetch all tasks
-      const response = await axiosInstance.get('cr9b3_permissions?$orderby=cr9b3_role asc')
+      const response = await apiClient.get('cr9b3_permissions?$orderby=cr9b3_role asc')
       // console.log('all tasks', response.data)
       let access = response.data.value
       console.log('all access entries', access)
@@ -75,9 +74,9 @@ const AdminConsole = () => {
 
   const createPermissions = async (users) => {
     setLoading(true)
-    const axiosInstance = await initializeAxiosInstance()
+
     const requests = users.map((user) =>
-      axiosInstance.post('/cr9b3_permissions', {
+      apiClient.post('/cr9b3_permissions', {
         cr9b3_userid: user.mail,
         cr9b3_role: user.role,
       }),
@@ -86,40 +85,38 @@ const AdminConsole = () => {
     return Promise.all(requests)
   }
 
-  const handleEditAccess = (user) => {
+  const handleEditAccess = async (user) => {
     console.log('Editing access for user:', user)
     setLoading(true)
-    const axiosInstancePromise = initializeAxiosInstance()
-    axiosInstancePromise
-      .then((axiosInstance) =>
-        axiosInstance.patch(`/cr9b3_permissions(${selectedUser.cr9b3_permissionid})`, {
+    try {
+      await apiClient
+        .patch(`/cr9b3_permissions(${selectedUser.cr9b3_permissionid})`, {
           cr9b3_role: user[0].role,
-        }),
+        })
+        .then(() => {
+          addToast('Accesso aggiornato con successo.', 'Gestisci accesso', 'success', 3000)
+          fetchData()
+          setVisibleEditAccess(false)
+          setLoading(false)
+        })
+    } catch (error) {
+      addToast(
+        "C'è stato un errore durante l'aggiornamento dell'accesso.",
+        'Gestisci accesso',
+        'danger',
+        3000,
       )
-      .then(() => {
-        addToast('Accesso aggiornato con successo.', 'Gestisci accesso', 'success', 3000)
-        fetchData()
-        setVisibleEditAccess(false)
-        setLoading(false)
-      })
-      .catch((error) => {
-        addToast(
-          "C'è stato un errore durante l'aggiornamento dell'accesso.",
-          'Gestisci accesso',
-          'danger',
-          3000,
-        )
-        setLoading(false)
-        console.error('Error updating permission:', error)
-      })
+      setLoading(false)
+      console.error('Error updating permission:', error)
+    }
   }
 
   const handleDeleteAccess = async () => {
     console.log('Deleting access for user:', selectedUser)
     // Implement delete functionality here
-    const axiosInstance = await initializeAxiosInstance()
+
     setLoading(true)
-    axiosInstance
+    apiClient
       .delete(`/cr9b3_permissions(${selectedUser.cr9b3_permissionid})`)
       .then(() => {
         addToast('Accesso cancellato con successo.', 'Gestisci accesso', 'success', 3000)

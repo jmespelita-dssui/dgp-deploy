@@ -1,9 +1,19 @@
 import React from 'react'
 import CIcon from '@coreui/icons-react'
-import { cilListRich, cilPlus, cilSettings, cilTrash } from '@coreui/icons'
+import { cilChart, cilListRich, cilPlus, cilSearch, cilSettings, cilTrash } from '@coreui/icons'
 import { CNavItem } from '@coreui/react-pro'
 
 const _nav = [
+  {
+    component: CNavItem,
+    name: 'Dashboard',
+    to: '/dashboard',
+    icon: <CIcon icon={cilChart} customClassName="nav-icon" />,
+    badge: {
+      color: 'info-gradient',
+      text: 'NEW',
+    },
+  },
   {
     component: CNavItem,
     name: 'Le mie pratiche',
@@ -30,6 +40,16 @@ const _nav = [
   //   //   text: 'NEW',
   //   // },
   // },
+  {
+    component: CNavItem,
+    name: 'Search',
+    to: '/search',
+    icon: <CIcon icon={cilSearch} customClassName="nav-icon" />,
+    // badge: {
+    //   color: 'info-gradient',
+    //   text: 'NEW',
+    // },
+  },
   {
     component: CNavItem,
     name: 'Cestino',

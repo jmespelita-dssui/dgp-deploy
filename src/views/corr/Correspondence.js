@@ -3,7 +3,7 @@ import { CCard, CCardBody, CCardHeader, CContainer } from '@coreui/react-pro'
 import React, { useEffect, useState } from 'react'
 import CorrDisplay from './CorrDisplay'
 import moment from 'moment'
-import { createAxiosInstance, getAccessToken } from 'src/util/axiosUtils'
+import apiClient from 'src/util/apiClient'
 
 const Correspondence = ({ corr }) => {
   const [createdBy, setCreatedBy] = useState('')
@@ -11,9 +11,7 @@ const Correspondence = ({ corr }) => {
   useEffect(() => {
     const getCreatedByUsername = async () => {
       try {
-        const token = await getAccessToken()
-        const axiosInstance = createAxiosInstance(token)
-        const createdByPromise = await axiosInstance.get(`systemusers(${corr._createdby_value})`)
+        const createdByPromise = await apiClient.get(`systemusers(${corr._createdby_value})`)
         setCreatedBy(createdByPromise.data.fullname)
       } catch (e) {
         console.error(e)

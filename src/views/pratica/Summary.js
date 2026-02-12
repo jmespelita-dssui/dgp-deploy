@@ -1,19 +1,11 @@
 /* eslint-disable react/prop-types */
 import React, { useEffect, useState } from 'react'
 
-import {
-  CCardBody,
-  CContainer,
-  CRow,
-  CCol,
-  CCallout,
-  CListGroup,
-  CListGroupItem,
-} from '@coreui/react-pro'
-import { emptyTask, getFields } from 'src/util/taskUtils'
-import { createAxiosInstance, getAccessToken } from 'src/util/axiosUtils'
+import { CCardBody, CContainer, CRow, CCol, CListGroup, CListGroupItem } from '@coreui/react-pro'
+import { emptyTask, getFields } from 'src/services/praticaService'
 import moment from 'moment'
 import Subtasks from '../subtasks/Subtasks'
+import apiClient from 'src/util/apiClient'
 
 const Summary = ({ pratica }) => {
   const [item, setItem] = useState(pratica)
@@ -33,10 +25,8 @@ const Summary = ({ pratica }) => {
   }, [pratica])
 
   const getUserDetails = async () => {
-    const token = await getAccessToken()
-    const axiosInstance = createAxiosInstance(token)
-    const createdByPromise = await axiosInstance.get(`systemusers(${item._createdby_value})`)
-    const modifiedByPromise = await axiosInstance.get(`systemusers(${item._modifiedby_value})`)
+    const createdByPromise = await apiClient.get(`systemusers(${item._createdby_value})`)
+    const modifiedByPromise = await apiClient.get(`systemusers(${item._modifiedby_value})`)
     setCreatedBy(createdByPromise.data.fullname)
     setModifiedBy(modifiedByPromise.data.fullname)
   }
