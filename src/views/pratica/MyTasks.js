@@ -37,7 +37,6 @@ import { filterTasks } from 'src/services/accessService'
 import { useAccessRights } from 'src/hooks/useAccessRights'
 
 const MyTasks = ({ isArchive }) => {
-  const [praticheList, setPraticheList] = useState([])
   const [archiveList, setArchiveList] = useState([])
   const [details, setDetails] = useState([])
   const [activeKey, setActiveKey] = useState(1)
@@ -57,7 +56,7 @@ const MyTasks = ({ isArchive }) => {
       try {
         filterTasks(defaultAccess, combinedTasks, isArchive).then(
           ({ praticheList, archiveList, permittedTasks }) => {
-            setPraticheList(praticheList)
+            // setPraticheList(praticheList)
             setArchiveList(archiveList)
             setPermittedTasks(permittedTasks)
             setLoading(false)
@@ -69,7 +68,7 @@ const MyTasks = ({ isArchive }) => {
     }
 
     loadPratiche()
-  }, [accessLoading, defaultAccess, combinedTasks])
+  }, [accessLoading, defaultAccess, combinedTasks, visible])
 
   const columns = [
     { key: 'summary', label: '', _style: { width: '1%' }, sorter: false },
@@ -118,6 +117,7 @@ const MyTasks = ({ isArchive }) => {
 
   const setNewPratica = async (pratID) => {
     setLoadingOverlay(true)
+    setVisible(false)
     const startTime = Date.now()
     try {
       const newPratica = await getPratica(pratID)
@@ -132,6 +132,7 @@ const MyTasks = ({ isArchive }) => {
       const delay = Math.max(1500 - elapsed, 0)
       setTimeout(() => {
         setLoadingOverlay(false)
+        setVisible(true)
       }, delay)
     }
   }

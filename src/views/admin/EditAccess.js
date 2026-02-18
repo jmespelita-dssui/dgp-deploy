@@ -32,10 +32,10 @@ const EditAccess = ({ visible, onCancel, onContinue, user }) => {
               }}
               defaultValue={user.cr9b3_role}
             >
-              <option>Seleziona ruolo</option>
+              <option disabled>Seleziona ruolo</option>
               <option value={129580000}>Amministratore</option>
-              <option value={129580001}>Manager</option>
-              <option value={129580002}>Responsabile</option>
+              <option value={129580001}>Utente avanzato</option>
+              <option value={129580002}>Supervisore</option>
             </CFormSelect>
           </>
         )}

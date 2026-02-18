@@ -1,5 +1,4 @@
 import apiClient from 'src/util/apiClient'
-import { createAxiosInstance, getAccessToken } from '../util/axiosUtils'
 import { sendNotificationtoUser } from './notificationService'
 
 export const getLabelColor = (index) => {
@@ -275,6 +274,47 @@ export const getFields = (categoria) => {
     // color = 'black'
   }
   return fields
+}
+
+export const getColumnName = (columnID) => {
+  switch (columnID) {
+    case 'cr9b3_titolo':
+      return 'Titolo'
+    case 'cr9b3_debrief':
+      return 'Briefing'
+    case 'cr9b3_destinatari':
+      return 'Destinatari'
+    case 'cr9b3_enteinviante':
+      return 'Ente inviante'
+    case 'cr9b3_entericevente':
+      return 'Ente ricevente'
+    case 'cr9b3_indirizzidestinatari':
+      return 'Indirizzi destinatari'
+    case 'cr9b3_istruzionesuperiori':
+      return 'Istruzioni superiori'
+    case 'cr9b3_luogoevento':
+      return 'Luogo evento'
+    case 'cr9b3_materiarapporto':
+      return 'Materia rapporto'
+    case 'cr9b3_notes':
+      return 'Note'
+    case 'cr9b3_personarichiedente':
+      return 'Persona richiedente'
+    case 'cr9b3_prano':
+      return 'Prat. no.'
+    case 'cr9b3_protno':
+      return 'Prot. no.'
+    case 'cr9b3_temacontributo':
+      return 'Tema contributo'
+    case 'cr9b3_titoloevento':
+      return 'Titolo evento'
+    case 'cr9b3_message':
+      return 'Corrispondenza'
+    case 'cr9b3_type':
+      return 'Corrispondenza'
+    default:
+      return ''
+  }
 }
 
 export const getCorrs = async (praticaID) => {

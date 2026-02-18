@@ -4,16 +4,16 @@ import { cilChart, cilListRich, cilPlus, cilSearch, cilSettings, cilTrash } from
 import { CNavItem } from '@coreui/react-pro'
 
 const _nav = [
-  {
-    component: CNavItem,
-    name: 'Dashboard',
-    to: '/dashboard',
-    icon: <CIcon icon={cilChart} customClassName="nav-icon" />,
-    badge: {
-      color: 'info-gradient',
-      text: 'NEW',
-    },
-  },
+  // {
+  //   component: CNavItem,
+  //   name: 'Dashboard',
+  //   to: '/dashboard',
+  //   icon: <CIcon icon={cilChart} customClassName="nav-icon" />,
+  //   badge: {
+  //     color: 'info-gradient',
+  //     text: 'NEW',
+  //   },
+  // },
   {
     component: CNavItem,
     name: 'Le mie pratiche',

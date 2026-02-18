@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import {
   CButton,
+  CForm,
   CFormSelect,
   CModal,
   CModalBody,
@@ -13,9 +14,10 @@ import React, { useState } from 'react'
 
 const AddNewAccess = ({ visible, onCancel, onContinue }) => {
   const [selectedPeople, setSelectedPeople] = useState([])
-  const [role, setRole] = useState(0)
+  const [role, setRole] = useState()
 
   const prepUser = () => {
+    console.log('hey!')
     const mails = selectedPeople.map((person) => {
       return { mail: person.mail, role }
     })
@@ -42,6 +44,7 @@ const AddNewAccess = ({ visible, onCancel, onContinue }) => {
             className="mt-3"
             aria-label="Select role"
             onChange={(e) => setRole(parseInt(e.target.value))}
+            required
           >
             <option>Seleziona ruolo</option>
             <option value={129580000}>Amministratore</option>
@@ -54,7 +57,7 @@ const AddNewAccess = ({ visible, onCancel, onContinue }) => {
         <CButton color="secondary" onClick={onCancel}>
           Annulla
         </CButton>
-        <CButton color="primary" onClick={() => prepUser()}>
+        <CButton color="primary" onClick={() => prepUser()} disabled={!role}>
           Continua
         </CButton>
       </CModalFooter>

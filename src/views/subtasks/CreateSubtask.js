@@ -104,7 +104,7 @@ const CreateSubtask = ({ onSave, onCancel }) => {
               <CCol>
                 <CDatePicker
                   key={dateKey}
-                  label="Deadline"
+                  label="Scadenza"
                   locale="it-IT"
                   onDateChange={(e) => {
                     setDeadline(e)

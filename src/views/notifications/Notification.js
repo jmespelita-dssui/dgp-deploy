@@ -4,7 +4,7 @@ import CIcon from '@coreui/icons-react'
 import { CBadge, CListGroupItem } from '@coreui/react-pro'
 import moment from 'moment'
 import React, { useState } from 'react'
-import { getLabelColor } from 'src/services/praticaService'
+import { getLabelColor, getPratica } from 'src/services/praticaService'
 import Pratica from '../pratica/Pratica'
 import LoadingOverlay from '../modals/LoadingOverlay'
 import RequestAccess from '../modals/RequestAccess'
@@ -23,20 +23,24 @@ const Notification = ({ notif, praticheList, permittedTasks, markNotifAsRead }) 
   const [visibleConfirmAccess, setVisibleConfirmAccess] = useState(false)
   const { addToast } = useToast()
 
-  const setNewPratica = async (pratica) => {
+  const setNewPratica = async (pratID) => {
+    setVisible(false)
     setLoading(true)
     const startTime = Date.now()
     try {
-      setSelectedPratica(pratica)
-      setLabel(getLabelColor(pratica.cr9b3_categoria))
-    } catch (error) {
-      console.error('error opening related pratica', error)
+      const newPratica = await getPratica(pratID)
+      // console.log(newPratica)
+
+      setLabel(getLabelColor(newPratica.cr9b3_categoria))
+      setSelectedPratica(newPratica)
+    } catch {
+      console.log('error opening related pratica')
     } finally {
       const elapsed = Date.now() - startTime
       const delay = Math.max(1500 - elapsed, 0)
       setTimeout(() => {
-        setLoading(false)
         setVisible(true)
+        setLoading(false)
       }, delay)
     }
   }
@@ -73,6 +77,12 @@ const Notification = ({ notif, praticheList, permittedTasks, markNotifAsRead }) 
       'request access',
       notif.pratica.cr9b3_praticaid,
     )
+      .then(() => {
+        addToast('Richiesta mandata.', 'Azione', 'success', 3000)
+      })
+      .finally(() => {
+        setVisibleRequestAccess(false)
+      })
   }
 
   const setAccess = async (isGranted) => {
@@ -130,7 +140,7 @@ const Notification = ({ notif, praticheList, permittedTasks, markNotifAsRead }) 
         setVisibleConfirmAccess(true)
       }
     } else if (verifyAccess(notif.pratica)) {
-      setNewPratica(notif.pratica)
+      setNewPratica(notif.pratica.cr9b3_praticaid)
     } else {
       setVisibleRequestAccess(true)
     }
@@ -156,7 +166,6 @@ const Notification = ({ notif, praticheList, permittedTasks, markNotifAsRead }) 
         visible={visible}
         onClose={() => setVisible(false)}
         pratica={selectedPratica}
-        praticheList={praticheList}
         permittedTasks={permittedTasks}
         label={label}
         setNewPratica={setNewPratica}

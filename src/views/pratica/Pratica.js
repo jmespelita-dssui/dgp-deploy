@@ -645,7 +645,6 @@ const Pratica = ({
                 <CCol className="mb-3 scrollable-container">
                   <Fields
                     pratica={pratica}
-                    // categoryLabel={categoryLabel}
                     superioriInvitati={superioriInvitati}
                     responsabile={responsabiliAssegnati}
                     officialiIncaricati={officialiIncaricati}
@@ -654,8 +653,6 @@ const Pratica = ({
                     loading={loading}
                     setIsView={changeMode}
                     onDeletePratica={deletePratica}
-                    // forceRerender={refresh}
-                    // labelColor={labelColor}
                     label={label}
                   />
                   <CCardBody className="text-body-secondary font-size-sm lh-2 m-4">

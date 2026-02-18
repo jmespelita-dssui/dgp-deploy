@@ -2,6 +2,7 @@ import { cilPencil, cilPlus, cilTrash, cilUser } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import {
   CButton,
+  CCallout,
   CCard,
   CCardBody,
   CCol,
@@ -9,6 +10,8 @@ import {
   CDropdownItem,
   CDropdownMenu,
   CDropdownToggle,
+  CListGroup,
+  CListGroupItem,
   CRow,
   CTable,
   CTableBody,
@@ -210,8 +213,8 @@ const AdminConsole = () => {
                               {accessItem.cr9b3_role === 129580000
                                 ? 'AMMINISTRATORE '
                                 : accessItem.cr9b3_role === 129580001
-                                ? 'MANAGER '
-                                : 'RESPONSABILE'}
+                                ? 'UTENTE AVANZATO '
+                                : 'SUPERVISORE'}
                             </CDropdownToggle>
                             <CDropdownMenu>
                               <CDropdownItem
@@ -219,6 +222,7 @@ const AdminConsole = () => {
                                   setSelectedUser(accessItem)
                                   setVisibleEditAccess(true)
                                 }}
+                                style={{ cursor: 'pointer' }}
                               >
                                 <CIcon className="me-2" icon={cilUser} /> Cambia ruolo
                               </CDropdownItem>
@@ -227,6 +231,7 @@ const AdminConsole = () => {
                                   setSelectedUser(accessItem)
                                   setVisibleConfirmation(true)
                                 }}
+                                style={{ cursor: 'pointer' }}
                               >
                                 <CIcon className="me-2" icon={cilTrash} /> Cancella accesso
                               </CDropdownItem>
@@ -238,6 +243,26 @@ const AdminConsole = () => {
                 </CTableBody>
               </CTable>
             </CCol>
+          </CRow>
+          <CRow className="px-5">
+            <CCallout color="light" className="px-3">
+              <CRow>
+                <small>
+                  <strong>Amministratore:</strong> può gestire i ruoli e assegnarli agli utenti.
+                </small>
+              </CRow>
+              <CRow>
+                <small>
+                  <strong>Utente avanzato:</strong> può eliminare permanentemente qualsiasi pratica
+                  e visualizzare tutte le pratiche.
+                </small>
+              </CRow>
+              <CRow>
+                <small>
+                  <strong>Supervisore:</strong> può vedere tutte le pratiche ma non eliminarle.
+                </small>
+              </CRow>
+            </CCallout>
           </CRow>
         </CCardBody>
       </CCard>

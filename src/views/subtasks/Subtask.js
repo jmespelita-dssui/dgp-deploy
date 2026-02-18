@@ -279,7 +279,7 @@ const Subtask = ({ task, refreshTask, pratica, responsabile, officialiIncaricati
               />{' '}
               <span>{taskDetails.cr9b3_label}</span>
               {statusLabel.value === '4' ? (
-                <CBadge shape="rounded-pill" color="success" className="mt-2">
+                <CBadge shape="rounded-pill" color="success" className="mt-2 ms-3">
                   Completato
                 </CBadge>
               ) : (
@@ -326,7 +326,7 @@ const Subtask = ({ task, refreshTask, pratica, responsabile, officialiIncaricati
                     </CCol>
                     <CCol>
                       <CDatePicker
-                        label="Deadline"
+                        label="Scadenza"
                         date={moment(taskDetails.cr9b3_deadline).format('YYYY/MM/DD').toString()}
                         locale="it-IT"
                         onDateChange={(e) => {
@@ -353,7 +353,7 @@ const Subtask = ({ task, refreshTask, pratica, responsabile, officialiIncaricati
                     className="mb-5"
                     rows={3}
                     id="desc"
-                    label="Description"
+                    label="Descrizione"
                     onChange={(e) => {
                       setTaskDetails({ ...taskDetails, cr9b3_description: e.target.value })
                       setTaskEdits({ ...taskEdits, cr9b3_description: e.target.value })
@@ -365,7 +365,7 @@ const Subtask = ({ task, refreshTask, pratica, responsabile, officialiIncaricati
                     value={comment}
                     className="mb-1"
                     id="desc"
-                    label="Comments"
+                    label="Commenti"
                     onChange={(e) => {
                       setComment(e.target.value)
                     }}
@@ -443,7 +443,7 @@ const Subtask = ({ task, refreshTask, pratica, responsabile, officialiIncaricati
                     }}
                     className="link-controls text-decoration-underline"
                   >
-                    {isExpand ? <>Save and hide</> : <>Edit</>}
+                    {isExpand ? <CButton size="sm">Salva</CButton> : <>Modifica</>}
                   </small>
                 </CCol>
               </CRow>
