@@ -11,14 +11,16 @@ import RequestAccess from '../modals/RequestAccess'
 import { sendNotificationtoUser } from 'src/services/notificationService'
 import { useToast } from 'src/context/ToastContext'
 import ConfirmAccess from '../modals/ConfirmAccess'
-import { checkAccessToPratica, getUser, giveAccess } from 'src/services/accessService'
+import { checkAccessToPratica, giveAccess } from 'src/services/accessService'
 import apiClient from 'src/util/apiClient'
+import { getUser } from 'src/services/userService'
 
-const Notification = ({ notif, praticheList, permittedTasks, markNotifAsRead }) => {
+const Notification = ({ notif, permittedPratiche, markNotifAsRead }) => {
   const [visible, setVisible] = useState(false)
   const [selectedPratica, setSelectedPratica] = useState(null)
   const [label, setLabel] = useState('')
   const [loading, setLoading] = useState(false)
+  const [type, setType] = useState('')
   const [visibleRequestAccess, setVisibleRequestAccess] = useState(false)
   const [visibleConfirmAccess, setVisibleConfirmAccess] = useState(false)
   const { addToast } = useToast()
@@ -62,15 +64,9 @@ const Notification = ({ notif, praticheList, permittedTasks, markNotifAsRead }) 
     }
   }
 
-  const verifyAccess = (pratica) => {
-    if (praticheList) {
-      return praticheList.find((p) => p.cr9b3_praticaid === pratica.cr9b3_praticaid)
-    }
-    return false
-  }
-
   const onConfirmRequestAccess = async () => {
     // const systemuserid = await getSystemUserID(notif.)
+    setLoading(true)
     await sendNotificationtoUser(
       notif.pratica._createdby_value,
       'Richiesta di accesso',
@@ -81,6 +77,7 @@ const Notification = ({ notif, praticheList, permittedTasks, markNotifAsRead }) 
         addToast('Richiesta mandata.', 'Azione', 'success', 3000)
       })
       .finally(() => {
+        setLoading(false)
         setVisibleRequestAccess(false)
       })
   }
@@ -95,19 +92,28 @@ const Notification = ({ notif, praticheList, permittedTasks, markNotifAsRead }) 
     console.log(user.yomifullname, 'has access?:', hasAccess)
     console.log('what say you?', isGranted)
 
-    const response = await giveAccess(notif._createdby_value, notif.pratica.cr9b3_praticaid)
-    if (response) {
-      await apiClient
-        .patch(`cr9b3_notifications(${notif.cr9b3_notificationid})`, {
-          cr9b3_comment: response ? 'access granted' : 'access denied',
-          cr9b3_completed: true,
-        })
-        .then(() => {
-          addToast('Risposta salvata.', 'Azione', 'success', 3000)
-          setVisibleConfirmAccess(false)
-          setLoading(false)
-        })
+    let response
+    if (isGranted && !hasAccess) {
+      response = await giveAccess(notif._createdby_value, notif.pratica.cr9b3_praticaid)
+    } else {
+      sendNotificationtoUser(
+        notif._createdby_value,
+        'la tua richiesta di accesso è stata rifiutata',
+        'pratica',
+        notif.pratica.cr9b3_praticaid,
+      )
     }
+
+    await apiClient
+      .patch(`cr9b3_notifications(${notif.cr9b3_notificationid})`, {
+        cr9b3_comment: response ? 'access granted' : 'access denied',
+        cr9b3_completed: true,
+      })
+      .then(() => {
+        addToast('Risposta salvata.', 'Azione', 'success', 3000)
+        setVisibleConfirmAccess(false)
+        setLoading(false)
+      })
   }
 
   const handleClick = async () => {
@@ -140,11 +146,21 @@ const Notification = ({ notif, praticheList, permittedTasks, markNotifAsRead }) 
         setVisibleConfirmAccess(true)
       }
     } else if (verifyAccess(notif.pratica)) {
+      if (notif.cr9b3_type === 'task') {
+        setType('task')
+      }
       setNewPratica(notif.pratica.cr9b3_praticaid)
     } else {
       setVisibleRequestAccess(true)
     }
     markNotifAsRead(notif)
+  }
+
+  const verifyAccess = (pratica) => {
+    if (permittedPratiche) {
+      return permittedPratiche.find((p) => p.cr9b3_praticaid === pratica.cr9b3_praticaid)
+    }
+    return false
   }
 
   return (
@@ -166,9 +182,10 @@ const Notification = ({ notif, praticheList, permittedTasks, markNotifAsRead }) 
         visible={visible}
         onClose={() => setVisible(false)}
         pratica={selectedPratica}
-        permittedTasks={permittedTasks}
+        permittedPratiche={permittedPratiche}
         label={label}
         setNewPratica={setNewPratica}
+        tab={type}
       />
       <CListGroupItem
         className={`border-start-4 border-start-${getBorderColor(
@@ -258,7 +275,7 @@ const Notification = ({ notif, praticheList, permittedTasks, markNotifAsRead }) 
           ) : (
             <div className="position-relative">
               <CIcon icon={notif.cr9b3_type === 'task' ? cilFlagAlt : cilFolder} className="me-2" />
-              <strong>{notif.cr9b3_actor}</strong> {notif.cr9b3_description}
+              <strong>{notif.cr9b3_actor}</strong> {notif.cr9b3_description}.
               {notif.cr9b3_read ? null : (
                 <CBadge
                   className="border border-light position-absolute top-0 start-100 translate-middle p-1 mt-1"

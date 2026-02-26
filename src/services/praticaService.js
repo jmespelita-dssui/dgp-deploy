@@ -1,5 +1,29 @@
 import apiClient from 'src/util/apiClient'
 import { sendNotificationtoUser } from './notificationService'
+import { getSystemUserID } from './userService'
+import { assignUserToPratica, assignUserToTask } from './accessService'
+import { logAction } from './applicationLogService'
+
+export const getStatus = (statusNo) => {
+  switch (Number(statusNo)) {
+    case 10:
+      return 'Nuovo'
+    case 30:
+      return 'In corso'
+    case 50:
+      return 'In attesa di risposta dal destinatario'
+    case 70:
+      return 'In attesa di approvazione dal superiore'
+    case 40:
+      return 'In sospeso'
+    case 0:
+      return 'Archiviato'
+    case 100:
+      return 'Completato'
+    default:
+      return
+  }
+}
 
 export const getLabelColor = (index) => {
   let color
@@ -78,6 +102,7 @@ export const emptyTask = {
   cr9b3_materiarapporto: '',
   cr9b3_superioriinvitati: '',
   cr9b3_sezioneresponsabile: '',
+  cr9b3_sezione: '',
   cr9b3_nopartecipanti: '',
   cr9b3_dssuipartecipanti: '',
   cr9b3_paese: '',
@@ -319,6 +344,7 @@ export const getColumnName = (columnID) => {
 
 export const getCorrs = async (praticaID) => {
   try {
+    // console.log(userID)
     const response = await apiClient.get(
       `cr9b3_praticas(${praticaID})/cr9b3_Pratica_Correspondence?$orderby=cr9b3_date desc`,
     )
@@ -331,6 +357,13 @@ export const getCorrs = async (praticaID) => {
     } else {
       console.error('Non-Axios error:', error)
     }
+    // await logAction({
+    //   userID: userID,
+    //   action: 'GET_CORRS',
+    //   entityName: 'cr9b3_Pratica_Correspondence',
+    //   entityId: praticaID,
+    //   details: error.message,
+    // })
   }
 }
 
@@ -351,12 +384,35 @@ export const getTasks = async (praticaID) => {
   }
 }
 
+export const getPraticheList = async (level) => {
+  let response
+  let sections
+  let filter
+  switch (level) {
+    case 1:
+      response = await apiClient.get('cr9b3_praticas?$orderby=createdon desc')
+      return response.data.value
+    case 2:
+      sections = ['AD', 'RR', 'CR']
+      filter = sections.map((s) => `cr9b3_sezione eq '${s}'`).join(' or ')
+      response = await apiClient.get(`cr9b3_praticas?$filter=${filter}&$orderby=createdon desc`)
+      return response.data.value
+    case 3:
+      sections = ['AD', 'EP']
+      filter = sections.map((s) => `cr9b3_sezione eq '${s}'`).join(' or ')
+      response = await apiClient.get(`cr9b3_praticas?$filter=${filter}&$orderby=createdon desc`)
+      return response.data.value
+    default:
+      return []
+  }
+}
+
 // Check if pratica with protNo exists
 export const checkIfExistingProt = async (protNo) => {
   try {
     // Perform the API request
     const response = await apiClient.get(`cr9b3_praticas?$filter=cr9b3_protno eq '${protNo}'`)
-
+    console.log('checking if', protNo, 'exists', response.data.value)
     // Check if the response contains data
     const exists = response.data.value && response.data.value.length > 0
 
@@ -365,6 +421,25 @@ export const checkIfExistingProt = async (protNo) => {
   } catch (error) {
     console.error('Error checking protNo existence:', error)
     return false // Return false in case of error (depends on your use case)
+  }
+}
+
+export const getRelatedPratiche = async (pratica) => {
+  if (pratica.cr9b3_praticaid) {
+    try {
+      const response = await apiClient.get(
+        `cr9b3_praticas?$filter=cr9b3_praticaid eq '${pratica.cr9b3_praticaid}'&$expand=cr9b3_related_pratica`,
+      )
+      return response.data.value[0].cr9b3_related_pratica
+    } catch (error) {
+      if (error.isAxiosError) {
+        console.error('Errore Axios nel recupero della pratica correlata:', error.response)
+        console.error('Messaggio di errore:', error.message)
+        console.error('Risposta di errore:', error.response.data)
+      } else {
+        console.error('Errore non Axios:', error)
+      }
+    }
   }
 }
 
@@ -391,52 +466,212 @@ export const assignRelatedTask = async (praticaID, relatedPraticaID) => {
   }
 }
 
-export const assignUserToPratica = async (userID, praticaID, table) => {
-  // console.log('adding superiori invitati', userID)
-  const data = {
-    '@odata.id': `https://orgac85713a.crm4.dynamics.com/api/data/v9.2/cr9b3_praticas(${praticaID})`,
-  }
-  try {
-    // POST request to create a relationship in cr9b3_pratica_superiore
-    const response = await apiClient.post(
-      `systemusers(${userID})/${table}/$ref`, //cr9b3_pratica_superiore
-      data,
-    )
-    // console.log('Successfully created the user <-> pratica record:', response.data)
-    sendNotificationtoUser(userID, 'ti ha assegnato una pratica', 'pratica', praticaID)
-    return true
-  } catch (error) {
-    console.error(
-      'Error creating user <-> pratica record:',
-      error.response ? error.response.data : error.message,
-    )
-    return false
-  }
-}
-
-export const assignUserToTask = async (userID, taskID, praticaID) => {
-  // console.log('adding superiori invitati', userID)
-  const data = {
-    '@odata.id': `https://orgac85713a.crm4.dynamics.com/api/data/v9.2/cr9b3_taskses(${taskID})`,
-  }
-  try {
-    sendNotificationtoUser(userID, 'ti ha assegnato un task', 'task', praticaID)
-    // POST request to create a relationship in cr9b3_task_utente
-    await apiClient.post(`systemusers(${userID})/cr9b3_task_utente/$ref`, data)
-    // console.log('Successfully assigned user to task:', response.data)
-    return true
-  } catch (error) {
-    console.error(
-      'Error assigning user to task:',
-      error.response ? error.response.data : error.message,
-    )
-    return false
-  }
-}
-
 export const getPratica = async (praticaID) => {
   const response = await apiClient.get(`cr9b3_praticas?$filter=cr9b3_praticaid eq '${praticaID}'`)
   // console.log('getPratica response', praticaID, response.data)
   return response.data.value[0]
   // ?$filter=cr9b3_praticaid eq '${pratica.cr9b3_praticaid}
+}
+
+export const assignSuperiors = async (superioriInvitatiList, superioriSystemUserIDs, praticaID) => {
+  let newSuperioriList = []
+  let superioriToAssign = []
+  let superioriToUnassign = []
+  try {
+    //get system user ids of all assigned superiors
+    newSuperioriList = await Promise.all(
+      superioriInvitatiList.map(async (id) => {
+        return getSystemUserID(id)
+      }),
+    )
+
+    //determine which superiors were removed
+    superioriToUnassign = superioriSystemUserIDs.filter(
+      (value) => !newSuperioriList.includes(value),
+    )
+
+    //determine which superiors were added
+    superioriToAssign = newSuperioriList.filter((value) => !superioriSystemUserIDs.includes(value))
+
+    //axios delete superiors
+    if (superioriToUnassign.length > 0) {
+      await Promise.all(
+        superioriToUnassign.map(async (id) => {
+          await apiClient.delete(`cr9b3_praticas(${praticaID})/cr9b3_pratica_superiore(${id})/$ref`)
+          sendNotificationtoUser(
+            id,
+            'La tua assegnazione alla pratica è stata rimossa',
+            'unassign',
+            praticaID,
+          )
+        }),
+      )
+    }
+
+    //axios post new superiors
+    if (superioriToAssign.length > 0) {
+      await Promise.all(
+        superioriToAssign.map(async (id) => {
+          return assignUserToTask(id, praticaID, 'cr9b3_pratica_superiore')
+        }),
+      )
+    }
+
+    return { newSuperioriList, superioriToAssign, superioriToUnassign, error: null }
+  } catch (error) {
+    console.log('error in assignSuperiors', error)
+    return { newSuperioriList, superioriToAssign, superioriToUnassign, error: error }
+  }
+}
+
+export const assignResponsabili = async (
+  responsabileList,
+  responsabiliSystemUserIDs,
+  praticaID,
+) => {
+  let newResponsabiliList = []
+  let responsabiliToAssign = []
+  let responsabiliToUnassign = []
+  try {
+    //get system user ids of assigned responsible
+    newResponsabiliList = await Promise.all(
+      responsabileList.map(async (id) => {
+        return getSystemUserID(id)
+      }),
+    )
+
+    //determine which responsibles were removed
+    responsabiliToUnassign = responsabiliSystemUserIDs.filter(
+      (value) => !newResponsabiliList.includes(value),
+    )
+
+    //determine which responsibles were added
+    responsabiliToAssign = newResponsabiliList.filter(
+      (value) => !responsabiliSystemUserIDs.includes(value),
+    )
+
+    //axios delete responsible
+    if (responsabiliToUnassign.length > 0) {
+      await Promise.all(
+        responsabiliToUnassign.map(async (id) => {
+          await apiClient.delete(
+            `cr9b3_praticas(${praticaID})/cr9b3_pratica_responsabile(${id})/$ref`,
+          )
+          sendNotificationtoUser(
+            id,
+            'La tua assegnazione alla pratica è stata rimossa',
+            'unassign',
+            praticaID,
+          )
+        }),
+      )
+    }
+
+    //axios add responsible
+    if (responsabiliToAssign.length > 0) {
+      await Promise.all(
+        responsabiliToAssign.map(async (id) => {
+          return assignUserToPratica(id, praticaID, 'cr9b3_pratica_responsabile')
+        }),
+      )
+    }
+    return { newResponsabiliList, responsabiliToAssign, responsabiliToUnassign, error: null }
+  } catch (error) {
+    console.error('Errore durante l’assegnazione del responsabile', error)
+    return { newResponsabiliList, responsabiliToAssign, responsabiliToUnassign, error: error }
+  }
+}
+
+export const assignOfficiali = async (
+  officialiIncaricatiList,
+  officialiIncaricatiSystemUserIDs,
+  praticaID,
+) => {
+  let newOfficialiIncaricatiList = []
+  let officialiIncaricatiToAssign = []
+  let officialiIncaricatiToUnassign = []
+  try {
+    //get system user ids of assigned officiali
+    newOfficialiIncaricatiList = await Promise.all(
+      officialiIncaricatiList.map(async (id) => {
+        return getSystemUserID(id)
+      }),
+    )
+
+    //determine which officiali were removed
+    officialiIncaricatiToUnassign = officialiIncaricatiSystemUserIDs.filter(
+      (value) => !newOfficialiIncaricatiList.includes(value),
+    )
+
+    //determine which officiali were added
+    officialiIncaricatiToAssign = newOfficialiIncaricatiList.filter(
+      (value) => !officialiIncaricatiSystemUserIDs.includes(value),
+    )
+
+    //axios delete official
+    if (officialiIncaricatiToUnassign.length > 0) {
+      await Promise.all(
+        officialiIncaricatiToUnassign.map(async (id) => {
+          await apiClient.delete(
+            `cr9b3_praticas(${praticaID})/cr9b3_pratica_officiali_incaricati(${id})/$ref`,
+          )
+          sendNotificationtoUser(
+            id,
+            'La tua assegnazione alla pratica è stata rimossa',
+            'unassign',
+            praticaID,
+          )
+        }),
+      )
+    }
+
+    //axios add officiali
+    if (officialiIncaricatiToAssign.length > 0) {
+      await Promise.all(
+        officialiIncaricatiToAssign.map(async (id) => {
+          return assignUserToPratica(id, praticaID, 'cr9b3_pratica_officiali_incaricati')
+        }),
+      )
+    }
+    return {
+      newOfficialiIncaricatiList,
+      officialiIncaricatiToAssign,
+      officialiIncaricatiToUnassign,
+      error: null,
+    }
+  } catch (error) {
+    console.error('Errore durante l’assegnazione del officiale', error)
+    return {
+      newOfficialiIncaricatiList,
+      officialiIncaricatiToAssign,
+      officialiIncaricatiToUnassign,
+      error: error,
+    }
+  }
+}
+
+export const getUserTodo = async (userID) => {
+  try {
+    const todoList = await apiClient.get(
+      `cr9b3_taskses
+   ?$select=cr9b3_label,cr9b3_status,cr9b3_deadline
+   &$filter=cr9b3_status ne 4 
+            and cr9b3_task_utente/any(u:u/systemuserid eq ${userID})
+   &$expand=cr9b3_Pratica($select=cr9b3_titolo,cr9b3_praticaid,cr9b3_protno)
+   &$orderby=cr9b3_deadline asc`,
+    )
+    // const todoList = await apiClient.get(`cr9b3_task_utenteset?$filter=systemuserid eq ${userID}`)
+    // const response = await apiClient.get(
+    //   `cr9b3_praticas(${praticaID})/cr9b3_pratica_tasks?$orderby=createdon desc`,
+    // )
+    return todoList.data.value
+  } catch (error) {
+    if (error.isAxiosError) {
+      console.error('Axios error getting user todo:', error.response)
+      console.error('Error message:', error.message)
+      console.error('Error response:', error.response.data)
+    } else {
+      console.error('Non-Axios error:', error)
+    }
+  }
 }

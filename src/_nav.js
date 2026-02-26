@@ -4,16 +4,6 @@ import { cilChart, cilListRich, cilPlus, cilSearch, cilSettings, cilTrash } from
 import { CNavItem } from '@coreui/react-pro'
 
 const _nav = [
-  // {
-  //   component: CNavItem,
-  //   name: 'Dashboard',
-  //   to: '/dashboard',
-  //   icon: <CIcon icon={cilChart} customClassName="nav-icon" />,
-  //   badge: {
-  //     color: 'info-gradient',
-  //     text: 'NEW',
-  //   },
-  // },
   {
     component: CNavItem,
     name: 'Le mie pratiche',
@@ -30,51 +20,23 @@ const _nav = [
     to: '/creare-pratica',
     icon: <CIcon icon={cilPlus} customClassName="nav-icon" />,
   },
-  // {
-  //   component: CNavItem,
-  //   name: 'Dashboard',
-  //   to: '/dashboard',
-  //   icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
-  //   // badge: {
-  //   //   color: 'info-gradient',
-  //   //   text: 'NEW',
-  //   // },
-  // },
   {
     component: CNavItem,
-    name: 'Search',
-    to: '/search',
+    name: 'Cerca',
+    to: '/cerca',
     icon: <CIcon icon={cilSearch} customClassName="nav-icon" />,
-    // badge: {
-    //   color: 'info-gradient',
-    //   text: 'NEW',
-    // },
+  },
+  {
+    component: CNavItem,
+    name: 'Admin Console',
+    to: '/admin-console',
+    icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
   },
   {
     component: CNavItem,
     name: 'Cestino',
     to: '/cestino',
     icon: <CIcon icon={cilTrash} customClassName="nav-icon" />,
-  },
-  // {
-  //   component: CNavItem,
-  //   name: 'Search',
-  //   to: '/search',
-  //   icon: <CIcon icon={cilSearch} customClassName="nav-icon" />,
-  //   // badge: {
-  //   //   color: 'info-gradient',
-  //   //   text: 'NEW',
-  //   // },
-  // },
-  {
-    component: CNavItem,
-    name: 'Admin Console',
-    to: '/admin-console',
-    icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
-    // badge: {
-    //   color: 'info-gradient',
-    //   text: 'NEW',
-    // },
   },
 ]
 

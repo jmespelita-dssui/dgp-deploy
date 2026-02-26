@@ -24,14 +24,9 @@ import { useToast } from 'src/context/ToastContext'
 import LoadingOverlay from '../modals/LoadingOverlay'
 import RelatedPraticaRow from './RelatedPraticaRow'
 import apiClient from 'src/util/apiClient'
+import { useAccessRights } from 'src/hooks/useAccessRights'
 
-const RelatedPratica = ({
-  relatedPratiche,
-  praticheList,
-  pratica,
-  refreshRelatedPratiche,
-  setNewPratica,
-}) => {
+const RelatedPratica = ({ relatedPratiche, pratica, refreshRelatedPratiche, setNewPratica }) => {
   const [options, setOptions] = useState([])
   const [visibleList, setVisibleList] = useState(false)
   const [filteredPraticheList, setFilteredPraticheList] = useState([])
@@ -39,6 +34,7 @@ const RelatedPratica = ({
   const [loading, setLoading] = useState(false)
   const [isDeleteMode, setIsDeleteMode] = useState(false)
   const { addToast } = useToast()
+  const { assignedPratiche } = useAccessRights()
 
   useEffect(() => {
     let filter = [...relatedPratiche, pratica]
@@ -46,8 +42,7 @@ const RelatedPratica = ({
       filter = filter.map((p) => p.cr9b3_praticaid)
     }
     // console.log(praticheList)
-
-    setFilteredPraticheList(praticheList.filter((p) => !filter.includes(p.cr9b3_praticaid)))
+    setFilteredPraticheList(assignedPratiche.filter((p) => !filter.includes(p.cr9b3_praticaid)))
     getOptions()
     setChosenPratica()
   }, [relatedPratiche, visibleList]) // Run when praticheList updates
@@ -126,7 +121,7 @@ const RelatedPratica = ({
                   //   console.log('Selected Value:', selectedValue)
                   //   console.log('Selected Label:', selectedLabel)
                   setChosenPratica(
-                    praticheList.find((item) => item.cr9b3_praticaid === selectedValue),
+                    assignedPratiche.find((item) => item.cr9b3_praticaid === selectedValue),
                   )
                 }}
               />
@@ -175,7 +170,7 @@ const RelatedPratica = ({
           ? relatedPratiche.map((item, index) => (
               <RelatedPraticaRow
                 pratica={pratica}
-                praticheList={praticheList}
+                praticheList={assignedPratiche}
                 relatedPratica={item}
                 isDeleteMode={isDeleteMode}
                 removeRelatedPratica={removeRelatedPratica}

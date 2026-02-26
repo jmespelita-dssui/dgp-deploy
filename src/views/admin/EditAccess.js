@@ -13,6 +13,7 @@ import React, { useState } from 'react'
 
 const EditAccess = ({ visible, onCancel, onContinue, user }) => {
   const [role, setRole] = useState(0)
+  const [isModified, setIsModified] = useState(false)
 
   return (
     <CModal visible={visible} alignment="center" backdrop="static">
@@ -27,6 +28,7 @@ const EditAccess = ({ visible, onCancel, onContinue, user }) => {
               className="mt-3"
               aria-label="Select role"
               onChange={(e) => {
+                setIsModified(true)
                 setRole(parseInt(e.target.value))
                 console.log(e.target.value)
               }}
@@ -46,7 +48,13 @@ const EditAccess = ({ visible, onCancel, onContinue, user }) => {
         </CButton>
         <CButton
           color="primary"
-          onClick={() => onContinue([{ permissionid: user.cr9b3_permissionid, role }])}
+          onClick={() => {
+            if (isModified) {
+              onContinue(role)
+            } else {
+              onCancel()
+            }
+          }}
         >
           Continua
         </CButton>

@@ -73,7 +73,7 @@ const ProtNos = ({ triggerUpdateProtNos, values, isView }) => {
           <CCol md={6}>
             <CButton color="link" onClick={addProtNo}>
               <CIcon icon={cilPlus} className="me-md-2" />
-              Add prot. no
+              Ulteriori prot. no
             </CButton>
           </CCol>
         </CRow>

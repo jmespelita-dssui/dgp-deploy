@@ -5,6 +5,7 @@ import { CButton, CCol, CTooltip, CRow } from '@coreui/react-pro'
 import React, { useState } from 'react'
 import ConfirmClose from '../modals/ConfirmAction'
 import { useToast } from 'src/context/ToastContext'
+import { getAccessLevel } from 'src/services/accessService'
 
 const RelatedPraticaRow = ({
   relatedPratica,
@@ -26,12 +27,22 @@ const RelatedPraticaRow = ({
     removeRelatedPratica(relatedPratica)
   }
 
-  const verifyAccess = () => {
-    // console.log('RELATED PRATICA', praticheList, relatedPratica.cr9b3_praticaid)
-    if (praticheList.find((prat) => prat.cr9b3_praticaid === relatedPratica.cr9b3_praticaid)) {
+  const verifyAccess = async () => {
+    const accessLevel = await getAccessLevel()
+    console.log('access level:', accessLevel)
+    if (accessLevel !== 0) {
       setNewPratica(relatedPratica.cr9b3_praticaid)
     } else {
-      addToast('Non hai accesso a questa pratica.', 'Visualizza pratica', 'warning', 3000)
+      console.log(
+        'pratiche list:',
+        praticheList,
+        praticheList.find((prat) => prat === relatedPratica.cr9b3_praticaid),
+      )
+      if (praticheList.find((prat) => prat === relatedPratica.cr9b3_praticaid)) {
+        setNewPratica(relatedPratica.cr9b3_praticaid)
+      } else {
+        addToast('Non hai accesso a questa pratica.', 'Visualizza pratica', 'warning', 3000)
+      }
     }
   }
 

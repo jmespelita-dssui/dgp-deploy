@@ -1,14 +1,13 @@
 import { useEffect, useState, useCallback } from 'react'
 import msalInstance from '../msalConfig'
-import { getDefaultAccess, getGroupMembers, getCurrentUser } from '../services/accessService'
 import apiClient from 'src/util/apiClient'
+import { getCurrentUser } from 'src/services/userService'
 
-export function useAccessRights() {
-  const [defaultAccess, setDefaultAccess] = useState()
-  const [combinedTasks, setCombinedTasks] = useState()
+export const useAccessRights = () => {
+  const [assignedPratiche, setAssignedPratiche] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  const [currentUser, setCurrentUser] = useState()
+  const [currentUser, setCurrentUser] = useState(null)
 
   const fetchAccessRights = useCallback(async () => {
     const account = msalInstance.getActiveAccount()
@@ -23,13 +22,10 @@ export function useAccessRights() {
 
     try {
       const user = await getCurrentUser()
-      const defaultAccessList = await getDefaultAccess()
-      const hasDefaultAccess = !!defaultAccessList.find(
-        (u) => u.id === user.azureactivedirectoryobjectid,
-      )
+      setCurrentUser(user)
 
       // Tasks
-      const [respTasks, officialeTasks, createdTasks, assignedTasks] = await Promise.all([
+      const [respPratiche, officialePratiche, createdPratiche, assigned] = await Promise.all([
         apiClient.get(`cr9b3_pratica_responsabileset?$filter=systemuserid eq ${user.systemuserid}`),
         apiClient.get(
           `cr9b3_pratica_officiali_incaricatiset?$filter=systemuserid eq ${user.systemuserid}`,
@@ -41,16 +37,14 @@ export function useAccessRights() {
       const combinedTaskList = [
         ...new Set(
           [
-            ...respTasks.data.value.map((i) => i.cr9b3_praticaid),
-            ...officialeTasks.data.value.map((i) => i.cr9b3_praticaid),
-            ...createdTasks.data.value.map((i) => i.cr9b3_praticaid),
-            ...assignedTasks.data.value.map((i) => i.cr9b3_praticaid),
+            ...respPratiche.data.value.map((i) => i.cr9b3_praticaid),
+            ...officialePratiche.data.value.map((i) => i.cr9b3_praticaid),
+            ...createdPratiche.data.value.map((i) => i.cr9b3_praticaid),
+            ...assigned.data.value.map((i) => i.cr9b3_praticaid),
           ].filter(Boolean),
         ),
       ]
-      setDefaultAccess(hasDefaultAccess)
-      setCombinedTasks(combinedTaskList)
-      setCurrentUser(currentUser)
+      setAssignedPratiche(combinedTaskList)
     } catch (e) {
       console.error('[useAccessRights]', e)
       setError(e)
@@ -65,9 +59,8 @@ export function useAccessRights() {
   }, [fetchAccessRights])
 
   return {
-    defaultAccess,
-    combinedTasks,
     currentUser,
+    assignedPratiche,
     loading,
     error,
     refetch: fetchAccessRights,

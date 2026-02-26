@@ -2,7 +2,7 @@ import React from 'react'
 
 // examples
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
-const MyTasks = React.lazy(() => import('./views/pratica/MyTasks'))
+const MyTasks = React.lazy(() => import('./views/pratica/Home'))
 const CreateTask = React.lazy(() => import('./views/createPratica/CreatePratica'))
 const Archive = React.lazy(() => import('./views/pratica/Archive'))
 const AdminConsole = React.lazy(() => import('./views/admin/AdminConsole'))
@@ -14,9 +14,9 @@ const routes = [
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
   { path: '/le-mie-pratiche', name: 'Le mie pratiche', element: MyTasks },
   { path: '/creare-pratica', name: 'Creare pratica', element: CreateTask, specialAccessOnly: true },
-  { path: '/cestino', name: 'Cestino', element: Archive, specialAccessOnly: true },
+  { path: '/cestino', name: 'Cestino', element: Archive, advancedUserOnly: true },
   { path: '/admin-console', name: 'Admin Console', element: AdminConsole, adminOnly: true },
-  { path: '/search', name: 'Search', element: Search },
+  { path: '/cerca', name: 'Cerca', element: Search },
   { path: '/403', name: 'Page 403', element: Page403 },
 ]
 

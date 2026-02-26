@@ -45,11 +45,11 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
   const onSubmit = async (e) => {
     e.preventDefault()
     if (isValid) {
-      onCreate(
-        { ...newPratica, cr9b3_protno2: JSON.stringify(protNoValues) },
-        superioriInvitati,
-        responsabili,
-      )
+      onCreate({
+        pratica: { ...newPratica, cr9b3_protno2: JSON.stringify(protNoValues) },
+        superiori: superioriInvitati,
+        responsabili: responsabili,
+      })
     } else {
       addToast('Inserire un link SharePoint valido', 'Create Pratica', 'warning')
     }
@@ -116,7 +116,7 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
               onChange={(e) => {
                 setNewPratica({ ...newPratica, cr9b3_prano: e.target.value })
               }}
-              maxLength={5}
+              maxLength={50}
               required
             />
           </CCol>
@@ -408,7 +408,7 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
             )}
           </CRow>
         )}
-        <CRow className="mb-5">
+        <CRow className="mb-3">
           <CCol md={4}>
             Responsabile sezione
             <PeoplePicker
@@ -432,6 +432,27 @@ const FieldsCreate = ({ onCreate, categoria, fields }) => {
               }}
               required={responsabili.length > 0}
             />
+          </CCol>
+        </CRow>
+        <CRow className="mb-5">
+          <CCol md={4}>
+            <CFormSelect
+              id="fields-select"
+              label="Sezione"
+              onChange={(e) => {
+                const value = e.target.value
+                setNewPratica({ ...newPratica, cr9b3_sezione: value })
+              }}
+              required
+            >
+              <option value="" disabled selected>
+                Scegli sezione
+              </option>
+              <option value="AD">Ascolto e Dialogo</option>
+              <option value="RR">Ricerca e Riflessione</option>
+              <option value="CR">Comunicazione e Restituzione</option>
+              <option value="EP">Evaluation & Planning</option>
+            </CFormSelect>
           </CCol>
         </CRow>
         {/* {fields.dssui_partecipanti && (

@@ -16,7 +16,13 @@ export function highlightMatch(text, query) {
   return parts.map((part, index) => (regex.test(part) ? <strong key={index}>{part}</strong> : part))
 }
 
-export async function unifiedSearch(query, permittedTasks) {
+export async function unifiedSearch(query, permittedPratiche) {
+  console.log(
+    'Running unified search for query:',
+    query,
+    'with permittedPratiche:',
+    permittedPratiche,
+  )
   if (!query) return []
 
   const baseUrl = 'https://orgac85713a.crm4.dynamics.com/api/data/v9.2'
@@ -56,15 +62,14 @@ export async function unifiedSearch(query, permittedTasks) {
     ])
 
     const resultMap = new Map()
-    const filteredIDs = new Set(permittedTasks.map((item) => item.cr9b3_praticaid))
+    const filteredIDs = new Set(permittedPratiche.map((item) => item.cr9b3_praticaid))
     // console.log(praticaRes, corrRes)
     const filteredPraticaRes = praticaRes.data.value.filter((item) =>
       filteredIDs.has(item.cr9b3_praticaid),
     )
     const filteredCorrRes = corrRes.data.value.filter((item) =>
-      filteredIDs.has(item.cr9b3_praticaid),
+      filteredIDs.has(item.cr9b3_Pratica.cr9b3_praticaid),
     )
-
     // ---- Process Pratica Matches ----
     filteredPraticaRes.forEach((record) => {
       praticaColumns.forEach((col) => {
@@ -110,6 +115,8 @@ export async function unifiedSearch(query, permittedTasks) {
         })
       }
     })
+
+    console.log('Unified search results:', Array.from(resultMap.values()))
 
     return Array.from(resultMap.values())
   } catch (error) {

@@ -3,14 +3,15 @@ import React, { useEffect, useState } from 'react'
 import { CButton, CCollapse, CContainer } from '@coreui/react-pro'
 import ConfirmationModal from '../modals/ConfirmSubtask'
 import Subtask from './Subtask'
-import { assignUserToTask, getTasks } from 'src/services/praticaService'
+import { getTasks } from 'src/services/praticaService'
 import CreateSubtask from './CreateSubtask'
 import CIcon from '@coreui/icons-react'
 import { cilPlus } from '@coreui/icons'
 import LoadingOverlay from '../modals/LoadingOverlay'
 import { useToast } from 'src/context/ToastContext'
-import { getSystemUserID } from 'src/services/accessService'
 import apiClient from 'src/util/apiClient'
+import { getSystemUserID } from 'src/services/userService'
+import { assignUserToTask } from 'src/services/accessService'
 
 const Subtasks = ({ pratica, responsabile, officialiIncaricati }) => {
   const [visibleConfirmation, setVisibleConfirmation] = useState(false)
@@ -50,6 +51,7 @@ const Subtasks = ({ pratica, responsabile, officialiIncaricati }) => {
       cr9b3_description: task.description,
       cr9b3_deadline: task.deadline instanceof Date ? task.deadline.toISOString() : null,
     }
+    console.log('Request body for creating task:', requestBody, 'Assigned users:', assignedUsers)
 
     try {
       await apiClient.post(

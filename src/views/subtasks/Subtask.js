@@ -23,17 +23,15 @@ import ConfirmClose from '../modals/ConfirmAction'
 import CIcon from '@coreui/icons-react'
 import { cilCalendar, cilChevronCircleDownAlt, cilChevronCircleUpAlt } from '@coreui/icons'
 import moment from 'moment'
-import { assignUserToTask } from 'src/services/praticaService'
 import LoadingOverlay from '../modals/LoadingOverlay'
 import {
-  getCurrentUser,
-  getSystemUserID,
+  assignUserToTask,
   getTaskUserIDs,
   getUserGraphDetails,
-  getUserName,
   giveAccessViaTask,
 } from 'src/services/accessService'
 import apiClient from 'src/util/apiClient'
+import { getCurrentUser, getSystemUserID, getUserName } from 'src/services/userService'
 
 const Subtask = ({ task, refreshTask, pratica, responsabile, officialiIncaricati }) => {
   const [isExpand, setIsExpand] = useState(false)
@@ -41,6 +39,7 @@ const Subtask = ({ task, refreshTask, pratica, responsabile, officialiIncaricati
   const [isHidden, setIsHidden] = useState(true)
   const [taskDetails, setTaskDetails] = useState()
   const [assignedUsers, setAssignedUsers] = useState([])
+  const [displayedUsers, setDisplayedUsers] = useState([])
   const [taskEdits, setTaskEdits] = useState()
   const [statusLabel, setStatusLabel] = useState()
   const [comment, setComment] = useState('')
@@ -77,13 +76,13 @@ const Subtask = ({ task, refreshTask, pratica, responsabile, officialiIncaricati
       setComment('')
     }
     setIsReassigned()
-    getAssignedUsers()
+    getUsersAssignedToTask()
   }, [task])
 
   const reset = async () => {
     refreshTask()
     setIsReassigned(false)
-    await getAssignedUsers()
+    // await getUsersAssignedToTask()
   }
 
   const deleteTask = async () => {
@@ -144,7 +143,7 @@ const Subtask = ({ task, refreshTask, pratica, responsabile, officialiIncaricati
     // setTaskStatus(value)
   }
 
-  const getAssignedUsers = async () => {
+  const getUsersAssignedToTask = async () => {
     let assignedUserIDs
     if (task.cr9b3_tasksid) {
       assignedUserIDs = await getTaskUserIDs(task)
@@ -156,6 +155,7 @@ const Subtask = ({ task, refreshTask, pratica, responsabile, officialiIncaricati
 
     const assignedUsersDetails = await Promise.all(detailsPromises)
     setAssignedUsers(assignedUsersDetails)
+    setDisplayedUsers(assignedUsersDetails.map((user) => user.mail))
     setAssignedUsersSystemUserIDs(assignedUserIDs.systemuserid)
     // console.log('assignedusersystemuserids', assignedUserIDs.systemuserid)
   }
@@ -212,8 +212,10 @@ const Subtask = ({ task, refreshTask, pratica, responsabile, officialiIncaricati
         } else {
           console.error('Non-Axios error:', error)
         }
+      } finally {
+        setDisplayedUsers(assignedUsers.map((user) => user.mail))
+        // await reset()
       }
-      await reset()
     }
 
     if (taskEdits) {
@@ -472,11 +474,11 @@ const Subtask = ({ task, refreshTask, pratica, responsabile, officialiIncaricati
             <CRow className="justify-content-between">
               <CCol md={6}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1px' }}>
-                  {assignedUsers.map((person, index) => (
+                  {displayedUsers.map((person, index) => (
                     <Person
                       key={index}
                       className="m-1"
-                      userId={person.mail}
+                      userId={person}
                       showPresence
                       personCardInteraction="hover"
                     />

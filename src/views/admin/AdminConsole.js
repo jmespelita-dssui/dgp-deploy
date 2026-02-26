@@ -61,8 +61,7 @@ const AdminConsole = () => {
     try {
       await createPermissions(mails)
       addToast('Accesso aggiunto con successo.', 'Gestisci accesso', 'success', 3000)
-      setLoading(false)
-      fetchData()
+      await fetchData()
       setVisibleAddAccess(false)
     } catch (error) {
       addToast(
@@ -72,29 +71,40 @@ const AdminConsole = () => {
         3000,
       )
       console.error('Error creating permissions:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
   const createPermissions = async (users) => {
     setLoading(true)
-
-    const requests = users.map((user) =>
-      apiClient.post('/cr9b3_permissions', {
-        cr9b3_userid: user.mail,
-        cr9b3_role: user.role,
-      }),
-    )
-
-    return Promise.all(requests)
+    const requests = users.map((user) => {
+      if (!accessList.some((item) => item.cr9b3_azureid === user.id)) {
+        return apiClient.post('/cr9b3_permissions', {
+          cr9b3_azureid: user.id,
+          cr9b3_userid: user.mail,
+          cr9b3_role: user.role,
+        })
+      } else {
+        addToast(
+          `L'utente ${user.mail} ha già un accesso assegnato. Ignorato.`,
+          'Gestisci accesso',
+          'warning',
+          3000,
+        )
+        return null
+      }
+    })
+    return Promise.all(requests.filter(Boolean))
   }
 
-  const handleEditAccess = async (user) => {
-    console.log('Editing access for user:', user)
+  const handleEditAccess = async (role) => {
+    console.log('Editing access for user:', selectedUser, 'New role:', role)
     setLoading(true)
     try {
       await apiClient
         .patch(`/cr9b3_permissions(${selectedUser.cr9b3_permissionid})`, {
-          cr9b3_role: user[0].role,
+          cr9b3_role: role,
         })
         .then(() => {
           addToast('Accesso aggiornato con successo.', 'Gestisci accesso', 'success', 3000)
@@ -117,8 +127,8 @@ const AdminConsole = () => {
   const handleDeleteAccess = async () => {
     console.log('Deleting access for user:', selectedUser)
     // Implement delete functionality here
-
     setLoading(true)
+
     apiClient
       .delete(`/cr9b3_permissions(${selectedUser.cr9b3_permissionid})`)
       .then(() => {
@@ -209,6 +219,9 @@ const AdminConsole = () => {
                               color="link"
                               className="p-0 text-decoration-none"
                               caret
+                              disabled={
+                                accessItem.cr9b3_azureid === '1d328771-910b-4892-a55b-3a005ef5025c'
+                              }
                             >
                               {accessItem.cr9b3_role === 129580000
                                 ? 'AMMINISTRATORE '

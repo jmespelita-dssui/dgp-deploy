@@ -15,18 +15,16 @@ import { People, PeoplePicker, Person, Get } from '@microsoft/mgt-react'
 import React, { useEffect, useState } from 'react'
 import { useToast } from 'src/context/ToastContext'
 import {
-  getGroupMembers,
-  getSystemUserID,
-  getUser,
+  getUniqueListById,
   getUserGraphDetails,
   giveAccess,
   removeAccess,
 } from 'src/services/accessService'
+import { getSystemUserID, getUser } from 'src/services/userService'
 import apiClient from 'src/util/apiClient'
 
-const ManageAccess = ({ responsabile, officialiIncaricati, pratica, refresh }) => {
+const ManageAccess = ({ officialiIncaricati, pratica, refresh }) => {
   const [visibleDefault, setVisibleDefault] = useState(false)
-  const [count, setCount] = useState(0)
   const [defaultAccess, setDefaultAccess] = useState([])
   const [others, setOthers] = useState([])
   const [newOthers, setNewOthers] = useState([])
@@ -37,35 +35,24 @@ const ManageAccess = ({ responsabile, officialiIncaricati, pratica, refresh }) =
   const [othersLoading, setOthersLoading] = useState(false)
 
   useEffect(() => {
-    // console.log(usersVersion)
     if (pratica) {
-      getDefaultAccess()
-      getNormalAccess()
+      getDefaultAccessList()
+      getNormalAccessList()
     }
   }, [pratica, refresh])
 
-  const getDefaultAccess = async () => {
+  const getDefaultAccessList = async () => {
     try {
       if (pratica.cr9b3_prano !== '') {
         setDefaultLoading(true)
-        const superiors = await getGroupMembers('317aa3d0-a94a-4c7c-bcb9-8870cfececa4')
-        const secretariat = await getGroupMembers('f67d3e5d-02c7-4d4d-8b95-834533623ad6')
         const creatorUserDetails = await getUser(pratica._createdby_value)
         const creatorGraphDetails = await getUserGraphDetails(
           creatorUserDetails.azureactivedirectoryobjectid,
         )
-        // console.log('creator graph details', creatorGraphDetails)
         setCreator(creatorGraphDetails)
-        const defaultAccessList = [
-          ...(superiors || []),
-          ...(secretariat || []),
-          ...(responsabile || []),
-          ...(officialiIncaricati || []),
-          creatorGraphDetails,
-        ]
+        const defaultAccessList = [...(officialiIncaricati || []), creatorGraphDetails]
 
         setDefaultAccess(defaultAccessList)
-        setCount(uniqueById(defaultAccessList).length)
         setDefaultLoading(false)
       }
     } catch (error) {
@@ -74,7 +61,7 @@ const ManageAccess = ({ responsabile, officialiIncaricati, pratica, refresh }) =
     }
   }
 
-  const getNormalAccess = async () => {
+  const getNormalAccessList = async () => {
     try {
       if (pratica.cr9b3_prano !== '') {
         setOthersLoading(true)
@@ -112,27 +99,12 @@ const ManageAccess = ({ responsabile, officialiIncaricati, pratica, refresh }) =
       systemUserIDs.map(async (id) => {
         giveAccess(id, pratica.cr9b3_praticaid)
       })
-      setOthers(uniqueById(newList))
+      setOthers(getUniqueListById(newList))
     } catch (error) {
       console.error(error)
       addToast(`Errore durante l'aggiunta dell'accesso`, 'Modifica accesso', 'warning', 3000)
     }
     setNewOthers([])
-  }
-
-  //remove duplicates in others list and remove empty arrays
-  const uniqueById = (arr) => {
-    // console.log('unique by id', arr)
-    const seen = new Set()
-    return arr
-      .filter((item) => (Array.isArray(item) ? item.length > 0 : true)) // remove empty arrays
-      .filter((item) => {
-        const obj = Array.isArray(item) ? item[0] : item // support nested arrays
-        if (!obj || !obj.id) return false
-        if (seen.has(obj.id)) return false
-        seen.add(obj.id)
-        return true
-      })
   }
 
   const getNotInDefault = (arr) => {
@@ -197,49 +169,27 @@ const ManageAccess = ({ responsabile, officialiIncaricati, pratica, refresh }) =
                   <CSpinner variant="grow" size="sm" color="primary" />
                 </CCol>
               )}
-              <CCol>Default ({count})</CCol>
+              <CCol>Default</CCol>
             </CRow>
           </CListGroupItem>
-          <CCollapse visible={visibleDefault}>
-            <CListGroup className="m-3" flush>
+          <CListGroup className="m-3" flush>
+            <small className="text-body-secondary">
+              Tutte le pratiche sono visibili a tutti i superiori e ai responsabili di sezione.
+            </small>
+            <CListGroupItem className="mb-2">
+              Officiali Incaricati
+              {officialiIncaricati &&
+                officialiIncaricati.map((s) => (
+                  <Person key={s.id} className="m-3" personQuery={s.mail} view="twoLines" />
+                ))}
+            </CListGroupItem>
+            {creator && (
               <CListGroupItem className="mb-2">
-                Superiors
-                <People
-                  groupId="317aa3d0-a94a-4c7c-bcb9-8870cfececa4"
-                  showMax={20}
-                  className="m-2"
-                />
+                Creatore pratica
+                <Person className="m-3" personQuery={creator.mail} view="twoLines" />
               </CListGroupItem>
-              <CListGroupItem className="mb-2">
-                Secretariat{' '}
-                <People
-                  groupId="f67d3e5d-02c7-4d4d-8b95-834533623ad6"
-                  showMax={20}
-                  className="m-2"
-                />
-              </CListGroupItem>
-              <CListGroupItem className="mb-2">
-                Section Responsible
-                {responsabile &&
-                  responsabile.map((s) => (
-                    <Person key={s.id} className="m-3" personQuery={s.mail} view="twoLines" />
-                  ))}
-              </CListGroupItem>
-              <CListGroupItem className="mb-2">
-                Assigned Official
-                {officialiIncaricati &&
-                  officialiIncaricati.map((s) => (
-                    <Person key={s.id} className="m-3" personQuery={s.mail} view="twoLines" />
-                  ))}
-              </CListGroupItem>
-              {creator && (
-                <CListGroupItem className="mb-2">
-                  Pratica Creator
-                  <Person className="m-3" personQuery={creator.mail} view="twoLines" />
-                </CListGroupItem>
-              )}
-            </CListGroup>
-          </CCollapse>
+            )}
+          </CListGroup>
 
           <CListGroupItem>
             <CRow>
@@ -248,7 +198,7 @@ const ManageAccess = ({ responsabile, officialiIncaricati, pratica, refresh }) =
                   <CSpinner variant="grow" size="sm" color="primary" />
                 </CCol>
               )}
-              <CCol>Others</CCol>
+              <CCol>Altri</CCol>
             </CRow>
             <CRow className="mb-3">
               <CCol md={9}>

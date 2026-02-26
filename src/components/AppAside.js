@@ -16,7 +16,7 @@ import Notification from 'src/views/notifications/Notification'
 import CIcon from '@coreui/icons-react'
 import { cilCheckCircle } from '@coreui/icons'
 import { fetchNotifications, markAllAsRead, markAsRead } from 'src/services/notificationService'
-import { filterTasks } from 'src/services/accessService'
+import { filterPratiche } from 'src/services/accessService'
 import { getPratica } from 'src/services/praticaService'
 import { useAccessRights } from 'src/hooks/useAccessRights'
 
@@ -24,14 +24,8 @@ const AppAside = () => {
   const dispatch = useDispatch()
   const notifications = useSelector((state) => state.notifications || [])
   const asideShow = useSelector((state) => state.asideShow)
-  const [praticheList, setPraticheList] = useState()
-  const [permittedTasks, setPermittedTasks] = useState()
-  const {
-    combinedTasks,
-    defaultAccess,
-    loading: accessLoading,
-    error: accessError,
-  } = useAccessRights()
+  const [permittedPratiche, setPermittedPratiche] = useState()
+  const { assignedPratiche, loading: accessLoading } = useAccessRights()
 
   // Separate notifications: today vs older
   const { today, others } = useMemo(
@@ -50,16 +44,15 @@ const AppAside = () => {
 
   useEffect(() => {
     if (accessLoading) return
-
     const loadPratiche = async () => {
-      filterTasks(defaultAccess, combinedTasks, false).then(({ praticheList, permittedTasks }) => {
-        setPraticheList(praticheList)
-        setPermittedTasks(permittedTasks)
+      filterPratiche(assignedPratiche, false).then(({ permittedPratiche }) => {
+        setPermittedPratiche(permittedPratiche)
       })
     }
-
-    loadPratiche()
-  }, [accessLoading, defaultAccess, combinedTasks])
+    if (assignedPratiche.length !== 0) {
+      loadPratiche()
+    }
+  }, [accessLoading, assignedPratiche])
 
   const refreshNotifs = async () => {
     try {
@@ -141,7 +134,7 @@ const AppAside = () => {
           }}
         >
           <CIcon icon={cilCheckCircle} />
-          <span className="ms-2">Mark all as read</span>
+          <span className="ms-2">Contrasegna tutte come letto</span>
         </CButton>
       </CSidebarHeader>
 
@@ -156,8 +149,7 @@ const AppAside = () => {
               <Notification
                 key={index}
                 notif={notif}
-                praticheList={praticheList}
-                permittedTasks={permittedTasks}
+                permittedPratiche={permittedPratiche}
                 markNotifAsRead={onMarkNotifAsRead}
                 refresh={refreshNotifs}
               />
@@ -177,8 +169,7 @@ const AppAside = () => {
               <Notification
                 key={index}
                 notif={notif}
-                praticheList={praticheList}
-                permittedTasks={permittedTasks}
+                permittedPratiche={permittedPratiche}
                 markNotifAsRead={onMarkNotifAsRead}
               />
             ))

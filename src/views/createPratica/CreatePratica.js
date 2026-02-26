@@ -17,43 +17,39 @@ import moment from 'moment-timezone'
 import { useToast } from 'src/context/ToastContext'
 
 import React, { useState } from 'react'
-import { assignUserToPratica, getFields, checkIfExistingProt } from 'src/services/praticaService'
+import { getFields, checkIfExistingProt } from 'src/services/praticaService'
 import { useNavigate } from 'react-router-dom'
 
 import FieldsCreate from './FieldsCreate'
 import ProtocolledSelect from './ProtocolledSelect'
 import NonProtocolledSelect from './NonProtocolledSelect'
 import { logActivity } from 'src/services/activityLogService'
-import { getSystemUserID } from 'src/services/accessService'
-import ConfirmClose from '../modals/ConfirmAction'
 import apiClient from 'src/util/apiClient'
+import { getSystemUserID } from 'src/services/userService'
+import { assignUserToPratica } from 'src/services/accessService'
+import ConfirmDuplicate from '../modals/ConfirmDuplicate'
 
 const CreateTask = () => {
   const { addToast } = useToast()
   const [isProtocolled, setIsProtocolled] = useState('')
   const [visibleConfirmation, setVisibleConfirmation] = useState(false)
   const [categoria, setCategoria] = useState('0')
-  const [fields, setFields] = useState({})
+  const [fields, setFields] = useState()
   const [loading, setLoading] = useState(false)
-  const [pratica, setPratica] = useState({})
-  const [superioriInvitati, setSuperioriInvitati] = useState([])
-  const [responsabili, setResponsabili] = useState([])
+  const [requestDetails, setRequestDetails] = useState()
 
   const navigate = useNavigate()
 
-  const createTask = async (pratica, superioriInvitati, responsabili) => {
-    setPratica(pratica)
-    setSuperioriInvitati(superioriInvitati)
-    setResponsabili(responsabili)
-
-    let exists = await checkIfExistingProt(pratica.cr9b3_protno)
-
-    // console.log('input', pratica)
+  const createPratica = async (request) => {
+    console.log('create pratica', request)
+    let exists = await checkIfExistingProt(request.pratica.cr9b3_protno)
     try {
-      // console.log(pratica.cr9b3_protno, checkIfExisting(pratica.cr9b3_protno))
       if (exists) {
         setVisibleConfirmation(true)
+        setRequestDetails(request)
         console.log('pratica already exists')
+      } else {
+        confirmCreatePratica(request)
       }
     } catch (error) {
       if (error.isAxiosError) {
@@ -66,18 +62,19 @@ const CreateTask = () => {
     }
   }
 
-  const confirmCreatePratica = async () => {
+  const confirmCreatePratica = async (request) => {
+    console.log('hello', request)
     setLoading(true)
     window.scrollTo({
       top: 0, // Scroll to the top
       behavior: 'smooth', // Smooth scrolling animation
     })
     setVisibleConfirmation(false)
-    const praticaDetailsResponse = await addNewPratica(pratica)
+    const praticaDetailsResponse = await addNewPratica(request.pratica)
     // console.log('output pratica id', praticaDetailsResponse)
     if (praticaDetailsResponse) {
       // assign user to task
-      superioriInvitati.map(async (id) => {
+      request.superiori.map(async (id) => {
         // console.log('adding superior:', id)
         const superiorID = await getSystemUserID(id)
         assignUserToPratica(
@@ -87,7 +84,7 @@ const CreateTask = () => {
         )
       })
 
-      responsabili.map(async (id) => {
+      request.responsabili.map(async (id) => {
         const respID = await getSystemUserID(id)
         if (
           !assignUserToPratica(
@@ -180,12 +177,9 @@ const CreateTask = () => {
 
   return (
     <>
-      <ConfirmClose
+      <ConfirmDuplicate
         visible={visibleConfirmation}
-        body={{
-          title: 'Conferma',
-          text: `Pratica con questo numero di protocollo già esistente. Sei sicuro di voler procedere con la creazione della pratica?`,
-        }}
+        data={requestDetails}
         onCancel={() => setVisibleConfirmation(false)}
         onContinue={confirmCreatePratica}
         // popupMsg={popupMsg}
@@ -239,7 +233,7 @@ const CreateTask = () => {
       </CCard>
       {categoria != '0' && (
         <CCard className="p-4">
-          <FieldsCreate onCreate={createTask} fields={fields} categoria={categoria} />
+          <FieldsCreate onCreate={createPratica} fields={fields} categoria={categoria} />
         </CCard>
       )}
     </>

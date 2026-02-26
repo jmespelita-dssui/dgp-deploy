@@ -24,8 +24,14 @@ import {
 
 import CIcon from '@coreui/icons-react'
 import { cilFolderOpen, cilGroup } from '@coreui/icons'
-import Fields from './Fields'
-import { assignUserToPratica, checkIfExistingProt } from 'src/services/praticaService'
+import Fields from './PraticaFields'
+import {
+  assignOfficiali,
+  assignResponsabili,
+  assignSuperiors,
+  checkIfExistingProt,
+  getStatus,
+} from 'src/services/praticaService'
 import { useToast } from 'src/context/ToastContext'
 import LoadingOverlay from '../modals/LoadingOverlay'
 import ConfirmClose from '../modals/ConfirmAction'
@@ -39,25 +45,13 @@ import {
   logActivity,
 } from 'src/services/activityLogService'
 import Subtasks from '../subtasks/Subtasks'
-import ManageAccess from '../access/ManageAccess'
-import {
-  getCurrentUser,
-  getSystemUserID,
-  getUserGraphDetails,
-  getUserName,
-} from 'src/services/accessService'
+import ManageAccess from '../praticaAccess/ManageAccess'
+import { getAssignedUsers } from 'src/services/accessService'
 import { sendNotificationtoUser } from 'src/services/notificationService'
 import apiClient from 'src/util/apiClient'
+import { getCurrentUser, getUserName } from 'src/services/userService'
 
-const Pratica = ({
-  pratica,
-  permittedTasks,
-  visible,
-  onClose,
-  // labelColor,
-  label,
-  setNewPratica,
-}) => {
+const Pratica = ({ pratica, visible, onClose, label, setNewPratica, tab }) => {
   const [visibleLinks, setVisibleLinks] = useState(true)
   const [visibleTasks, setVisibleTasks] = useState(false)
   const [visibleCorr, setVisibleCorr] = useState(false)
@@ -67,10 +61,10 @@ const Pratica = ({
   const [visibleConfirmClose, setVisibleConfirmClose] = useState(false)
   const [status, setStatus] = useState()
   const [sharepointLink, setSharePointLink] = useState()
-  const [confirmCloseBody, setConfirmCloseBody] = useState({
+  const confirmCloseBody = {
     title: 'Conferma',
     text: 'Le modifiche potrebbero non essere state salvate. Continuare?',
-  })
+  }
 
   const [pratNo, setPratNo] = useState('')
   const [protNo, setProtNo] = useState('')
@@ -81,7 +75,6 @@ const Pratica = ({
   const [responsabiliSystemUserIDs, setResponsabiliSystemUserIDs] = useState([])
   const [officialiIncaricati, setOfficialiIncaricati] = useState([])
   const [officialiIncaricatiSystemUserIDs, setOfficialiIncaricatiUserIDs] = useState([])
-  // const [categoryLabel, setCategoryLabel] = useState('')
   const [createdBy, setCreatedBy] = useState('')
   const [modifiedBy, setModifiedBy] = useState('')
   const [isView, setIsView] = useState(true)
@@ -95,46 +88,32 @@ const Pratica = ({
   const [modifiedByUserID, setModifiedByUserID] = useState('')
 
   useEffect(() => {
-    // console.log('starting pratica', pratica)
     if (pratica) {
-      setVisibleLinks(true)
-      setVisibleTasks(false)
-      setVisibleCorr(false)
-      setVisibleLogs(false)
-      setVisibleAccess(false)
+      if (tab === 'task') {
+        setVisibleLinks(false)
+        setVisibleTasks(true)
+        setVisibleCorr(false)
+        setVisibleLogs(false)
+        setVisibleAccess(false)
+      } else {
+        setVisibleLinks(true)
+        setVisibleTasks(false)
+        setVisibleCorr(false)
+        setVisibleLogs(false)
+        setVisibleAccess(false)
+      }
       setPratNo(pratica.cr9b3_prano)
       setProtNo(pratica.cr9b3_protno)
       setSharePointLink(pratica.cr9b3_sharepointlink)
       setActivityLogs(pratica.cr9b3_activitylog ? JSON.parse(pratica.cr9b3_activitylog) : [])
-      getAssignedUsers()
+      getAssignedUsersDetails()
       getRelatedPratiche()
       setStatus(pratica.cr9b3_status)
       setLoading(false)
       setIsView(true)
       setIsSaved(false)
     }
-  }, [pratica])
-
-  const getStatus = (statusNo) => {
-    switch (Number(statusNo)) {
-      case 10:
-        return 'Nuovo'
-      case 30:
-        return 'In corso'
-      case 50:
-        return 'In attesa di risposta dal destinatario'
-      case 70:
-        return 'In attesa di approvazione dal superiore'
-      case 40:
-        return 'In sospeso'
-      case 0:
-        return 'Archiviato'
-      case 100:
-        return 'Completato'
-      default:
-        return
-    }
-  }
+  }, [pratica, visible])
 
   const getRelatedPratiche = async () => {
     if (pratica.cr9b3_praticaid) {
@@ -156,82 +135,18 @@ const Pratica = ({
     }
   }
 
-  const getUserIDs = async (tableName) => {
-    let user
-    let azureactivedirectoryobjectid
-    let systemuserid
-    const response = await apiClient.get(
-      `cr9b3_praticas?$filter=cr9b3_praticaid eq '${pratica.cr9b3_praticaid}'&$expand=${tableName}`,
-    )
-    if (tableName === 'cr9b3_pratica_superiore') {
-      user = response.data.value[0].cr9b3_pratica_superiore
-    } else if (tableName === 'cr9b3_pratica_responsabile') {
-      user = response.data.value[0].cr9b3_pratica_responsabile
-    } else if (tableName === 'cr9b3_pratica_officiali_incaricati') {
-      user = response.data.value[0].cr9b3_pratica_officiali_incaricati
-    }
-
-    azureactivedirectoryobjectid = user.map((user) => user.azureactivedirectoryobjectid)
-    systemuserid = user.map((user) => user.systemuserid)
-
-    return {
-      azureactivedirectoryobjectid: azureactivedirectoryobjectid,
-      systemuserid: systemuserid,
-    }
-  }
-
-  const getAssignedUsers = async () => {
-    try {
-      // Perform same operations for both invited superiors and assigned responsible
-      if (pratica.cr9b3_praticaid) {
-        const superioriIDs = await getUserIDs('cr9b3_pratica_superiore')
-        const responsabiliIDs = await getUserIDs('cr9b3_pratica_responsabile')
-        const officialiIncaricatiIDs = await getUserIDs('cr9b3_pratica_officiali_incaricati')
-
-        const superiorUserDetailsPromises = superioriIDs.azureactivedirectoryobjectid.map(
-          async (userID) => {
-            return await getUserGraphDetails(userID)
-          },
-        )
-
-        const responsabileUserDetailsPromises = responsabiliIDs.azureactivedirectoryobjectid.map(
-          async (userID) => {
-            return await getUserGraphDetails(userID)
-          },
-        )
-        const officialiIncaricatiUserDetailsPromises =
-          officialiIncaricatiIDs.azureactivedirectoryobjectid.map(async (userID) => {
-            return await getUserGraphDetails(userID)
-          })
-
-        // Wait for all user details to be fetched
-        const superiorUsersDetails = await Promise.all(superiorUserDetailsPromises)
-        setSuperioriInvitati(superiorUsersDetails)
-        setSuperioriSystemUserIDs(superioriIDs.systemuserid)
-
-        const responsabileUsersDetails = await Promise.all(responsabileUserDetailsPromises)
-        setResponsabiliAssegnati(responsabileUsersDetails)
-        setResponsabiliSystemUserIDs(responsabiliIDs.systemuserid)
-
-        const officialiIncaricatiDetails = await Promise.all(officialiIncaricatiUserDetailsPromises)
-        setOfficialiIncaricati(officialiIncaricatiDetails)
-        setOfficialiIncaricatiUserIDs(officialiIncaricatiIDs.systemuserid)
-
-        // Get system information on creator and modifier
-        const createdBy = await getUserName(pratica._createdby_value)
-        const modifiedBy = await getUserName(pratica._modifiedby_value)
-        setCreatedBy(createdBy)
-        setModifiedBy(modifiedBy)
-      }
-    } catch (error) {
-      if (error.isAxiosError) {
-        console.error('Axios error getting user ID:', error.response)
-        console.error('Error message:', error.message)
-        console.error('Error response:', error.response.data)
-      } else {
-        console.error('Non-Axios error:', error)
-      }
-    }
+  const getAssignedUsersDetails = async () => {
+    if (pratica && pratica.cr9b3_praticaid)
+      await getAssignedUsers(pratica).then((response) => {
+        setSuperioriInvitati(response.superioriInvitati)
+        setSuperioriSystemUserIDs(response.superioriSystemUserIDs)
+        setResponsabiliAssegnati(response.responsabiliAssegnati)
+        setResponsabiliSystemUserIDs(response.responsabiliSystemUserIDs)
+        setOfficialiIncaricati(response.officialiIncaricati)
+        setOfficialiIncaricatiUserIDs(response.officialiIncaricatiSystemUserIDs)
+        setCreatedBy(response.createdBy)
+        setModifiedBy(response.modifiedBy)
+      })
     // return userID
   }
 
@@ -291,17 +206,6 @@ const Pratica = ({
     action,
   ) => {
     setLoading(true)
-    // console.log(prat)
-
-    let newSuperioriList = []
-    let superioriToAssign = []
-    let superioriToUnassign = []
-    let newResponsabiliList = []
-    let responsabiliToAssign = []
-    let responsabiliToUnassign = []
-    let newOfficialiIncaricatiList = []
-    let officialiIncaricatiToUnassign = []
-    let officialiIncaricatiToAssign = []
     let response
     let praticaDetailsResponse
     let entityUrl
@@ -319,149 +223,62 @@ const Pratica = ({
       return
     }
 
-    try {
-      //get system user ids of all assigned superiors
-      newSuperioriList = await Promise.all(
-        superioriInvitatiList.map(async (id) => {
-          return getSystemUserID(id)
-        }),
-      )
+    //assign superiors
+    const { newSuperioriList, superioriToAssign, superioriToUnassign, errorSuperior } =
+      await assignSuperiors(superioriInvitatiList, superioriSystemUserIDs, prat.cr9b3_praticaid)
 
-      //determine which superiors were removed
-      superioriToUnassign = superioriSystemUserIDs.filter(
-        (value) => !newSuperioriList.includes(value),
-      )
+    if (errorSuperior) {
+      addToast('Errore durante l’assegnazione del superiore', 'Modifica pratica', 'warning', 3000)
+      setLoading(false)
+      return
+    }
 
-      //determine which superiors were added
-      let superioriToAssign = newSuperioriList.filter(
-        (value) => !superioriSystemUserIDs.includes(value),
-      )
+    //assign responsabili
+    const { newResponsabiliList, responsabiliToAssign, responsabiliToUnassign, errorResponsabile } =
+      await assignResponsabili(responsabileList, responsabiliSystemUserIDs, prat.cr9b3_praticaid)
 
-      //axios delete superiors
-      if (superioriToUnassign.length > 0) {
-        superioriToUnassign.map(async (id) => {
-          response = await apiClient.delete(
-            `cr9b3_praticas(${prat.cr9b3_praticaid})/cr9b3_pratica_superiore(${id})/$ref`,
-          )
-          sendNotificationtoUser(
-            id,
-            'La tua assegnazione alla pratica è stata rimossa.',
-            'unassign',
-            prat.cr9b3_praticaid,
-          )
-        })
-      }
-
-      //axios add superiors
-      if (superioriToAssign.length > 0) {
-        superioriToAssign.map(async (id) => {
-          assignUserToPratica(id, prat.cr9b3_praticaid, 'cr9b3_pratica_superiore')
-        })
-      }
-    } catch (error) {
+    if (errorResponsabile) {
       addToast(
-        'Errore durante la rimozione/assegnazione del superiore',
+        'Errore durante l’assegnazione del responsabile',
         'Modifica pratica',
         'warning',
         3000,
       )
-      console.error('Errore durante la rimozione del superiore', error)
+      setLoading(false)
+      return
     }
 
-    try {
-      //get system user ids of assigned responsible
-      newResponsabiliList = await Promise.all(
-        responsabileList.map(async (id) => {
-          return getSystemUserID(id)
-        }),
+    //assign officiali incaricati
+    const {
+      newOfficialiIncaricatiList,
+      officialiIncaricatiToAssign,
+      officialiIncaricatiToUnassign,
+      errorOfficiali,
+    } = await assignOfficiali(
+      officialiIncaricatiList,
+      officialiIncaricatiSystemUserIDs,
+      prat.cr9b3_praticaid,
+    )
+
+    if (errorOfficiali) {
+      addToast(
+        'Errore durante l’assegnazione del officiale incaricato',
+        'Modifica pratica',
+        'warning',
+        3000,
       )
-
-      //determine which responsibles were removed
-      responsabiliToUnassign = responsabiliSystemUserIDs.filter(
-        (value) => !newResponsabiliList.includes(value),
-      )
-
-      //determine which responsibles were added
-      responsabiliToAssign = newResponsabiliList.filter(
-        (value) => !responsabiliSystemUserIDs.includes(value),
-      )
-
-      //axios delete responsible
-      if (responsabiliToUnassign.length > 0) {
-        responsabiliToUnassign.map(async (id) => {
-          response = await apiClient.delete(
-            `cr9b3_praticas(${prat.cr9b3_praticaid})/cr9b3_pratica_responsabile(${id})/$ref`,
-          )
-          sendNotificationtoUser(
-            id,
-            'La tua assegnazione alla pratica è stata rimossa.',
-            'unassign',
-            prat.cr9b3_praticaid,
-          )
-        })
-      }
-
-      //axios add responsible
-      if (responsabiliToAssign.length > 0) {
-        responsabiliToAssign.map(async (id) => {
-          assignUserToPratica(id, prat.cr9b3_praticaid, 'cr9b3_pratica_responsabile')
-        })
-      }
-    } catch (error) {
-      addToast('Errore durante l’assegnazione del superiore', 'Modifica pratica', 'warning', 3000)
-      console.error('Errore durante l’assegnazione del superiore', error)
+      setLoading(false)
+      return
     }
 
-    try {
-      //get system user ids of assigned officiali
-      newOfficialiIncaricatiList = await Promise.all(
-        officialiIncaricatiList.map(async (id) => {
-          return getSystemUserID(id)
-        }),
-      )
-
-      //determine which officiali were removed
-      officialiIncaricatiToUnassign = officialiIncaricatiSystemUserIDs.filter(
-        (value) => !newOfficialiIncaricatiList.includes(value),
-      )
-
-      //determine which officiali were added
-      officialiIncaricatiToAssign = newOfficialiIncaricatiList.filter(
-        (value) => !officialiIncaricatiSystemUserIDs.includes(value),
-      )
-
-      //axios delete officiali
-      if (officialiIncaricatiToUnassign.length > 0) {
-        officialiIncaricatiToUnassign.map(async (id) => {
-          response = await apiClient.delete(
-            `cr9b3_praticas(${prat.cr9b3_praticaid})/cr9b3_pratica_officiali_incaricati(${id})/$ref`,
-          )
-          sendNotificationtoUser(
-            id,
-            'ha rimosso la tua assegnazione.',
-            'unassign',
-            prat.cr9b3_praticaid,
-          )
-        })
-      }
-
-      //axios add officiali
-      if (officialiIncaricatiToAssign.length > 0) {
-        officialiIncaricatiToAssign.map(async (id) => {
-          assignUserToPratica(id, prat.cr9b3_praticaid, 'cr9b3_pratica_officiali_incaricati')
-        })
-      }
-    } catch (error) {
-      addToast('Errore durante l’assegnazione del officiale', 'Modifica pratica', 'warning', 3000)
-      console.error('Errore durante l’assegnazione del officiale', error)
-    }
+    let allAssignedUsers = [
+      ...newResponsabiliList,
+      ...newOfficialiIncaricatiList,
+      ...newSuperioriList,
+    ]
 
     try {
-      let allAssignedUsers = [
-        ...newResponsabiliList,
-        ...newOfficialiIncaricatiList,
-        ...newSuperioriList,
-      ]
+      // Check if status has changed and send notifications to assigned users
       if (!prat.cr9b3_status || Number(prat.cr9b3_status) === Number(status)) {
         console.log('no change')
       } else if (
@@ -475,7 +292,12 @@ const Pratica = ({
           Number(status),
           prat.cr9b3_status !== status,
         )
-        console.log('Send notification to:', allAssignedUsers)
+        console.log(
+          'Send notification to:',
+          [...allAssignedUsers, pratica._createdby_value],
+          'with status:',
+          newStatus,
+        )
         allAssignedUsers.map(async (id) => {
           console.log('notifying user', id, newStatus)
           sendNotificationtoUser(id, newStatus, 'status', prat.cr9b3_praticaid)
@@ -511,17 +333,18 @@ const Pratica = ({
           officialiIncaricatiList,
         ),
       )
+
       if (entityUrl) {
         if (action === 'archive') {
           setIsSaved(true)
-          addToast('La pratica è stata archiviata.', 'Modifica pratica', 'warning', 3000)
+          addToast('La pratica è spostata nel cestino.', 'Modifica pratica', 'warning', 3000)
           setActionType('pratica archiviata.')
           checkForLogs()
         } else if (action === 'unarchive') {
           setIsSaved(true)
           setActionType('pratica de-archiviata.')
           checkForLogs()
-          addToast('La pratica è stata de-archiviata.', 'Modifica pratica', 'success', 3000)
+          addToast('La pratica è stata ripristinata.', 'Modifica pratica', 'success', 3000)
         } else {
           addToast(
             'Successo! Le modifiche sono state salvate.',
@@ -569,11 +392,7 @@ const Pratica = ({
       }
     }
 
-    getAssignedUsers()
-  }
-
-  const changeMode = (view) => {
-    setIsView(view)
+    getAssignedUsersDetails()
   }
 
   const deletePratica = async () => {
@@ -598,6 +417,7 @@ const Pratica = ({
         })
         .finally(() => {
           onClose()
+          // fetchData()
           setLoading(false)
         })
     } catch (error) {
@@ -651,7 +471,7 @@ const Pratica = ({
                     onSaveEdit={onSaveEdit}
                     isView={isView}
                     loading={loading}
-                    setIsView={changeMode}
+                    setIsView={(view) => setIsView(view)}
                     onDeletePratica={deletePratica}
                     label={label}
                   />
@@ -786,7 +606,6 @@ const Pratica = ({
                         <h6>PRATICHE CORRELATE</h6>
                         <RelatedPratica
                           relatedPratiche={relatedPratiche}
-                          praticheList={permittedTasks}
                           pratica={pratica}
                           refreshRelatedPratiche={getRelatedPratiche}
                           setNewPratica={setNewPratica}

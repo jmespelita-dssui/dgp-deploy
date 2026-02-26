@@ -7,7 +7,7 @@ import moment from 'moment'
 import DOMPurify from 'dompurify'
 import { useAccessRights } from 'src/hooks/useAccessRights'
 import Pratica from '../pratica/Pratica'
-import { filterTasks } from 'src/services/accessService'
+import { filterPratiche } from 'src/services/accessService'
 import LoadingOverlay from '../modals/LoadingOverlay'
 
 const Search = () => {
@@ -16,27 +16,20 @@ const Search = () => {
   const [visible, setVisible] = useState(false)
   const [label, setLabel] = useState('')
   const [selectedPratica, setSelectedPratica] = useState()
-  const [praticheList, setPraticheList] = useState([])
-  const [permittedTasks, setPermittedTasks] = useState([])
+  const [permittedPratiche, setPermittedPratiche] = useState([])
   const [loadingOverlay, setLoadingOverlay] = useState(false)
-  const {
-    combinedTasks,
-    defaultAccess,
-    loading: accessLoading,
-    error: accessError,
-  } = useAccessRights()
+  const { assignedPratiche, defaultAccess, loading: accessLoading } = useAccessRights()
 
   useEffect(() => {
-    filterTasks(defaultAccess, combinedTasks, false).then(({ praticheList, permittedTasks }) => {
-      setPraticheList(praticheList)
-      setPermittedTasks(permittedTasks)
+    filterPratiche(assignedPratiche, false).then(({ permittedPratiche }) => {
+      setPermittedPratiche(permittedPratiche)
     })
-  }, [accessLoading, defaultAccess, combinedTasks])
+  }, [accessLoading, defaultAccess, assignedPratiche])
 
   useEffect(() => {
     const run = async () => {
       if (!query) return setResults([])
-      const data = await unifiedSearch(query, permittedTasks)
+      const data = await unifiedSearch(query, permittedPratiche)
       setResults(data)
     }
 
@@ -54,8 +47,8 @@ const Search = () => {
   }
 
   const setNewPratica = async (pratID) => {
-    setVisible(false)
     setLoadingOverlay(true)
+    // setVisible(false)
     const startTime = Date.now()
     try {
       const newPratica = await getPratica(pratID)
@@ -69,7 +62,7 @@ const Search = () => {
       const elapsed = Date.now() - startTime
       const delay = Math.max(1500 - elapsed, 0)
       setTimeout(() => {
-        setVisible(true)
+        // setVisible(true)
         setLoadingOverlay(false)
       }, delay)
     }
@@ -81,16 +74,19 @@ const Search = () => {
 
       <Pratica
         visible={visible}
-        onClose={() => setVisible(false)}
+        onClose={() => {
+          setVisible(false)
+          setLoadingOverlay(false)
+        }}
         pratica={selectedPratica}
         // praticheList={!isArchive ? praticheList : archiveList}
-        permittedTasks={permittedTasks}
+        permittedPratiche={permittedPratiche}
         label={label}
         // refresh={() => setRefreshKey((prevKey) => prevKey + 1)}
         setNewPratica={setNewPratica}
       />
       <CFormInput
-        placeholder="Search..."
+        placeholder="Cerca..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         size="lg"
@@ -100,7 +96,7 @@ const Search = () => {
           results.map((item, idx) => (
             <CListGroupItem className="p-3" key={idx}>
               <small className="float-end text-medium-emphasis">
-                {moment(item.pratica.createdon).format('DD/MM HH:mm')}
+                Data di creazione: {moment(item.pratica.createdon).format('DD/MM/YY')}
               </small>
               <CButton
                 color="link"

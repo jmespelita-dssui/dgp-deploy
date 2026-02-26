@@ -115,10 +115,10 @@ const AppHeader = () => {
           </CHeaderNav>
         </CContainer>
 
-        <CHeaderDivider />
+        {/* <CHeaderDivider />
         <CContainer fluid>
           <AppBreadcrumb />
-        </CContainer>
+        </CContainer> */}
       </CHeader>
     </>
   )

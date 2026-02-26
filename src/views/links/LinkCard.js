@@ -13,8 +13,8 @@ import {
   logActivity,
 } from 'src/services/activityLogService'
 import moment from 'moment-timezone'
-import { getCurrentUser, getUserName } from 'src/services/accessService'
 import apiClient from 'src/util/apiClient'
+import { getCurrentUser, getUserName } from 'src/services/userService'
 
 const LinkCard = ({ header, links, type, praticaID, refreshLinks }) => {
   const [visible, setVisible] = useState(false)

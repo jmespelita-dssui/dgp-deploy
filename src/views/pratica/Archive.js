@@ -1,5 +1,5 @@
 import React from 'react'
-import MyTasks from './MyTasks'
+import MyTasks from './Home'
 
 const Archive = () => {
   return (

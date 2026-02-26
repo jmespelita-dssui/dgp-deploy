@@ -1,3 +1,4 @@
+import moment from 'moment'
 import apiClient from 'src/util/apiClient'
 
 const sampleData = [

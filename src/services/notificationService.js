@@ -1,6 +1,6 @@
 import apiClient from 'src/util/apiClient'
-import { getCurrentUser, getUserName } from './accessService'
 import { getPratica } from './praticaService'
+import { getCurrentUser, getUserName } from './userService'
 
 export const fetchNotifications = async () => {
   const systemuserid = (await getCurrentUser()).systemuserid
@@ -88,15 +88,16 @@ export const sendNotificationtoUser = async (assignTo, desc, type, praticaID) =>
     const actorName = await getUserName(actor.systemuserid)
     const assignToUsername = await getUserName(assignTo)
     console.log('Creating notification:', assignToUsername, actorName, desc, type, praticaID)
-
-    await apiClient.post('/cr9b3_notifications', {
-      cr9b3_description: desc,
-      cr9b3_type: type,
-      cr9b3_pratica: praticaID,
-      cr9b3_actor: actorName,
-      cr9b3_read: false,
-      'cr9b3_SystemUser@odata.bind': `/systemusers(${assignTo})`,
-    })
+    if (assignTo !== actor.systemuserid) {
+      await apiClient.post('/cr9b3_notifications', {
+        cr9b3_description: desc,
+        cr9b3_type: type,
+        cr9b3_pratica: praticaID,
+        cr9b3_actor: actorName,
+        cr9b3_read: false,
+        'cr9b3_SystemUser@odata.bind': `/systemusers(${assignTo})`,
+      })
+    }
   } catch (error) {
     if (error.isAxiosError) {
       console.error('Axios error assigning notification:', error.response)

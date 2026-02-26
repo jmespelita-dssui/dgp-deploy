@@ -2,16 +2,13 @@
 import React, { useEffect, useState } from 'react'
 import {
   CButton,
-  CCol,
-  CForm,
   CModal,
   CModalBody,
   CModalFooter,
   CModalHeader,
   CModalTitle,
-  CRow,
 } from '@coreui/react-pro'
-import { getUser } from 'src/services/accessService'
+import { getUser } from 'src/services/userService'
 
 const RequestAccess = ({ visible, onClose, onSubmit, pratica }) => {
   const [user, setUser] = useState()

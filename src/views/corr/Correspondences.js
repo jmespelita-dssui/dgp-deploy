@@ -18,8 +18,8 @@ import {
   getUpdatedActivityLog,
   logActivity,
 } from 'src/services/activityLogService'
-import { getCurrentUser, getUserName } from 'src/services/accessService'
 import apiClient from 'src/util/apiClient'
+import { getCurrentUser, getUserName } from 'src/services/userService'
 
 const Correspondences = ({ pratica }) => {
   const [newCorr, setNewCorr] = useState('')
@@ -50,7 +50,7 @@ const Correspondences = ({ pratica }) => {
       cr9b3_date: date,
     }
     try {
-      const response = await apiClient.post(
+      await apiClient.post(
         `cr9b3_praticas(${pratica.cr9b3_praticaid})/cr9b3_Pratica_Correspondence?$return=representation`,
         requestBody,
       )

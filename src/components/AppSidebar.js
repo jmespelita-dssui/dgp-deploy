@@ -13,17 +13,17 @@ import 'simplebar/dist/simplebar.min.css'
 
 // sidebar nav config
 import navigation from '../_nav'
-import { checkAdminAccess } from 'src/services/accessService'
+import { checkUserRole } from 'src/services/accessService'
 
 const AppSidebar = () => {
   const dispatch = useDispatch()
   const unfoldable = useSelector((state) => state.sidebarUnfoldable)
   const sidebarShow = useSelector((state) => state.sidebarShow)
-  const [hasAdminAccess, setHasAdminAccess] = React.useState(false)
+  const [role, setRole] = React.useState('')
 
   useEffect(() => {
-    checkAdminAccess().then((isAdmin) => {
-      setHasAdminAccess(isAdmin)
+    checkUserRole().then((role) => {
+      setRole(role)
     })
   }, [])
 
@@ -40,8 +40,6 @@ const AppSidebar = () => {
       }
     >
       <CSidebarBrand className="d-none d-md-flex" to="/">
-        {/* <CIcon className="sidebar-brand-full" icon={logoNegative} height={35} />
-        <CIcon className="sidebar-brand-narrow" icon={sygnet} height={35} /> */}
         <img className="sidebar-brand-narrow" src={sygnet} alt="logo" height={40} />
         <img className="sidebar-brand-full" src={logo} alt="logo" height={80} />
       </CSidebarBrand>
@@ -49,9 +47,16 @@ const AppSidebar = () => {
         <SimpleBar>
           <AppSidebarNav
             items={
-              hasAdminAccess
+              role === 'admin'
                 ? navigation
-                : navigation.filter((item) => item.name !== 'Admin Console')
+                : role === 'advancedUser'
+                ? navigation.filter((item) => item.name !== 'Admin Console')
+                : navigation.filter(
+                    (item) =>
+                      item.name !== 'Admin Console' &&
+                      item.name !== 'Cestino' &&
+                      item.name !== 'Creare pratica',
+                  )
             }
           />
         </SimpleBar>
