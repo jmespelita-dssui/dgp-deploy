@@ -31,7 +31,7 @@ const Home = ({ isArchive }) => {
   }, [currentUser, accessLoading, assignedPratiche, visible])
 
   const loadPratiche = async () => {
-    await getAccessLevel()
+    // await getAccessLevel()
     setLoading(true)
     try {
       filterPratiche(assignedPratiche, isArchive).then(({ archiveList, permittedPratiche }) => {
@@ -92,6 +92,7 @@ const Home = ({ isArchive }) => {
     setVisible(false)
     const startTime = Date.now()
     try {
+      console.log(pratID)
       const newPratica = await getPratica(pratID)
       setLabel(getLabelColor(newPratica.cr9b3_categoria))
       setSelectedPratica(newPratica)

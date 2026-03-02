@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import msalInstance from '../msalConfig'
 import apiClient from 'src/util/apiClient'
 import { getCurrentUser } from 'src/services/userService'
+import { logAction } from 'src/services/applicationLogService'
 
 export const useAccessRights = () => {
   const [assignedPratiche, setAssignedPratiche] = useState([])
@@ -23,7 +24,6 @@ export const useAccessRights = () => {
     try {
       const user = await getCurrentUser()
       setCurrentUser(user)
-
       // Tasks
       const [respPratiche, officialePratiche, createdPratiche, assigned] = await Promise.all([
         apiClient.get(`cr9b3_pratica_responsabileset?$filter=systemuserid eq ${user.systemuserid}`),
@@ -44,6 +44,14 @@ export const useAccessRights = () => {
           ].filter(Boolean),
         ),
       ]
+      logAction(
+        user.userDetails.domainname,
+        'GET_COMBINEDTASKLIST',
+        'useAccessRights',
+        'cr9b3_praticaid',
+        '',
+        combinedTaskList,
+      )
       setAssignedPratiche(combinedTaskList)
     } catch (e) {
       console.error('[useAccessRights]', e)
@@ -57,7 +65,6 @@ export const useAccessRights = () => {
   useEffect(() => {
     fetchAccessRights()
   }, [fetchAccessRights])
-
   return {
     currentUser,
     assignedPratiche,

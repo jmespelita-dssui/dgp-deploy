@@ -51,6 +51,7 @@ const Search = () => {
     // setVisible(false)
     const startTime = Date.now()
     try {
+      console.log(pratID)
       const newPratica = await getPratica(pratID)
       // console.log(newPratica)
 

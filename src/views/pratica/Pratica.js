@@ -36,7 +36,7 @@ import { useToast } from 'src/context/ToastContext'
 import LoadingOverlay from '../modals/LoadingOverlay'
 import ConfirmClose from '../modals/ConfirmAction'
 import Correspondences from '../corr/Correspondences'
-import RelatedPratica from '../links/RelatedPratica'
+import RelatedPratica from '../relatedPratica/RelatedPratica'
 import Links from '../links/Links'
 import ActivityLogs from '../activityLog/ActivityLogs'
 import {

@@ -15,10 +15,8 @@ import CIcon from '@coreui/icons-react'
 import { cilBell, cilMenu } from '@coreui/icons'
 
 import { Login } from '@microsoft/mgt-react'
-import { AppBreadcrumb } from './index'
 import logo from 'src/assets/brand/dssui-logo.png'
 import { fetchNotifications } from 'src/services/notificationService'
-import { getPratica } from 'src/services/praticaService'
 
 const AppHeader = () => {
   const dispatch = useDispatch()
@@ -33,24 +31,15 @@ const AppHeader = () => {
     const getNotifsWithPratiche = async () => {
       try {
         const notifs = await fetchNotifications()
-        const unreadCount = notifs.filter((n) => !n.cr9b3_read).length
-        const enriched = await Promise.all(
-          notifs.map(async (notif) => {
-            const pratica = await getPratica(notif.cr9b3_pratica)
-            return { ...notif, pratica }
-          }),
-        )
-
-        // Update Redux state
         dispatch({
           type: 'set',
           payload: {
-            notifications: enriched,
-            notifCount: unreadCount,
+            notifications: notifs.notifs,
+            notifCount: notifs.unreadCount,
           },
         })
       } catch (err) {
-        console.error('Error loading notifications:', err)
+        console.error('Error loading notifications (getNotifsWithPratiche):', err)
       }
     }
 

@@ -23,6 +23,7 @@ const AppContent = () => {
     }
     init()
   }, [])
+
   if (loading) {
     return (
       <CContainer className="p-5">

@@ -1,20 +1,29 @@
 import apiClient from 'src/util/apiClient'
-import { getPratica } from './praticaService'
 import { getCurrentUser, getUserName } from './userService'
 
 export const fetchNotifications = async () => {
   const systemuserid = (await getCurrentUser()).systemuserid
   try {
+    // Fetch notifications and expand related pratica
     const res = await apiClient.get('/cr9b3_notifications', {
       params: {
         $filter: `_cr9b3_systemuser_value eq ${systemuserid}`,
         $orderby: 'createdon desc',
+        $expand: 'cr9b3_notification_pratica',
       },
     })
 
     const notifications = res.data.value
-    // console.log('Fetched notifications:', notifications)
-    return notifications
+
+    // Count unread
+    const unreadCount = notifications.filter((n) => !n.cr9b3_read).length
+
+    // Map to include the expanded pratica directly
+    const enriched = notifications.map((n) => ({
+      ...n,
+      pratica: n.cr9b3_notification_pratica, // already included via $expand
+    }))
+    return { notifs: enriched, unreadCount }
   } catch (error) {
     if (error.isAxiosError) {
       console.error('Axios error getting notifs:', error.response)
@@ -23,22 +32,6 @@ export const fetchNotifications = async () => {
     } else {
       console.error('Non-Axios error:', error)
     }
-  }
-}
-
-export const getNotifsWithPratiche = async () => {
-  try {
-    const notifs = await fetchNotifications()
-    const unreadCount = notifs.filter((n) => !n.cr9b3_read).length
-    const enriched = await Promise.all(
-      notifs.map(async (notif) => {
-        const pratica = await getPratica(notif.cr9b3_pratica)
-        return { ...notif, pratica }
-      }),
-    )
-    return { notifications: enriched, notifCount: unreadCount }
-  } catch (err) {
-    console.error('Error loading notifications:', err)
   }
 }
 
@@ -92,9 +85,10 @@ export const sendNotificationtoUser = async (assignTo, desc, type, praticaID) =>
       await apiClient.post('/cr9b3_notifications', {
         cr9b3_description: desc,
         cr9b3_type: type,
-        cr9b3_pratica: praticaID,
+        // cr9b3_praticaid: praticaID,
         cr9b3_actor: actorName,
         cr9b3_read: false,
+        'cr9b3_notification_pratica@odata.bind': `/cr9b3_praticas(${praticaID})`,
         'cr9b3_SystemUser@odata.bind': `/systemusers(${assignTo})`,
       })
     }
@@ -107,4 +101,14 @@ export const sendNotificationtoUser = async (assignTo, desc, type, praticaID) =>
       console.error('Non-Axios error:', error)
     }
   }
+}
+
+export const requestAccess = async (pratica) => {
+  // const systemuserid = await getSystemUserID(notif.)
+  await sendNotificationtoUser(
+    pratica._createdby_value,
+    'Richiesta di accesso',
+    'request access',
+    pratica.cr9b3_praticaid,
+  )
 }

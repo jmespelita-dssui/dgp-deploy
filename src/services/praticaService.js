@@ -468,9 +468,7 @@ export const assignRelatedTask = async (praticaID, relatedPraticaID) => {
 
 export const getPratica = async (praticaID) => {
   const response = await apiClient.get(`cr9b3_praticas?$filter=cr9b3_praticaid eq '${praticaID}'`)
-  // console.log('getPratica response', praticaID, response.data)
   return response.data.value[0]
-  // ?$filter=cr9b3_praticaid eq '${pratica.cr9b3_praticaid}
 }
 
 export const assignSuperiors = async (superioriInvitatiList, superioriSystemUserIDs, praticaID) => {

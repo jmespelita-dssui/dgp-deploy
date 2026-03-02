@@ -13,10 +13,13 @@ import { getUser } from 'src/services/userService'
 const RequestAccess = ({ visible, onClose, onSubmit, pratica }) => {
   const [user, setUser] = useState()
   useEffect(() => {
-    fetchData()
-  }, [])
+    if (visible) {
+      fetchData()
+    }
+  }, [visible])
 
   const fetchData = async () => {
+    console.log('here')
     const createdBy = await getUser(pratica._createdby_value)
     setUser(createdBy)
   }

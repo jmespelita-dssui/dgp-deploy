@@ -17,7 +17,6 @@ import CIcon from '@coreui/icons-react'
 import { cilCheckCircle } from '@coreui/icons'
 import { fetchNotifications, markAllAsRead, markAsRead } from 'src/services/notificationService'
 import { filterPratiche } from 'src/services/accessService'
-import { getPratica } from 'src/services/praticaService'
 import { useAccessRights } from 'src/hooks/useAccessRights'
 
 const AppAside = () => {
@@ -57,39 +56,27 @@ const AppAside = () => {
   const refreshNotifs = async () => {
     try {
       const notifs = await fetchNotifications()
-      const unreadCount = notifs.filter((n) => !n.cr9b3_read).length
-      const enriched = await Promise.all(
-        notifs.map(async (notif) => {
-          const pratica = await getPratica(notif.cr9b3_pratica)
-          return { ...notif, pratica }
-        }),
-      )
-
+      const unreadCount = notifs.notifs.filter((n) => !n.cr9b3_read).length
       // Update Redux state
       dispatch({
         type: 'set',
         payload: {
-          notifications: enriched,
+          notifications: notifs.enriched,
           notifCount: unreadCount,
         },
       })
     } catch (err) {
-      console.error('Error loading notifications:', err)
+      console.error('Error loading notifications (refreshNotifs):', err)
     }
   }
 
   const onMarkNotifAsRead = async (notif) => {
     const updatedNotifs = await markAsRead(notif)
-    const enriched = await Promise.all(
-      updatedNotifs.map(async (notif) => {
-        const pratica = await getPratica(notif.cr9b3_pratica)
-        return { ...notif, pratica }
-      }),
-    )
+
     dispatch({
       type: 'set',
       payload: {
-        notifications: enriched,
+        notifications: updatedNotifs.notifs,
         notifCount: 0,
       },
     })

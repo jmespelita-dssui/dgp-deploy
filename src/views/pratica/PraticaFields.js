@@ -126,6 +126,7 @@ const Fields = ({
 
   const onExit = async () => {
     if (confirmAction === 'close') {
+      console.log(formData.cr9b3_praticaid)
       let refreshPratica = await getPratica(formData.cr9b3_praticaid)
       setFormData(refreshPratica)
       setPraticaEdits({ cr9b3_praticaid: pratica.cr9b3_praticaid })

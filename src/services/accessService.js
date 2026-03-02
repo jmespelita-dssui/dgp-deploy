@@ -3,7 +3,6 @@ import { sendNotificationtoUser } from './notificationService'
 import apiClient from 'src/util/apiClient'
 import { getCurrentUser, getGroupMembers, getUser, getUserName } from './userService'
 import { getPratica, getPraticheList } from './praticaService'
-import { get } from 'lodash'
 
 export const getAssignedUsers = async (pratica) => {
   let superioriInvitati = []

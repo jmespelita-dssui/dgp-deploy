@@ -8,7 +8,7 @@ import { getLabelColor, getPratica } from 'src/services/praticaService'
 import Pratica from '../pratica/Pratica'
 import LoadingOverlay from '../modals/LoadingOverlay'
 import RequestAccess from '../modals/RequestAccess'
-import { sendNotificationtoUser } from 'src/services/notificationService'
+import { requestAccess, sendNotificationtoUser } from 'src/services/notificationService'
 import { useToast } from 'src/context/ToastContext'
 import ConfirmAccess from '../modals/ConfirmAccess'
 import { checkAccessToPratica, giveAccess } from 'src/services/accessService'
@@ -30,6 +30,7 @@ const Notification = ({ notif, permittedPratiche, markNotifAsRead }) => {
     setLoading(true)
     const startTime = Date.now()
     try {
+      console.log(pratID)
       const newPratica = await getPratica(pratID)
       // console.log(newPratica)
 
@@ -62,24 +63,6 @@ const Notification = ({ notif, permittedPratiche, markNotifAsRead }) => {
       default:
         return 'secondary'
     }
-  }
-
-  const onConfirmRequestAccess = async () => {
-    // const systemuserid = await getSystemUserID(notif.)
-    setLoading(true)
-    await sendNotificationtoUser(
-      notif.pratica._createdby_value,
-      'Richiesta di accesso',
-      'request access',
-      notif.pratica.cr9b3_praticaid,
-    )
-      .then(() => {
-        addToast('Richiesta mandata.', 'Azione', 'success', 3000)
-      })
-      .finally(() => {
-        setLoading(false)
-        setVisibleRequestAccess(false)
-      })
   }
 
   const setAccess = async (isGranted) => {
@@ -161,6 +144,18 @@ const Notification = ({ notif, permittedPratiche, markNotifAsRead }) => {
       return permittedPratiche.find((p) => p.cr9b3_praticaid === pratica.cr9b3_praticaid)
     }
     return false
+  }
+
+  const onConfirmRequestAccess = async () => {
+    setLoading(true)
+    await requestAccess(notif.pratica)
+      .then(() => {
+        addToast('Richiesta mandata.', 'Azione', 'success', 3000)
+      })
+      .finally(() => {
+        setLoading(false)
+        setVisibleRequestAccess(false)
+      })
   }
 
   return (

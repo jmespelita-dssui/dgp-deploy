@@ -6,6 +6,9 @@ import React, { useState } from 'react'
 import ConfirmClose from '../modals/ConfirmAction'
 import { useToast } from 'src/context/ToastContext'
 import { getAccessLevel } from 'src/services/accessService'
+import RequestAccess from '../modals/RequestAccess'
+import { requestAccess } from 'src/services/notificationService'
+import LoadingOverlay from '../modals/LoadingOverlay'
 
 const RelatedPraticaRow = ({
   relatedPratica,
@@ -15,6 +18,8 @@ const RelatedPraticaRow = ({
   setNewPratica,
 }) => {
   const [visibleConfirmClose, setVisibleConfirmClose] = useState(false)
+  const [visibleRequestAccess, setVisibleRequestAccess] = useState(false)
+  const [loading, setLoading] = useState(false)
   const { addToast } = useToast()
 
   const [confirmCloseBody, setConfirmCloseBody] = useState({
@@ -41,13 +46,33 @@ const RelatedPraticaRow = ({
       if (praticheList.find((prat) => prat === relatedPratica.cr9b3_praticaid)) {
         setNewPratica(relatedPratica.cr9b3_praticaid)
       } else {
-        addToast('Non hai accesso a questa pratica.', 'Visualizza pratica', 'warning', 3000)
+        // addToast('Non hai accesso a questa pratica.', 'Visualizza pratica', 'warning', 3000)
+        setVisibleRequestAccess(true)
       }
     }
+  }
+  const onConfirmRequestAccess = async () => {
+    setLoading(true)
+    await requestAccess(relatedPratica)
+      .then(() => {
+        addToast('Richiesta mandata.', 'Azione', 'success', 3000)
+      })
+      .finally(() => {
+        setLoading(false)
+        setVisibleRequestAccess(false)
+      })
   }
 
   return (
     <>
+      <LoadingOverlay loading={loading} />
+
+      <RequestAccess
+        visible={visibleRequestAccess}
+        onClose={() => setVisibleRequestAccess(false)}
+        onSubmit={onConfirmRequestAccess}
+        pratica={relatedPratica}
+      />
       <ConfirmClose
         visible={visibleConfirmClose}
         body={confirmCloseBody}

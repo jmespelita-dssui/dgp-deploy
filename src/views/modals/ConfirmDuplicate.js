@@ -12,7 +12,6 @@ import {
   CListGroup,
   CListGroupItem,
 } from '@coreui/react-pro'
-import { getPratica } from 'src/services/praticaService'
 import apiClient from 'src/util/apiClient'
 import moment from 'moment'
 
